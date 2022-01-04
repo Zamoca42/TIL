@@ -1,5 +1,5 @@
 // #define _CRT_SECURE_NO_WARNINGS
-// Property -> preprocessor -> Debug¿¡ _CRT_SECURE_NO_WARNINGS Ãß°¡
+// Property -> preprocessor -> Debugì— _CRT_SECURE_NO_WARNINGS ì¶”ê°€
 
 #include<stdio.h>
 
@@ -11,8 +11,8 @@ int main()
 	printf("Input two integers\n");
 
 	scanf("%d%d", &i, &j); //& : ampersand
-	//¸Ş¸ğ¸® ÁÖ¼Ò¸¦ Á÷Á¢ Á¢±ÙÇÏ±â¶§¹®¿¡ º¸¾È À§Çè
-	//microsoft¿¡¼­´Â scanf_s ±ÇÀå
+	//ë©”ëª¨ë¦¬ ì£¼ì†Œë¥¼ ì§ì ‘ ì ‘ê·¼í•˜ê¸°ë•Œë¬¸ì— ë³´ì•ˆ ìœ„í—˜
+	//microsoftì—ì„œëŠ” scanf_s ê¶Œì¥
 
 	sum = i + j;
 
