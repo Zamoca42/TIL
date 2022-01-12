@@ -26,7 +26,7 @@ int main()
 
 	//// scanf("%d", &my_numbers[0]);
 	//// scanf("%d", my_numbers); 
-	//// º¯¼ö¿¡´Â &À» ºÙÀÌÁö¸¸ array´Â ÁÖ¼Ò ÀÚÃ¼¶ó¼­ ºÙÀÌÁö ¾ÊÀ½
+	//// ë³€ìˆ˜ì—ëŠ” &ì„ ë¶™ì´ì§€ë§Œ arrayëŠ” ì£¼ì†Œ ìì²´ë¼ì„œ ë¶™ì´ì§€ ì•ŠìŒ
 
 	//printf("%d\n", my_numbers[0]);
 	//printf("%d\n", my_numbers[1]);
