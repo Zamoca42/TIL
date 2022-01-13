@@ -1,3 +1,5 @@
+![C_lang](https://user-images.githubusercontent.com/96982072/149340879-6abd88d5-2fbc-4439-8d9b-20137922c6a2.png)
+
 >## 목차
 >[따라 배우는 C언어 강의를 선택하게 된 이유](#따라-배우는-C언어-강의를-선택하게-된-이유)  
 >[Chapter 0~1. C언어 강의 시작](#chapter-01-C언어-강의-시작)  
