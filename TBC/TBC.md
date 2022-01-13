@@ -75,9 +75,8 @@ Chapter 0~1 부분은 반드시 이해한다는 느낌보다는
     
     → 프로그램을 유지하고 개선해 나간다
     
----
+    
 ## Chapter 2. C의 해부학
----
 
 ```c
 #include <stdio.h>
@@ -482,9 +481,9 @@ int main(void) 는 함수 정의 시작부분이고 나머지 중괄호 안은 �
     	printf("%d %d\n", i_post, pre_j); // 출력값 1 2
     ```
     
----
-### Chapter 6. 반복문
----
+
+## Chapter 6. 반복문
+
 
 - **[6.2] Pseudo Code**
     
