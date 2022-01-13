@@ -3,11 +3,11 @@
 ## 목차
 [따라 배우는 C언어 강의를 선택하게 된 이유](#따라-배우는-C언어-강의를-선택하게-된-이유)  
 [Chapter 0~1. C언어 강의 시작](#chapter-01-C언어-강의-시작)  
-[Chapter 2. C의 해부학](#Chapter-2.-C의-해부학)  
-[Chapter 3. scanf() & 데이터와 자료형](#Chapter-3.-scanf()-&-데이터와-자료형)  
-[Chapter 4. 문자열과 형식 맞춘 입출력](#Chapter-4.-문자열과-형식-맞춘-입출력)  
-[Chapter 5. 반복문 & 연산자](#Chapter-5.-반복문-&-연산자)  
-[Chapter 6. 반복문](#Chapter-6.-반복문)  
+[Chapter 2. C의 해부학](#chapter-2-C의-해부학)  
+[Chapter 3. scanf() & 데이터와 자료형](#chapter-3-scanf()--데이터와-자료형)  
+[Chapter 4. 문자열과 형식 맞춘 입출력](#chapter-4-문자열과-형식-맞춘-입출력)  
+[Chapter 5. 반복문 & 연산자](#chapter-5-반복문--연산자)  
+[Chapter 6. 반복문](#chapter-6-반복문)  
 
 ---
 ### 따라 배우는 C언어 강의를 선택하게 된 이유
