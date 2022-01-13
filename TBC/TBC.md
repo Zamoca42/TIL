@@ -638,13 +638,13 @@ int main(void) 는 함수 정의 시작부분이고 나머지 중괄호 안은 �
     
     ```c
     do
-    	{
-    		printf("Enter secret code : ");
-    		scanf("%d", &i);
-    	} 
-    	while (i != password);
+    {
+    	printf("Enter secret code : ");
+    	scanf("%d", &i);
+    } 
+    while (i != password);
     
-    	printf("Good!\n");
+    printf("Good!\n");
     ```
     
     do while문 에서는 한번만 입력을 하면 루프로 들어가고
@@ -688,7 +688,7 @@ int main(void) 는 함수 정의 시작부분이고 나머지 중괄호 안은 �
     - 예시 2
         
         ```c
-        	for (int r = 0; r < 10; ++r)
+        for (int r = 0; r < 10; ++r)
         	{
         		for (char c = 'A'; c <= 'A' + r; ++c)
         		{
