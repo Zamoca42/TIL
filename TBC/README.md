@@ -8,6 +8,7 @@
 >[Chapter 4. 문자열과 형식 맞춘 입출력](#chapter-4-문자열과-형식-맞춘-입출력)  
 >[Chapter 5. 반복문 & 연산자](#chapter-5-반복문--연산자)  
 >[Chapter 6. 반복문](#chapter-6-반복문)  
+>[Chapter 7. 분기문](#chapter-7-분기문)
 
 ## 따라 배우는 C언어 강의를 선택하게 된 이유
   
@@ -896,3 +897,679 @@ int main(void) 는 함수 정의 시작부분이고 나머지 중괄호 안은 �
     그래서 main 함수 위에 밑에서 작성한 int compute_pow(int base, int exp); 
     
     프로토타입을 작성하여 main에서 사용할 수 있게 해준다.
+    
+## Chapter 7. 분기문
+
+- ### [7.1] 분기문 if
+    
+    분기문 if 를 배우면서 간단한 예시로 숫자를 입력 했을 때, 홀수 또는 짝수를 나타내는 함수를 연습 해보았다.
+    
+    ```c
+    int number;
+    
+    	printf("Input a positive integer : ");
+    	scanf("%d", &number);
+    ```
+    
+    입력 받을 숫자의 변수를 선언 해주고
+    
+    ```c
+    if (number % 2 == 0)
+    	printf("Even");
+    printf("Odd");
+    ```
+    
+    나는 이런식으로 작성하였지만, else를 사용하지 않았기 때문에 홀수를 출력할 때 문제가 발생하였다.
+    
+    ```c
+    if (number % 2 == 0)
+    		printf("Even");
+    	
+    if (number % 2 != 0)
+    		printf("Odd");
+    ```
+    
+    정확한 방법은 이렇게 if문을 두 개 사용하여 확실히 기능을 나누어 주거나
+    
+    ```c
+    if (number % 2 == 0)
+    		printf("Even");
+    	else
+    		printf("Odd");
+    ```
+    
+    if 와 else를 사용하여 나머지가 0이 아닐 때 홀수로 출력할 수 있게 한다.
+    
+- ### [7.2] 표준입출력 함수들
+    
+    한 글자씩 가져올 수 있는 getchar(), 
+    
+    가져온 글자를 출력하는 putchar()를 
+    
+    if문과 함께 알아보자
+    
+    - 예시 1
+        
+        ```c
+        char ch;
+        
+        ch = getchar();	// 한글자 가져오기
+        	putchar(ch);	// 가져온 글자 출력하기
+        ```
+        
+        우선 함수의 소개이다. 글자를 가져오고, 가져온 글자를 출력할 수 있다.
+        
+    - 예시 2
+        
+        ```c
+        while (ch != '\n') // Use '\n' to find the end of a sentence
+        	{
+        		putchar(ch);
+        		ch = getchar();
+        	}
+        
+        putchar(ch);
+        
+        	// 한 글자씩 출력하는 원리이지만 여러글자를 입력해도 출력하는 이유
+        	// buffer에서 임시로 받아놨다가 while 문에서 한 글자씩 반복해서 빼내오고 있기 때문
+        	// 뒤에 나오는 buffer에서 자세히 설명
+        ```
+        
+        while문을 사용하면 입력한 만큼 받은 문자를 출력할 수 있다.
+        
+    - 예시 3
+        
+        ```c
+        while ((ch = getchar()) != '\n')
+        		putchar(ch);
+        	putchar(ch);
+        ```
+        
+        while문을 짧게 줄이는 것도 가능하다.
+        
+    - 예시 4
+        
+        ```c
+        while ((ch = getchar()) != '\n')
+        	{
+        		if (ch >= '0' && ch <= '9')
+        			ch = '*';
+        		putchar(ch);
+        	}
+        ```
+        
+        이렇게 if문을 사용하여 조건 내에 글자를 치환 할 수 있다.
+        
+        if대신 for을 사용할 수 있는데
+        
+        ```c
+        for (int i = '0'; i <= '9'; ++i)
+        			if (ch == i)
+        				ch = '*';
+        ```
+        
+        이렇게 작성할 수도 있지만, 논리구조를 파악하여 if하나만 쓰는 것이 더 좋을 수 있다.
+        
+    - 예시 5
+        
+        ```c
+        while ((ch = getchar()) != '\n')
+        	{
+        		if (ch >= 'a' && ch <= 'z') // 'A' = 65, 'a' = 97
+        			ch -= 'a' - 'A';
+        		else if(ch >= 'A' && ch <= 'Z')
+        			ch += 'a' - 'A';
+        		putchar(ch);
+        	}
+        ```
+        
+        마지막으로 문자는 ASCII코드를 사용하여 문자 대신 인수로 받을 수 있으므로
+        
+        연산을 사용하여 소문자를 대문자로 또는 대문자를 소문자로 치환 가능하다.
+        
+    
+- ### [7.3] ctype.h 사용법
+    
+    새로운 헤더인 ctype.h를 사용하면 대소문자 치환이나 숫자치환, 공백같은 조건들을 쉽게 적용 가능하다.
+    
+    ctype.h 설명 [https://www.tutorialspoint.com/c_standard_library/ctype_h.htm](https://www.tutorialspoint.com/c_standard_library/ctype_h.htm)
+    
+    ```c
+    #define _CRT_SECURE_NO_WARNINGS
+    #include <stdio.h>
+    #include <ctype.h> //New header
+    
+    int main()
+    {
+    	char ch;
+    	
+    	while ((ch = getchar()) != '\n')
+    	{
+    		if (islower(ch))
+    			ch = toupper(ch);
+    		else if (isupper(ch))
+    			ch = tolower(ch);
+    
+    		if (isdigit(ch) != 0)
+    			ch = '*';
+    
+    		putchar(ch);
+    	}
+    
+    	putchar(ch);
+    
+    	return 0;
+    }
+    ```
+    
+    if안의 조건으로 islower을 넣어서 소문자 타입을 찾고 toupper로 대문자로 치환이 가능하다.
+    
+    isdigit으로 10진수 숫자를 찾아서 *로 바꾸는 식으로도 가능하다.
+    
+- ### [7.4] 다중 선택 else if
+    
+    내가 버는 수입에서 세금을 제외하면 얼마나 될 지 계산하는 소득 계산기를 작성해보았다.
+    
+    else if를 사용 해보기 위한 예제인데 구간 별로 세율을 매겨서 공제 금액을 찾고 마지막 최종 적용되는 세금을 출력하면 된다.
+    
+    ```c
+    // assessment standard tax base
+    #define BASE1  12000000.0
+    #define BASE2  46000000.0
+    #define BASE3  88000000.0
+    #define BASE4 150000000.0
+    #define BASE5 300000000.0
+    #define BASE6 500000000.0
+    
+    #define RATE1  (6.0 / 100.0)		// percent to rate
+    #define RATE2 (15.0 / 100.0)
+    #define RATE3 (24.0 / 100.0)
+    #define RATE4 (35.0 / 100.0)
+    #define RATE5 (38.0 / 100.0)
+    #define RATE6 (40.0 / 100.0)
+    #define RATE7 (42.0 / 100.0)
+    
+    #define BASIC_DEDUCTION 1500000.0
+    ```
+    
+    처음에 이렇게 구간을 정의 해주고나서
+    
+    ```c
+    income -= BASIC_DEDUCTION;
+    
+    	if (income <= BASE1)
+    	{
+    		tax = income * RATE1;
+    	}
+    	else if (income <= BASE2)
+    	{
+    		tax = BASE1 * RATE1 + (income - BASE1) * RATE2;
+    	}
+    	else if (income <= BASE3)
+    	{
+    		tax = BASE1 * RATE1 + (BASE2 - BASE1) * RATE2 + (income - BASE2) * RATE3;
+    	}
+    	else if (income <= BASE4)
+    	{
+    		tax = BASE1 * RATE1 + (BASE2 - BASE1) * RATE2 + (BASE3 - BASE2) * RATE3
+    			+ (income - BASE3) * RATE4;
+    	}
+    	else if (income <= BASE5)
+    	{
+    		tax = BASE1 * RATE1 + (BASE2 - BASE1) * RATE2 + (BASE3 - BASE2) * RATE3
+    			+ (BASE4 - BASE3) * RATE4 + (income - BASE4) * RATE5;
+    	}
+    	else if (income <= BASE6)
+    	{
+    		tax = BASE1 * RATE1 + (BASE2 - BASE1) * RATE2 + (BASE3 - BASE2) * RATE3
+    			+ (BASE4 - BASE3) * RATE4 + (BASE5 - BASE4) * RATE5 + (income - BASE5) * RATE6;
+    	}
+    	else
+    	{
+    		tax = BASE1 * RATE1 + (BASE2 - BASE1) * RATE2 + (BASE3 - BASE2) * RATE3
+    			+ (BASE4 - BASE3) * RATE4 + (BASE5 - BASE4) * RATE5 + (BASE6 - BASE5) * RATE6
+    			+ (income - BASE6) * RATE7;
+    	}
+    ```
+    
+    이런식으로 구간별로 적용을 해주는데 참 헷갈린다. 
+    
+    구간 별로 조건 지정은 어렵지 않았지만 블록 안에 함수들이 점점 헷갈린다
+    
+- ### [7.5] else와 if 짝짓기
+    
+    if를 한번만 사용하면 else를 사용할 때 별로 문제가 될 일은 없다.
+    
+    하지만 if를 여러번 중복해서 사용하면 else를 어디붙이느냐에 따라 출력하는 값이 완전히 바뀔 수 있다.
+    
+    ```c
+    if (number > 5)
+    		if (number < 10)
+    			printf("Lager than 5 smaller than 10\n");
+    else
+    		printf("Less than or equal to 5");
+    ```
+    
+    이렇게 하면 else위치가 맨 앞의 if와 붙어서 출력하게 된다.
+    
+    만약에 헷갈린다면 명확하게 {블록}을 설정한다.
+    
+    ```c
+    if (number > 5)
+    	{
+    		if (number < 10)
+    			printf("Lager than 5 smaller than 10\n");
+    		else
+    			printf("Lager than 10\n");
+    	}
+    else
+    		printf("Less than or equal to 5");
+    ```
+    
+    이렇게 하면 입력하는 나도 보기 편하고 출력도 제대로 가능하다.
+    
+- ### [7.6] 소수 판단 예제
+    
+    숫자를 입력 받아서 입력 받은 숫자가 소수인지 아닌지를 판단하는 예제를 작성 해보았다.
+    
+    ```c
+    #define _CRT_SECURE_NO_WARNINGS
+    #include <stdio.h>
+    #include <stdbool.h>
+    
+    int main()
+    {
+    	unsigned num, i;
+    	bool isPrime = 0; // flag, try bool type
+    
+    	scanf("%u", &num);
+    ```
+    
+    초기에 이렇게 설정해주고 숫자를 입력받는다
+    
+    ```c
+    isPrime = 1;
+    
+    	for (i = 1; num > i; ++i)
+    	{
+    		if (num % i == 0)
+    		{
+    			isPrime = 0;
+    		}
+    	}
+    
+    if (isPrime)
+    		printf("%u is a prime number.\n", num);
+    	else
+    		printf("%u is not a prime number.\n", num);
+    ```
+    
+    if 와 for을 사용해서 소수인지 판단하는데 내가 입력한 코드는 오류가 난다.
+    
+    ```c
+    isPrime = true;
+    
+    	for (i = 2; num > i; ++i)
+    	{
+    		if (num % i == 0)
+    		{
+    			isPrime = false;
+    		}
+    	}
+    ```
+    
+    정답을 보고 비교해보니  i = 1인 것과 i = 2인 것의 차이가 있다. 초기에 설정하는 값도 중요하다. 
+    
+- ### [7.7] 논리 연산자
+    
+    논리 연산자에는 && , || , ! 가 있다.
+    
+    각각 and, or, not으로 사용할 수 있다.
+    
+    논리 연산자 and는 두 개의 조건 값이 true 이면 true를 출력하고, 한 쪽이라도 false이면 false을 출력 한다.
+    
+    or 연산자는 어느 한 쪽만 true면 true를 출력한다.
+    
+    not 연산자는 true면 반대로 false를 출력한다.
+    
+    ```c
+    bool test1 = 3 > 2 || 5 > 6;	// true
+    bool test2 = 3 > 2 && 5 > 6;	// false
+    bool test3 = !(5 > 6);		    // true, equivalnet to 5 <= 6
+    ```
+    
+    iso646 헤더를 사용하면 연산자를 and, or, not으로 바꿔 줄 수 있다.
+    
+    ```c
+    #include <iso646.h>		// and, or, not
+    
+    bool test1 = 3 > 2 or 5 > 6;	// true
+    bool test2 = 3 > 2 and 5 > 6;	// false
+    bool test3 = not(5 > 6);		  // true, equivalnet to 5 <= 6
+    ```
+    
+    if문 조건 안에 논리 연산자를 넣어줘서 여러 조건을 넣을 수 있다.
+    
+    ```c
+    char ch;
+    	int count = 0;
+    	while ((ch = getchar()) != PERIOD)
+    	{
+    		//TODO : make exeptions
+    		if (ch != '\n' && ch != ' ')
+    			count++;
+    	}
+    printf("%d", count);
+    ```
+    
+- ### [7.8] 단어 세기 예제
+    
+    이제까지 사용한 ctype.h, if문, bool을 사용해서 글자 수, 단어 개수, 문장 개수를 알아보는 예제이다.
+    
+    ```c
+    #define _CRT_SECURE_NO_WARNINGS
+    #include <stdio.h>
+    #include <ctype.h>
+    #include <stdbool.h>
+    #define STOP '.'
+    
+    int main()
+    {
+    	char c;
+    	int	 n_chars = 0; // number of non-space characters
+    	int  n_lines = 0;
+    	int	 n_words = 0;
+    	bool word_flag = false;
+    	bool line_flag = false;
+    
+    	printf("Enter test :\n");
+    ```
+    
+    여기까지는 작성을 예시를 보여주었고, 나머지 부분만 작성해서
+    
+    ```c
+    printf("Characters = %d, Words = %d, Lines = %d\n", n_chars, n_words, n_lines);
+    ```
+    
+    이런식으로 출력을 한다. 힌트는 bool에 주어진 word_flag, line_flag를 활용하는 것이였다.
+    
+    내가 작성한 코드는
+    
+    ```c
+    while ((c = getchar()) != STOP)
+    	{
+    		if (c != '\n' && c != ' ')
+    		{
+    			n_chars++;
+    		}
+    		
+    		if (word_flag != (c == ' '))
+    		{
+    			n_words++;
+    		}
+    				
+    		if (c != '\n' && !line_flag)
+    		{
+    			n_lines++;
+    			line_flag = true;
+    		}
+    
+    		if (c == '\n')
+    			line_flag = false;
+    	}
+    ```
+    
+    이런 식으로 작성을 했다. 문장 개수를 찾는 부분에서 오류가 있었고, ctype.h를 활용하지 못해서 아쉬웠다.
+    
+    ```c
+    if (!isspace(c))
+    			n_chars++;
+    				
+    		if (!isspace(c) && !line_flag)
+    		{
+    			n_lines++;
+    			line_flag = true;
+    		}
+    		if (c == '\n')
+    		{
+    			line_flag = false;
+    		}
+    		if (!isspace(c) && !word_flag)
+    		{
+    			n_words++;
+    			word_flag = true;
+    		}
+    		if (isspace(c))
+    			word_flag = false;
+    ```
+    
+    이런식으로 구조 자체는 유사해보이지만, ctype.h 부분을 사용하면서 훨씬 간결해지고, 보기 쉽다.
+    
+    isspace는 공백 부분 뿐만 아니라 줄바꿈인 \n도 해당되기 때문에 조건값을 일일이 입력하는 것 보다 더 유용하다.
+    
+- ### [7.9] 조건 연산자
+    
+    삼항 연산자, 영어로는 ternary라고도 쓴다.
+    
+    ```c
+    temp = true ? 1024 : 7;
+    ```
+    
+    true 옆에 ?를 붙여서 true면 왼쪽에 있는 1024를 temp에 넣고, false가 왔다면 오른쪽에 있는 7을 temp에 넣는다.
+    
+    앞에서 입력해본 홀수 짝수를 찾는 예제를
+    
+    ```c
+    int number;
+    scanf("%d", &number);
+    	
+    	if (number % 2 == 0)
+    		is_even = true;
+    	else
+    		is_even = false;
+    
+    if (is_even)
+    		printf("Even");
+    	else
+    		printf("Odd");
+    ```
+    
+    이렇게 사용 했다면
+    
+    ```c
+    is_even = (number % 2 == 0) ? 1 : 0;
+    ```
+    
+    홀/짝 판단을 한 줄로 바꿀 수 있고
+    
+    ```c
+    (number % 2 == 0) ? printf("Even") : printf("Odd");
+    ```
+    
+    최종적으로 한 줄로 바꿔서 홀/짝을 출력까지 하게 만들 수도 있다.
+    
+    다만 코드를 보았을때 직관적이진 않아서 잘 사용하지 않는다.
+    
+- ### [7.10] 루프 도우미 continue 와 break
+    
+    코드를 직관적으로 바꾸고 싶다면, continue 와 break을 사용한다
+    
+    continue는 조건 실행 중에 만난다면 제외하고 건너 뛰는 역할을 하고
+    
+    break는 조건을 탈출한다.
+    
+    ```c
+    for (int i = 0; i < 10; ++i)
+    	{
+    		if (i == 5)
+    			continue;
+    
+    		printf("%d ", i);
+    
+    		if (i != 5)
+    			printf("%d ", i);
+    	}
+    ```
+    
+    여기서 사용된 continue를 출력하면  1 2 3 4 6 7 8 9 같이 5를 제외한 숫자가 출력 된다.
+    
+    ```c
+    for (int i = 0; i < 10; ++i)
+    	{
+    		if (i == 5)
+    			break;
+    
+    		printf("%d ", i);
+    	}
+    ```
+    
+    break를 사용하면 1~9까지 출력해야 되는 것을 1 2 3 4 까지만 출력 한다.
+    
+    ```c
+    while (getchar() != '\n')
+    		continue; //null statement
+    ```
+    
+    이것과
+    
+    ```c
+    while (getchar() != '\n')
+    		; //null statement
+    ```
+    
+    이것처럼 continue를 빼도 다른 것은 없으나 continue나 break를 넣어서 만드는 것이 직관적이라는 점에서 장점이다.
+    
+    마찬가지로 break 도
+    
+    ```c
+    char c;
+    	while ((c = getchar()) != '.')
+    	{
+    		putchar(c);
+    	}
+    ```
+    
+    이것을
+    
+    ```c
+    while (1)
+    	{
+    		char c = getchar();
+    
+    		if (c == '.')
+    			break;
+    
+    		putchar(c);
+    	}
+    ```
+    
+    이렇게 쓸 수 있다. 어떤 것을 사용해도 상관은 없으나 밑에 문장이 길어지긴 하지만 더 직관적으로 보이기도 한다.
+    
+- ### [7.11] 최대, 최소, 평균 구하기 예제
+    
+    ```c
+    #define _CRT_SECURE_NO_WARNINGS
+    #include <stdio.h>
+    #include <float.h>
+    
+    int main()
+    {
+    	float max = -FLT_MAX;
+    	float min = FLT_MAX;
+    	float sum = 0.0f;
+    	float input;
+    	int n = 0;
+    
+    	while (scanf("%f", &input) == 1)
+    	{
+    		if (input < 0.0f || input > 100.0f)
+    			continue;
+    
+    		//TODO: ignore negative values
+    
+    		/*
+    		if (input > max)
+    			max = input;
+    		if (input < min)
+    			min = input;
+    		*/
+    
+    		max = (input > max) ? input : max;
+    		min = (input < min) ? input : min;
+    		sum += input;
+    		
+    		n++; // Count number of inputs
+    	}
+    
+    	if (n > 0)
+    		printf("min = %f, max = %f, ave = %f\n", min, max, sum / n);
+    	else
+    		printf("No input\n");
+    
+    	return 0;
+    }
+    ```
+    
+    최대 최소 구하기 예제이다.
+    
+    ```c
+    if (input > max)
+    			max = input;
+    if (input < min)
+    			min = input;
+    ```
+    
+    if 를 사용해서 최대,최소 값을 구성할 수도 있고
+    
+    ```c
+    max = (input > max) ? input : max;
+    min = (input < min) ? input : min;
+    ```
+    
+    삼항 연산자를 사용할 수도 있다.
+    
+
+- ### [7.12] 다중 선택 switch 와 break
+    
+    ```c
+    #define _CRT_SECURE_NO_WARNINGS
+    #include <stdio.h>
+    
+    int main()
+    {
+    	int c = 0;
+    
+    	while ((c = getchar()) != '.')
+    	{
+    		printf("You love ");
+    
+    		switch (c)	//Note: integer types only
+    		{
+    		case 'a':
+    			printf("apple");
+    			break;
+    		case 'b':
+    			printf("baseball");
+    			break;
+    		case 'c':
+    			printf("cake");
+    			break;
+    		default:
+    			printf("nothing");
+    		}
+    
+    		printf(".\n");
+    
+    		while (getchar() != '\n')
+    			continue;
+    	}
+    
+    	return 0;
+    }
+    ```
+    
+    마지막으로 볼 것은 switch 인데 만약에 a를 입력했다면
+    
+    case 'a'; 밑에 입력해놓은 단어 "apple"이 You love 와 합쳐져 You love apple를 출력한다.  
+    
+    여기서 break가 없다면 입력한 단어들에 들어가는 모든 단어를 출력해버린다.
