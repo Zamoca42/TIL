@@ -1563,3 +1563,491 @@ int main(void) 는 함수 정의 시작부분이고 나머지 중괄호 안은 �
     case 'a'; 밑에 입력해놓은 단어 "apple"이 You love 와 합쳐져 You love apple를 출력한다.  
     
     여기서 break가 없다면 입력한 단어들에 들어가는 모든 단어를 출력해버린다.
+    
+    
+## Chapter 8. 문자 입출력과 입력 유효성 검증
+
+- ### [8.1] 입출력 버퍼
+    
+    앞에서 배운 getchar(), putchar() 함수들은 버퍼에서 임시로 받아 놓은 값을
+    
+    출력하기 때문에 while문과 사용하면 여러 문자를 출력할 수 있었다.
+    
+    ![img_c_buffer_vs_nobuffer_(1)](https://user-images.githubusercontent.com/96982072/149668431-6181d04a-d2e4-4407-a460-f433407a7441.png)
+    
+    [출처] [http://www.tcpschool.com/c/c_io_console](http://www.tcpschool.com/c/c_io_console)
+    
+    버퍼는 버스와 같다고 생각하면 된다. 버퍼를 사용하지 않는 함수도 존재한다
+    
+    ```c
+    #define _CRT_SECURE_NO_WARNINGS
+    #include <stdio.h>
+    #include <conio.h> //Windows, _getch(), _getche()
+    
+    int main()
+    {
+    	char c;
+    
+    	while ((c = _getche()) != '.')//echo : no buffer
+    		putchar(c);
+    
+    	return 0;
+    }
+    ```
+    
+    _getch(), _getche() 함수는 버퍼를 사용하지 않는다. 그래서 한 글자만 받는다고 할 수 있겠다.
+    
+    _getche()를 사용해서 a b c를 순서대로 입력하면 aabbcc처럼 출력된다.
+    
+- ### [8.2] 파일의 끝
+    
+    문자를 입력받을 때 
+    
+    ```c
+    while ((c = getchar()) != '.') 
+    	putchar(c);	   			  
+    ```
+    
+    마침표를 사용하거나 엔터를 입력하면 함수가 종료되는 식으로 사용을 해왔었는데
+    
+    EOF를 이용하여 종료 시킬 수도 있다. 기본적으로 ASCII 코드도 인수를 받는데
+    
+    아스키 코드 표를 보면 음수가 없는 것을 알 수  있다.
+    
+    ```c
+    while ((c = getchar()) != EOF) // End Of File
+    		putchar(c);	   			  // EOF = (-1) ASCII END
+    ```
+    
+    이렇게 사용해서 변수 c에 -1을 넣어서 종료 시키는 것과 같다
+    
+    실행을 시켜서 문자를 입력하다가 ctrl + Z키를 누르면 프로그램이 종료한다.
+    
+    ```c
+    while (1)
+    	{
+    		c = getchar();
+    		printf("%d\n", c);
+    		if (c == EOF)
+    			break;
+    	}
+    ```
+    
+    이런 식으로 사용하는 것을 스트림이라고 한다.
+    
+
+- ### [8.3] 입출력 방향 재지정
+    
+    ```c
+    #define _CRT_SECURE_NO_WARNINGS
+    #include <stdio.h>
+    
+    int main()
+    {
+    	//printf("I love apple.\n");
+    
+    	char str[100];
+    	scanf("%s", str);
+    	printf("I love %s\n", str);
+    
+    	return 0;
+    ```
+    
+    콘솔창을 통해서 자기가 직접 입력을 하는 방법도 있겠지만
+    
+    명령프롬프트에서 출력한 내용의 txt파일을 만들거나, 읽어오게 시킬 수도 있다.
+    
+    cmd창에서 프로그램을 작성한 .exe 실행 파일이 있는 곳으로 이동한다
+    
+    CH08_03.exe > output.txt 를 입력하면
+    
+    ```c
+    printf("I love apple.\n")
+    ```
+    
+    출력하라고 했던 I love apple를 txt파일로 만들 수 있다.
+    
+    ![이미지_047](https://user-images.githubusercontent.com/96982072/149668436-7d8abd5c-a0bf-4c54-a704-a23a32381fc5.png)
+    
+    반대로 해당폴더에서 Melon이라는 글자를 input.txt로 만들고
+    
+    ```c
+    char str[100];
+    
+    scanf("%s", str);
+    printf("I love %s\n", str);
+    ```
+    
+    이렇게 작성한 프로그램에
+    
+    CH08_03.exe < input.txt 식으로 입력하면 
+    
+    ![이미지_049](https://user-images.githubusercontent.com/96982072/149668438-c3c000d6-61a0-4103-9472-02e783cf9db4.png)
+    
+    I love Melon이 출력되는 것을 알 수 있다.
+    
+    아까 입력한 Melon을 CH08_03.exe < input.txt > output.txt 로 입력하면?
+    
+    입력과 출력을 동시에 할 수 있다.
+    
+    ![이미지_050](https://user-images.githubusercontent.com/96982072/149668440-5c7010f5-21c3-4967-adde-87826821c028.png)
+    
+    추가로 CH08_03.exe >> output.txt로 >를 두 번 입력하면
+    
+    ![이미지_051](https://user-images.githubusercontent.com/96982072/149668443-3c314524-7290-4571-945e-84a594cdc39d.png)
+    
+    이렇게 txt파일에는 저번에 출력을 요청 했던 것과 추가로 한 줄이 출력된다.
+    
+- ### [8.4] 사용자 인터페이스는 친절하게
+    
+    프로그램을 작성할 때에는 사용자는 예측할 수 없는 방법으로 다양하게 사용할 수 있다.
+    
+    그래서 프로그램이 목표하는 것 이외의 입력이 있을 수 있다.
+    
+    모든 가능성을 생각하고 작성해 볼 필요가 있다.
+    
+    ```c
+    #define _CRT_SECURE_NO_WARNINGS
+    #include <stdio.h>
+    
+    int main()
+    {
+    	int count = 0;
+    
+    	while (1)
+    	{
+    		printf("Current count is %d. Continue? (y/n)\n", count);
+    
+    		int c = getchar();
+    
+    		if (c == 'n')
+    			break;
+    		else if (c == 'y')
+    			count++;
+    		else
+    			printf("Please input y or n\n");
+    		
+    		while (getchar() != '\n')
+    			continue;
+    	
+    	}
+    	return 0;
+    }
+    ```
+    
+    간단하게 y를 입력하면 1을 올리고 n을 입력하면 종료하는 프로그램이 있다고 하자.
+    
+    여기 작성된 코드에는 y를 입력하던 yes를 입력하던 
+    
+    어쨌든 첫 문자로 y를 받기 때문에 문제가 없다. 
+    
+    그러나 막상 처음 보는 사용자는
+    
+    what이나 여러가지 문자를 입력할 수 있기 때문에 y나 n 이외의 것을 입력하면 
+    
+    다시 y나 n을 입력하라고 안내를 해주는 코드를 작성 하는 것이 좋다.
+    
+- ### [8.5] 숫자와 문자 섞어서 입력받기
+    
+    문자 한 개와 숫자 두 개를 입력 받아서  숫자 두 개가 행렬이 되어
+    
+    행렬만큼 문자를 출력하는 식을 만드는 예제이다.
+    
+    ```c
+    while (1)
+    	{
+    		scanf("%c %d %d", &c, &rows, &cols);
+    		while (getchar() != '\n') continue;
+    		display(c, rows, cols);
+    		if (c == '\n')
+    			break;
+    	}
+    ```
+    
+    여기서 행렬 부분을 main파트에 작성하면 길어질 수 있으므로 
+    
+    따로 display라는 함수로 정의를 해주면
+    
+    ```c
+    void display(char cr, int lines, int width)
+    {
+    	int row, col;
+    
+    	for (row = 1; row <= lines; row++)
+    	{
+    		for (col = 1; col <= width; col++)
+    			putchar(cr);
+    		putchar('\n');
+    	}
+    }
+    ```
+    
+    이렇게 행렬 부분을 만들 수 있다.
+    
+    또 한 scanf에서 문자 숫자 숫자를 다 받다가 특수문자를 입력하면 오류가 발생한다.
+    
+    그리고 여러번 입출력을 하고 싶고,
+    
+    아무것도 입력하지 않고 엔터만 입력하면 종료를 시키고 싶을 때 
+    
+    ```c
+    printf("Input one character and tow integers:\n");
+    	while ((c = getchar()) != '\n')
+    	{
+    		scanf("%d %d", &rows, &cols);
+    		while (getchar() != '\n') continue;
+    
+    		display(c, rows, cols);
+    		printf("Input another character and two integers:\n");
+    		printf("Press Enter to quit.\n");
+    
+    	}
+    ```
+    
+    이런식으로 while문 getchar로 반복 입력할 수 있다.
+    
+- ### [8.6] 입력 확인하기
+    
+    조금 더 나아가서 정수를 입력하고 그 수가 유효하면 맞다고 
+    
+    출력하고 그 중에서도 범위를 설정해서 범위 안의 숫자가 아니면 다시 입력하게 하는
+    
+    예제를 보았다
+    
+    ```c
+    int main()
+    {
+    	long number;
+    
+    	while (1)
+    	{
+    		printf("Please input an integer between 1 and 100.\n");
+    		number = get_long();
+    
+    		if (number > 1 && number < 100)
+    		{
+    			printf("OK. Thank you.\n");
+    			break;
+    		}
+    		else
+    			printf("wrong input. Please try again\n");
+    	}
+    
+    	printf("Your input %d is between 1 and 100. Thank you\n", number);
+    
+    	return 0;
+    }
+    ```
+    
+    먼저 main()안의 함수는 이렇다. 여기서 빠진 것은 정수를 입력하게 하는 방법인데
+    
+    main안에서 모두 입력하면 너무 길어지므로 새로 get_long을 만들어서 함수를 선언한다
+    
+    ```c
+    long get_long(void)
+    {
+    	printf("Please input an integer and press enter.\n");
+    
+    	long input;
+    	char c;
+    
+    	while (scanf("%ld", &input) != 1)
+    	{
+    		printf("Your input -");
+    
+    		while ((c = getchar()) != '\n')
+    			putchar(c); // input left in buffer
+    
+    		printf(" - is not an integer. Please try again.\n");
+    	}
+    
+    	printf("Your input %ld is an integer. Thank you.\n", input);
+    
+    	return input;
+    }
+    ```
+    
+    이렇게 입력하면 정수를 받는 함수파트가 만들어지고 위의 main함수에서는 
+    
+    정수 범위만 설정해 줄 수 있다.
+    
+    정수가 아닌 것을 입력하면
+    
+    ![이미지_052](https://user-images.githubusercontent.com/96982072/149668447-5bd4fb61-c26b-485c-bb86-9ee21758f9c9.png)
+    
+    다시 입력을 받는다.
+    
+- ### [8.7] 입력 스트림과 숫자
+    
+    ```c
+    #define _CRT_SECURE_NO_WARNINGS
+    #include <stdio.h>
+    
+    int main()
+    {
+    	/*
+    		Assume that your input is :
+    		Hello 123 3.14
+    	*/
+    
+    	char str[255];
+    	int i, i2;
+    	double d;
+    
+    	scanf("%s %d %lf", str, &i, &d);
+    	printf("%s %d %f\n", str, i, d);
+    
+    	// or (see the difference)
+    
+    	scanf("%s %d %d", str, &i, &i2);
+    	printf("%s %d %d\n", str, i, i2);
+    
+    	// or (see the difference)
+    
+    	char c;
+    	while ((c = getchar()) != '\n')
+    		putchar(c);
+    	printf("\n");
+    
+    	return 0;
+    }
+    ```
+    
+    각각 scanf에서 Hello 123 3.14를 입력하면 어떤 결과를 가져오는지 확인하는 예제이다.
+    
+    ```c
+    scanf("%s %d %lf", str, &i, &d);
+    printf("%s %d %f\n", str, i, d);
+    ```
+    
+    첫 번째 scanf에서 Hello 123 3.14를 입력하면 같은 값이 출력된다
+    
+    ```c
+    scanf("%s %d %d", str, &i, &i2);
+    printf("%s %d %d\n", str, i, i2);
+    ```
+    
+    두 번째 i2인 정수를 입력받는 scanf에서 Hello 123 3.14를 입력하면
+    
+    Hello 123 3까지만 출력하고 나머지 .14는 다음 줄로 출력한다
+    
+    여기서 i2에서 정수로 받은 3은 출력하지만 소수자리인 .14는 버려지는 것이 아니라
+    
+    버퍼에 남겨둔다.
+    
+    그리고 str에서는 문자를 스트림 하지만 컴퓨터에서는 결국 2진수로 된 데이터를 받게 된다
+    
+- ### [8.8] 메뉴 만들기 예제
+    
+    ![이미지_053](https://user-images.githubusercontent.com/96982072/149668449-e899acc5-3cfa-4e6e-985a-39221599a4f7.png)
+    
+    이렇게 메뉴를 만들고 메뉴에 맞는 단축키를 입력하면 반응하는 예제를 작성 해보았다
+    
+    ```c
+    int user_choice;
+    
+    	while ((user_choice = get_choice()) != 'q')
+    	{
+    		switch (user_choice)
+    		{
+    		case 'a':
+    			printf("Avengers assemble!\n");
+    			break;
+    		case 'b':
+    			putchar("/a"); //Beep
+    			break;
+    		case 'c':
+    			count();
+    			break;
+    		default :
+    			printf("Error with %d.\n", user_choice);
+    			exit(1);
+    			break;
+    		}
+    	}
+    ```
+    
+    메인 함수 부분은 이렇게 작성되었다. 조금 어렵고 헷갈려서 따라치는 수준에 그쳤다.
+    
+    조금만 시간을 들여서 고민했으면 어느정도 해볼 수 있었을 거란 생각도 해본다.
+    
+    따로 만들어야 하는 함수 블럭이 4개정도 되었는데 메뉴 선택하는 부분은 손도 못댔다.
+    
+    ```c
+    void count(void)
+    {
+    	int n, i;
+    
+    	printf("Enter an integer:\n");
+    	n = get_integer();
+    	for (i = 1; i <= n; ++i)
+    		printf("%d\n", i);
+    	while (getchar() != '\n')
+    		continue;
+    
+    }
+    ```
+    
+    c를 선택하면 1씩 올라가서 출력해주는 함수 부분이다. 
+    
+    ```c
+    int get_integer(void)
+    {
+    	int input;
+    	char c;
+    
+    	while (scanf("%d", &input) != 1)
+    	{
+    		while ((c = getchar()) != '\n')
+    			putchar(c);
+    		printf(" is not an integer.\nPlease try again.");
+    	}
+    
+    	return input;
+    }
+    ```
+    
+    get_integer부분을 따로 함수를 만들어 주어서 정수가 아니면 다시 입력하게 만들 수 있다.
+    
+    ```c
+    char get_choice(void)
+    {
+    	int user_input;
+    
+    	printf("Enter the letter of your choice:\n");
+    	printf("a. avengers\tb. beep\n");
+    	printf("c. count\tq. quit\n");
+    
+    	user_input = get_first_char();
+    
+    	while ((user_input < 'a' || user_input > 'c') && user_input != 'q')
+    	{
+    		printf("Please try again.\n");
+    		user_input = get_first_char();
+    	}
+    
+    	return user_input;
+    }
+    ```
+    
+    프로그램을 실행시켰을 때 맨처음에 나오는 메뉴선택 부분이다
+    
+    /t 을 써서 줄 맞춤을 해줄 수 있다.
+    
+    abc이외의 값을 입력하면 다시 입력하라는 부분도 볼 수 있다.
+    
+    ```c
+    char get_first_char(void)
+    {
+    	int ch;
+    
+    	ch = getchar();
+    	while (getchar() != '\n')
+    		continue;
+    
+    	return ch;
+    
+    }
+    ```
+    
+    입력된 값 이외의 버퍼를 없애주는 부분도 따로 만들어 주었다.
