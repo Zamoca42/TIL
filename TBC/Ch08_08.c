@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 char get_choice(void);
-char get_first_char(void)
+char get_first_char(void);
 int get_integer(void);
 void count(void);
 
