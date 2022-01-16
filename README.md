@@ -2,7 +2,7 @@
 > 귀찮음을 이겨내자
 
 ## :book: List 
-- [[TBC] C언어 Ch.0~7](TBC/README.md)
+- [[TBC] C언어 (작성중)](TBC/README.md)
 
 ## :open_file_folder: Post
 - [Markdown 작성법 - emoji, table](https://github.com/jinkyukim-me/markdown_ko/blob/23cb9dcad35f83b2f4ec5ac63eff139700d6b52e/README.md)
