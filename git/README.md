@@ -17,4 +17,5 @@
     이 강의만큼 직관적으로 설명해주는건 없는 것 같다
 - [원격저장소 변경된 인증 방식](https://www.yalco.kr/_02_github_token/)
     - 2021년 8월 13일부터 원격을 통해 깃헙 저장소에 push, pull 하기 위해서는 토큰 인증이나 ssh를 입력하여야한다. push할때 오류가 떠서 당황했지만, 이 글을 찾고나서 해결했다. 
+- [누구나 쉽게 이해하는 git 입문](https://backlog.com/git-tutorial/kr/intro/intro1_1.html)
 
