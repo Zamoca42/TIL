@@ -15,8 +15,10 @@
     push가 정상적으로 작동했다.  
     [도움 받은 블로그](https://itchbo.tistory.com/79)
 
+</br>
 
-## 도움되었던 글  
+
+## 도움되었던 링크  
 - [가장 쉬운 Git강좌-(상)](https://youtu.be/FXDjmsiv8fI)  
     
 - [가장 쉬운 Git강좌-(하)](https://youtu.be/GaKjTjwcKQo)

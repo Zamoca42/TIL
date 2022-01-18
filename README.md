@@ -1,9 +1,13 @@
 # Today I learned :thumbsup:
 > 귀찮음을 이겨내자
 
+</br>
+
 ## :book: List 
 - [[TBC] C언어 (작성중)](TBC/README.md)
 - [git](git/README.md)
+
+</br>
 
 ## :open_file_folder: Post
 - [Markdown 작성법 - emoji, table](https://github.com/jinkyukim-me/markdown_ko/blob/23cb9dcad35f83b2f4ec5ac63eff139700d6b52e/README.md)
