@@ -2060,3 +2060,628 @@ int main(void) 는 함수 정의 시작부분이고 나머지 중괄호 안은 �
     ```
     
     입력된 값 이외의 버퍼를 없애주는 부분도 따로 만들어 주었다.
+
+</br>
+
+## Chapter 9. 함수
+
+- ### [9.1]함수가 필요할 때
+    
+    캡쳐한 것과 같이 이름과 밑에 지역이 나오는 예제를 작성 해보았다.
+    
+    ![이미지 054](https://user-images.githubusercontent.com/96982072/150098401-609c6f55-8ab6-407b-8f4e-fbdee3daae22.png)
+    
+    이렇게 작성하기 위해 가장 쉬운 방법은
+    
+    ```c
+    printf("********************\n");
+    printf("    YEON KYU CHU\n");
+    printf("    Yong-In, Korea\n");
+    printf("********************\n");
+    ```
+    
+    이렇게 작성하는 것이다. 하지만 이렇게 작성하는 것은 후에
+    
+    별의 갯수를 늘리거나 줄이는 것과 같이 유지 보수를 하기에는 쉽지 않다.
+    
+    그러므로 같은 기능을 여러번 반복하는 것은 함수로 만들고, 가변적으로 만들어서
+    
+    쉽게 작동할 수 있게 개선하는 것이 좋다.
+    
+    ```c
+    void star(void);
+    int main()
+    {
+    	star();
+    	printf("   YEON KYU CHU \n");
+    	printf("   Yong-In, Korea \n");
+    	star();
+    	return 0;
+    }
+    
+    void star(void)
+    {
+    	int i = 0;
+    	for (i = 0; i < 20; ++i)
+    		printf("*");
+    	printf("\n");
+    	return 0;
+    }
+    ```
+    
+    처음 예제를 봤을 때 예상했던 작성법이다.
+    
+    별 정도는 함수로 만들었지만, 여전히 유지 보수는 쉽지 않다.
+    
+    작동을 하기 쉽게 하기 위해
+    
+    고려 해야 할 사항
+    
+    - 별의 개수를 바꿀 수 있게 요청할 수 있음
+    - 주소가 바뀔 수도 있음
+    - 별도 위아래로 두번이상 나오므로 함수로
+        
+        묶는게 나중에 수정하기 편함
+        
+    
+    ```c
+    #define WIDTH 30
+    #define NAME "YEON KYU CHU"
+    #define ADDRESS "Yong-In, Korea"
+    
+    void print_multiple_chars(char c, int n_stars, bool end1)
+    {
+    	for (int i = 0; i < n_stars; ++i)
+    		printf("%c",c); // puthcar(c)
+    
+    	if (end1 == true)
+    		printf("\n");
+    }
+    
+    void print_centered_str(char str[])
+    {
+    	int n_blanks = 0;
+    
+    	n_blanks = (WIDTH - strlen(str)) / 2;
+    	print_multiple_chars(' ', n_blanks, false);
+    	printf("%s\n", str);
+    }
+    
+    int main()
+    {
+    	print_multiple_chars('*', WIDTH, true);
+    		
+    	print_centered_str(NAME);
+    	print_centered_str(ADDRESS);
+    		
+    	print_multiple_chars('*', WIDTH, false);
+    
+    	return 0;
+    }
+    ```
+    
+    이름에 사용되는 함수도 후에 바꿀 수 있게 NAME으로 정의하고 주소도 정의한다.
+    
+    별의 개수도 쉽게 바꿀 수 있게 맨위에 WIDTH로 정의 한다.
+    
+    함수 길이는 길어 보이지만 유지 보수는 쉽게 할 수 있다.
+    
+    프로그램을 작성할 때 생각해봐야 할 것은
+    
+    - 더 일반적으로 작동하려면 어떻게 해야하는가.
+    - 장기적으로 유지보수가 쉬우려면 어떻게해야하는가
+
+- ### [9.2] 함수의 프로토타입
+    
+    앞 선 9.1에서 배운 명함을 출력하는 예제에서는 
+    
+    함수를 위에서 선언하고 작성했었다. 
+    
+    하지만 진짜 동작하는 프로그램은 main함수에서 작성되기 때문에
+    
+    이를 확인하려면 main까지 왔다갔다 해야하는 번거로움이 생긴다.
+    
+    번거로움을 없애기 위해 한페이지에서 작성하려면 프로토타입을 선언해준다
+    
+    이 것을 블랙 박스로서의 함수라고 부른다.
+    
+    블랙 박스로서의 함수는
+    
+    직접 작성하는 것을 예외로 다른 라이브러리의 함수를 보았을 때,
+    
+    어떻게 작동하는지 외울 필요 없고 뭐가 들어가고 나오는가 즉 재조립을 잘 해야 한다.
+    
+    입력이 뭐고 출력이 뭔지 알지만 내부에서 어떻게 작동하는지는 모르더라도
+    
+    일단 무엇을 출력할지 함수로 선언하고 내부를 채워 나가는 식의 함수 디자인을 뜻한다.
+    
+    ```c
+    void print_multiple_chars(char c, int n_stars, bool end1); // prototype
+    void print_centered_str(char str[]);
+    
+    int main()
+    {
+    	print_multiple_chars('*', WIDTH, true); // argument
+    
+    	print_centered_str(NAME);
+    	print_centered_str(ADDRESS);
+    
+    	print_multiple_chars('*', WIDTH, false);
+    
+    	return 0;
+    }
+    
+    void print_multiple_chars(char c, int n_stars, bool end1)
+    {
+    	for (int i = 0; i < n_stars; ++i)
+    		printf("%c", c); // puthcar(c)
+    
+    	if (end1 == true)
+    		printf("\n");
+    }
+    
+    void print_centered_str(char str[])
+    {
+    	int n_blanks = 0;
+    
+    	n_blanks = (WIDTH - strlen(str)) / 2;
+    	print_multiple_chars(' ', n_blanks, false);
+    	printf("%s\n", str);
+    }
+    ```
+    
+    프로토타입을 선언 하면
+    
+    몸체가 없어도 일단 컴파일은 가능 하다
+    
+    그러나 함수의 몸체가 없어서 링크 에러가 뜬다.
+    
+    c언어는 컴파일 과 링커는 분리되어 작동하기 때문에
+    
+    함수의 몸체는 어디서든 있어도 실행 가능하다.
+    
+    ```c
+    void print_multiple_chars(char c, int n_stars, bool end1); //parameter
+    ```
+    
+    이와 같이 작성된 함수에서 괄호 안에 char c, int n_stars 같이 들어오는 값에 따라 변하는 변수를
+    
+    매개변수라고 부른다.
+    
+    프로토타입을 선언할 때
+    
+    ```c
+    void print_multiple_chars();
+    ```
+    
+    매개변수가 있음에도 빈칸으로 선언해도 빌드가 되는 것을 알 수 있다.
+    
+    ```c
+    void print_multiple_chars(char, int, bool);
+    ```
+    
+    또한 변수 이름이 없어도 빌드가 되는 것을 알 수 있다.
+    
+    하지만 프로토 타입과 함수의 몸체를 맞추는 것이 혼란을 줄일 수 있어서 
+    
+    매개변수까지 입력하는 것을 권장한다.
+    
+- ### [9.3] 함수의 자료형과 반환 값
+    - 정수형(int) 반환 자료형은 int 생략 가능
+
+- ### [9.4] 변수의 영역과 지역 변수
+    
+    
+    변수에도 사용할 수 있는 영역(scope)이 존재한다.
+    
+    위에서 선언한 함수에 있는 변수를 메인에서도 사용가능할까?
+    
+    ```c
+    int main()
+    {
+    	int a;
+    	
+    	a = int_max(1, 2);
+    
+    	printf("%d\n", a);
+    	printf("%p\n", &a);
+    ```
+    
+    불가능, 따로 정의된 함수 안에 있는 변수는 그 함수 바디 안에서만 유효함
+    
+    여기서 사용한 변수 a는
+    
+    ```c
+    int int_max(int i, int j)
+    {
+    	//a = 456;
+    	int m;
+    	m = i > j ? i : j;
+    	return m;
+    }
+    ```
+    
+    여기서 다른 함수영역에서 사용하지 못한다.
+    
+    특정 함수의 스코프 안에서만 사용 가능한 변수를 지역 변수라고 부른다
+    
+    지역 변수는 메인 함수에서는 사용 불가능
+    
+    ```c
+    int main()
+    {
+    	int a;
+    	
+    	a = int_max(1, 2);
+    
+    	printf("%d\n", a);
+    	printf("%p\n", &a);
+    
+    	{
+    		int a;
+    		a = int_max(4, 5);
+    
+    		printf("%d\n", a);
+    		printf("%p\n", &a);
+    
+    		int b = 123;
+    
+    	}
+    
+    	printf("%d\n", a);
+    	printf("%p\n", &a);
+    
+    	return 0;
+    }
+    ```
+    
+    영역 안에 다른 영역에서 선언된 함수는 전혀 다르다
+    
+    메인함수 제일 위에 선언 된 int a와
+    
+    중괄호 안의 int a 는 이름은 같지만 다른 변수다.
+    
+- ### [9.5] 지역 변수와 스택
+    
+    9.4에 작성했던 코드를 통해
+    
+    입력된 변수의 메모리에 쌓는다 메인 함수에서 int a가 선언되고
+    
+    int_max함수에서 선언된  int m이 그 위에 쌓이게 된다 여기서 변수a가 밑에 쌓여있지만
+    
+    직접 접근할 수 있느냐고 물어볼 수 있는데 포인터를 이용해서 사용할 수 있다.
+    
+    같은 알파벳으로 선언된 변수라도 주소가 다르면 다른 변수처럼 사용할 수 있다.
+    
+
+- ### [9.6~7] recursion 재귀 호출
+    
+    ```c
+    void my_func(int);
+    
+    int main()
+    {
+    	my_func(1);
+    
+    	return 0;
+    }
+    
+    void my_func(int n)
+    {
+    	printf("Level %d, address of variable n = %p\n", n, &n);
+    
+    	if(n <= 4)
+    		my_func(n + 1);
+    
+    	//printf("Level %d, address of variable n = %p\n", n, &n);
+    }
+    ```
+    
+    재귀 호출 예제이다.
+    
+    만약에 my_func함수에서 탈출조건인 if문이 없었다면
+    
+    메모리가 꽉 찰 때까지 스택이 쌓이고 모두 차면 stack overflow 메시지를 출력하고 종료한다
+    
+    재귀 호출은 무한루프를 실행할 때 사용하는 함수가 아니다.
+    
+    재귀 호출은 탈출하기 위한 stop condition이 있어야한다.
+    
+    재귀 호출은 함수를 끝내기전에 다시 돌아오는 것을 볼 수 있는데
+    
+    영화 인셉션과 비슷하다고 생각하면 된다. 
+    
+    쌓여있던 스택을 하나씩 빼는 것으로도 볼 수 있다.
+    
+    즉 1 2 3 순으로 메모리를 쌓았다가 다시 3 2 1 순으로 나가는 것을 디버그를 통해 알 수 있다.
+    
+- ### [9.8] 팩토리얼 예제
+    
+    ```c
+    loop vs recursion
+    	factorial : 3! = 3 * 2 * 1, 0! = 1
+    	5! = 5 * 4! = 5 * 4 * 3! = 5 * 4 * 3 * 2! = 5 * 4 * 3 * 2 * 1! = 5 * 4 * 3 * 2 * 1 * 0!
+    ```
+    
+    팩토리얼의 매커니즘이다.
+    
+    반복문으로 작성하는 방법과 재귀 호출을 통해서 작성 할 수 있다.
+    
+    반복문으로 작성할 때에는
+    
+    ```c
+    long loop_factorial(int n)
+    {
+    	long i;
+    
+    	for (i = 1; n > 1; n--)
+    		i *= n;
+    
+    	return i;
+    }
+    ```
+    
+    이렇게 나타낼 수 있고
+    
+    ```c
+    long recursive_factorial(int n)
+    {
+    	if (n > 0)
+    	{
+    		//my code
+    		//n *= recursive_factorial(n - 1); 
+    		return n * recursive_factorial(n - 1); // tail (end) recursion
+    	}
+    	else
+    		return 1;
+    ```
+    
+    재귀로 나타낼 때에는 return을 이용해서 나타낼 수 있다.
+    
+- ### [9.9] 이진수 변환 예제
+    
+    다음은 10진수를 이진수로 변환할때 사용하는 방법을 C언어로 작성하는 예제이다.
+    
+    이 예제 또한 재귀와 반복문으로 작성할 수 있다.
+    
+    ```c
+    10
+    	10 / 2 = 5, remainder = 0
+    	5 / 2 = 2, remainder = 1
+    	2 / 2 = 1, remainder = 0
+    	1 / 2 = 0, remainder = 1
+    ```
+    
+    이런식으로 10을 2진수로 표현하면 0101의 거꾸로인 1010으로 나타낼 수 있다.
+    
+    하지만 현재까지 배운걸로는 반복문을 사용해서는 0101을 거꾸로 꺼낼 방법은 없다.
+    
+    그래서 0101을 표현하는 식으로 반복문으로 작성하면
+    
+    ```c
+    void print_binary_loop(unsigned long n)
+    {
+    	while (1)
+    	{
+    		int quotient = n / 2;
+    		int remainder = n % 2;
+    
+    		printf("%d", remainder); // remainder is 0 or 1
+    
+    		n = quotient;
+    
+    		if (n == 0) break;
+    	}
+    
+    	printf("\n");
+    }
+    ```
+    
+    이렇게 작성하면 0101이 나온다.
+    
+    재귀를 사용하면 1010으로 나타낼 수 있다.
+    
+    ```c
+    void print_binary(unsigned long n)
+    {
+    	int remainder = n % 2;
+    
+    	if (n >= 2)
+    		print_binary(n / 2);
+    
+    	printf("%d", remainder);
+    
+    	return;
+    }
+    ```
+    
+    그렇다면 거꾸로 출력해야하는 문제는 무조건 재귀호출을 사용해야하는가?
+    
+    아니다 뒤에 부분에서 배열을 사용하면 반복문도 거꾸로 출력하는 것도 가능하다
+    
+- ### [9.10] 피보나치 예제
+    
+    ```c
+    Finonacci sequence
+    	1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, ...
+    	ex) fibonacci(5) = 3 + 2 = fibonacci(4) + fibonacci(3)
+    ```
+    
+    피보나치 수열을 나타낸 예제이다. 5번째 수의 값은 1번째 전의 값과 2번째 전의 값을 더한 값으로 표현할 수 있다.
+    
+    이 것은 재귀 호출로 간결하게 작성할 수있다.
+    
+    ```c
+    int fibonacci(int number)
+    {
+    
+    	if (number > 2)
+    		return fibonacci(number - 1) + fibonacci(number - 2); // double recursion
+    	else
+    		return 1;
+    }
+    ```
+    
+    이렇게 간단하게 작성할 수 있지만, 메모리를 비효율적으로 사용하게 되고
+    
+    뒤로 갈수록 중복으로 호출하는 계산이 늘어나기 때문에 눈으로 보기엔 간결하지만
+    
+    컴퓨터는 고생을 한다.
+    
+     
+    
+- ### [9.11] 헤더 파일 만드는 방법
+    
+    초반 강의에는 위에 프로토타입을 선언하고 메인 밑에 함수를 작성하는 식으로 했지만
+    
+    후반에는 여러 개의 헤더 파일을 만들어서 반복 사용하는 것을 권장한다
+    
+    헤더 파일을 만들고 싶은 프로젝트 오른쪽 클릭 → 추가 → 새 항목
+    
+    헤더 파일은 프로토타입처럼 차례이자 목록 역할을 한다
+    
+    ```c
+    #pragma once
+    
+    void print_hello();
+    void print_hi();
+    void print_str(char* str);
+    
+    // assume that we have many more longer functions
+    ```
+    
+    헤더에는 이렇게 작성을 해두면
+    
+    다른 소스파일에서는 프로토타입 선언을 안해도 전부 작성해둔 함수를 사용할 수 있다
+    
+- ### [9.12~13] 포인터의 작동 원리
+    
+    변수는 메모리의 주소를 받아서 거기에 받은 값을 저장하는 방식
+    
+    그렇다면 메모리의 주소는 어떻게 알 수 있을까?
+    
+    ```c
+    int *a_ptr = &a;
+    ```
+    
+    a앞에 있는 주소 연산자 &은 단항 연산자로 주소값을 가져올 수 있다.
+    
+    int 뒤에 *이 붙으면 int형 변수의 주소를 저장하는 변수가 된다.
+    
+    포인터 변수에 저장되어 있는 값은 다른 변수의 주소이다.
+    
+    직접적으로 데이터를 저장하기 보다는 다른 메모리 공간이나 그 공간에 저장되어 있는
+    
+    데이터를 간접적으로 가리키는 역할을 한다.
+    
+    ```c
+    *a_ptr = 8;
+    ```
+    
+    a_ptr은 a의 주소값이 저장되어 있기 때문에 8을 대입하면
+    
+    a 에 8을 넣는 것과 같이 작동한다
+    
+    하지만 완전 같진 않아서 간접 접근, 역참조, 방향 재지정이라 부른다.
+    
+    포인터는 또한 컴파일러와 작성 스타일에 따라 형식이 조금 다른데
+    
+    ```c
+    int* a_ptr;
+    ```
+    
+    이처럼 int 바로 뒤에 *이 붙을 수 있다.
+    
+    ```c
+    int* a_ptr, b_ptr;
+    ```
+    
+    하지만 이렇게 int 뒤에 *이 붙는다고해서 b_ptr까지 포인터로 선언되는 것은 아니다
+    
+    여기서는 a_ptr만 포인터이고 b_ptr은 그냥 정수형 변수이다.
+    
+    b_ptr까지 포인터로 선언되려면 *b_ptr처럼 둘다 *이 붙어야 한다.
+    
+- ### [9.14~16] NULL 포인터와 런타임 에러
+    
+    포인터 변수를 선언하고 초기화를 하지 않으면 쓰레기 값이 주소로 들어가서 초기화를 안했다는 메세지 발생한다.
+    
+    ```c
+    int *ptr = 1234;
+    ```
+    
+    하지만 포인터를 선언한 뒤 바로 어떤 값을 넣어주면, 주소 자체를 1234로 지정하는 것이기 때문에 런타임 에러 발생
+    
+    컴퓨터는 메모리의 주소를 랜덤으로 작성하는 것이기 때문에 이처럼 포인터의 주소에 값을 직접 대입하는 것은
+    
+    런타임 에러를 부른다.
+    
+    그렇다면 포인터를 초기화 하기 위해서는 NULL 포인터를 사용한다
+    
+    ```c
+    int* safer_ptr = NULL;
+    ```
+    
+    이처럼 NULL값을 넣어주면 포인터는 초기화 되고 후에 주소연산자 &을 넣으면 대입 가능해진다.
+    
+
+- ### [9.17] 포인터 변수의 크기
+    
+    ```c
+    	char a;
+    	float b;
+    	double c;
+    
+    	char* ptr_a = &a;
+    	float* ptr_b = &b;
+    	double* ptr_c = &c;
+    
+    	printf("%zd %zd %zd \n", sizeof(a), sizeof(b), sizeof(c));
+    	printf("%zd %zd %zd \n", sizeof(ptr_a), sizeof(ptr_b), sizeof(ptr_c));
+    	printf("%zd %zd %zd \n", sizeof(&a), sizeof(&b), sizeof(&c));
+    	printf("%zd %zd %zd \n", sizeof(char*), sizeof(float*), sizeof(double*));
+    ```
+    
+    그렇다면 포인터 변수의 크기는 어떻게 나올까?
+    
+    다음을 출력해보면
+    
+    첫번째줄의 a b c는 각각 char, float, double 이므로 1 4 8 byte로 출력된다.
+    
+    각각의 주소 들의 크기는 x86으로 출력했을 때 전부 4byte로 출력된다
+    
+    x86은 32bit이고 32bit는 4byte로 보았을 때
+    
+    x86이나 x64는 메모리의 크기를 나타내는 것을 알 수 있다.
+    
+
+- ### [9.18] 포인터형 매개변수
+    
+    다음은 선언된 변수를 swap하여 입력 값과 출력 값을 바꾸는 예제이다.
+    
+    ```c
+    void swap(int *u, int *v)
+    {
+    	int temp = *u;
+    	*u = *v;
+    	*v = temp;
+    }
+    
+    int main()
+    {
+    	int a = 123;
+    	int b = 456;
+    
+    	printf("%p %p\n", &a, &b);
+    
+    	swap(&a, &b);
+    
+    	printf("%d %d\n", a, b);
+    
+    	return 0;
+    }
+    ```
+    
+    다음과 같이 포인터를 선언하고 
+    
+    주소 값을 바꾸면 쉽게 처음 선언된 값과 바꿀 수 있다.
