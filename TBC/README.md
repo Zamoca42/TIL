@@ -2685,3 +2685,746 @@ int main(void) 는 함수 정의 시작부분이고 나머지 중괄호 안은 �
     다음과 같이 포인터를 선언하고 
     
     주소 값을 바꾸면 쉽게 처음 선언된 값과 바꿀 수 있다.
+
+    </br>
+
+    ## Chapter 10. 배열과 포인터
+
+- ### [10.1] 배열과 메모리
+    
+    
+    만약에 월 별 최고 기온과 최저 기온을 변수를 선언해서 입력한다고 했을 때 일일이 손으로 입력이 가능한가?
+    
+    12월까지 변수를 12번 선언하기에는 힘들 것이다.
+    
+    쉬운 방법은 배열을 사용하는 것이다
+    
+    ```c
+    /* Monthly temperatures */
+    int high[12] = {2, 5, 11, 18, 23, 26, 29, 30, 26, 20, 12, 6}; 
+    int low[12] = {-7, -5, 1, 7, 13, 18, 22, 22, 16, 9, 2, -5};
+    ```
+    
+    선언된 배열 안에 데이터를 모두 집어넣을 수 있다.
+    
+    &arr[0] 과 &arr[1]의 주소 차이는 얼마나 될까?
+    
+    선언된 자료형의 크기 만큼의 주소 차이를 보여준다.
+    
+    int로 선언된 자료형의 경우 arr[0] 과 arr[1]의 차이는 4byte만큼 메모리 주소 차이가 난다
+    
+    배열이 선언되면서 배열 개수 만큼의 연속적인 주소가 할당 되므로
+    
+    배열과 다음 배열 사이는 선언된 자료형 크기 만큼의 차이를 보이는 것이다.
+    
+- ### [10.2] 배열의 기본적인 사용 방법
+    
+    ```c
+    high[12] = {...};
+    
+    high[12] = 4; //Error
+    high[-1] = 123; //Error
+    ```
+    
+    배열의 무서운 점은 컴파일에서 에러를 잡아주지 않는다
+    
+    ```c
+    const int low[12] = {-7, -5, 1, 7, 13, 18, 22, 22, 16, 9, 2, -5};
+    low[0] = 123;
+    ```
+    
+    const를 선언하면 배열의 값을 바꿀 수 없다.
+    
+    ```c
+    int not_init[4];
+    for (int i = 0; i < 4; ++i)
+    	printf("%d\n", not_init[i]);
+    ```
+    
+    배열을 초기화 하지 않으면 의미 없는 주소 값을 출력한다.
+    
+    ```c
+    static int not_init[4];
+    ```
+    
+    앞에 static을 붙이면 초기화를 해주지 않아도 0으로 초기화를 해준다
+    
+    ```c
+    int over[2] = {2, 4, 6, 8};
+    ```
+    
+    선언된 배열보다 많은 데이터를 넣으면 컴파일 오류가 일어난다.
+    
+    ```c
+    const int power_of_twos[] = {1, 2, 4, 8, 16, 32, 64};
+    
+    for (int i = 0; i < sizeof power_of_twos / sizeof power_of_twos[0]; ++i)
+    	printf("%d ", power_of_tows[i]);
+    ```
+    
+    배열의 사이즈를 입력하지 않았을 때, 갯수를 모른다면 반복문을 사용할 수 없게 된다.
+    
+    그래서 sizeof 함수를 사용해 전체 배열에서 첫 번째 배열의 크기를 나눠주면 정확한 배열 수를 알 수 있다.
+    
+    하지만 동적 할당에서는 작동하지 않는다.
+    
+    ```c
+    int days[MONTHS] = {31, 28, [4] = 31, 30, 31, [1] = 29};
+    ```
+    
+    출력을 해보면 두 번째에는 28이 아닌 29가 나오는데 [1] = 29에서 배열을 덮어쓰기 때문이다.
+    
+    지정하지 않은 값은 0이 나온다.
+    
+    선언이 끝난 배열의 값을 바꾸기 위해서는 따로 값을 넣어 주어야 한다.
+    
+    ```c
+    	int high[12] = { 2, 5, 11, 18, 23, 26, 29, 30, 26, 20, 12, 6 };
+    	
+    	for (int i = 0; i < MONTHS; ++i)
+    		printf("%d ", high[i]);
+    	printf("\n");
+    
+    	float avg = 0.0;
+    	for (int i = 0; i < MONTHS; ++i)
+    		avg += high[i];
+    	printf("Average = %f\n", avg / (float)MONTHS);
+    
+    	high[0] = 1;
+    	high[1] = 2;
+    	//선언이 끝나면 하나씩 입력 해주어야함
+    	//high[12] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}; // not working
+    ```
+    
+    메모리 주소의 값을 알아보고 싶을 때에는
+    
+    ```c
+    printf("%p %p\n", high, &high[0]);
+    ```
+    
+    배열 이름만 사용하거나 앞에 주소 연산자 &과 첫 번째 배열을 입력하면 주소를 알 수 있다.
+    
+    ```c
+    for (int i = 0; i < MONTHS; ++i)
+    		printf("%lld\n", (long long)&high[i]);
+    	printf("\n");
+    ```
+    
+    반복문을 통해 배열 사이의 주소 값 차이를 볼 수 있는데 이 값을 출력하면
+    
+    4씩 차이가 나는 것을 알 수 있다. 4라는 숫자인 것을 보면 int의 정수형 4byte만큼 차이 난다
+    
+- ### [10.3] 포인터의 산술 연산
+    
+    포인터도 배열처럼 자료형의 주소 값 차이가 나는지 알아보면
+    
+    int 포인터 선언 시 4 차이
+    
+    char는 1차이
+    
+    double은 8차이
+    
+    void 포인터는 에러가 뜬다
+    
+    포인터도 자료형 만큼 주소 값을 건너 뛴다
+    
+    ```c
+    int i = ptr2 - ptr1;
+    ```
+    
+    arr[3] - arr[1]을 뺀 두 주소 간의 거리 2가 int i 로 들어간다.
+    
+- ### [10.4] 포인터와 배열
+    
+    [https://edu.goorm.io/learn/lecture/201/한-눈에-끝내는-c언어-기초/lesson/1271949/call-by-value-call-by-reference](https://edu.goorm.io/learn/lecture/201/%ED%95%9C-%EB%88%88%EC%97%90-%EB%81%9D%EB%82%B4%EB%8A%94-c%EC%96%B8%EC%96%B4-%EA%B8%B0%EC%B4%88/lesson/1271949/call-by-value-call-by-reference)
+    
+    포인터와 배열은 비슷하지만 차이도 존재한다
+    
+    ```c
+    int* ptr = arr;
+    	
+    	printf("%p %p %p \n", ptr, arr, &arr[0]);
+    
+    	ptr += 2;
+    
+    	printf("%p %p %p \n", ptr, arr + 2, &arr[2]);
+    ```
+    
+    포인터는 주소 값 그 자체이고 배열은 arr[]식으로 사용했을 때는 값을 불러오기 때문에 주소 연산자를 붙여야 주소를 출력한다.
+    
+    그냥 arr로 사용했을 때는 주소를 불러올 수 있지만, arr + 2처럼 연산을 사용할 수는 있다.
+    
+    ```c
+    arr += 2;
+    ```
+    
+    더해서 다시 값을 집어넣을 수는 없다.
+    
+- ### [10.5] 2차원 배열과 메모리
+    
+    
+    ```c
+    int arr[2][3] = {{1, 2, 3}{4, 5, 6}};
+    ```
+    
+    2차원 배열은 행렬과 비슷하다.
+    
+    위의 코드는 2행 3열로 이해할 수 있다.
+    
+    하지만 내부적으로 메모리 안의 값들은 1차원으로 나열되어 있고, C언어 상으로 2차원처럼 보이게 만들어 주는 것이다.
+    
+    ```c
+    for (int j = 0; j < 2; ++j)
+    	{
+    		for (int i = 0; i < 3; ++i)
+    			printf("%d ", arr[j][i]);
+    
+    		printf("\n");
+    	}
+    ```
+    
+    중첩으로 for문을 사용해서 행렬처럼 출력할 수있다.
+    
+    ```c
+    arr[j][i] 일때 i는 안쪽루프, j는 바깥루프가 메모리 구조상 빠름
+    ```
+    
+    또한 포인터를 이용해서 선언된 배열이 내부적으로 1차원으로 나열된 것을 확인할 수 있다.
+    
+    ```c
+    int* ptr = &arr[0][0];
+    	for (int k = 0; k < 6; ++k)
+    		printf("%d ", ptr[k]);
+    	printf("\n\n");
+    ```
+    
+    이렇게 출력 해보면 1 2 3 4 5 6이 나온다
+    
+- ### [10.6] 2차원 배열 연습문제
+    
+    2차원 배열을 이용해서 3년 동안 매월 평균 기온을 출력하는 예제를 작성해보았다.
+    
+    ```c
+    double avg_years[YEARS][MONTHS] = { {-3.2, 0.2, 7.0, 14.1, 19.6, 23.6, 26.2, 28.0, 23.1, 16.1, 6.8, 1.2},
+    		{-1.8,-0.2, 6.3, 13.9, 19.5, 23.3, 26.9, 25.9, 22.1, 16.4, 5.6, -1.9},
+    		{-4.0, -1.6, 8.1, 13.0, 18.2, 23.1, 27.8, 28.8, 21.5, 13.1, 7.8, -0.6}};
+    ```
+    
+    기상청에 들어가서 각각 16년, 17년, 18년의 월별 평균 기온을 입력해주었다.
+    
+    2차원 배열을 활용하여 3년의 평균 날씨를 출력해보면
+    
+    ```c
+    printf("[Yearly average temperatures of 3 years]\n");
+    	for (int j = 0; j < YEARS; ++j)
+    	{
+    		double avg_temp = 0.0;
+    
+    		for (int i = 0; i < MONTHS; ++i)
+    		{
+    			avg_temp += avg_years[j][i];
+    		}
+    		avg_temp /= (double)MONTHS;
+    		
+    		printf("Year %d : average temperature = %.1f\n", j, avg_temp);
+    	}
+    	printf("\n");
+    ```
+    
+    이중 반복문으로 평균 기온을 알 수 있고
+    
+    ```c
+    printf("[Monthly average temperatures for 3 years]\n");
+    	
+    	for (int i = 0; i < MONTHS; ++i)
+    	{
+    		double avg_temp = 0.0;
+    
+    		for (int j = 0; j < YEARS; ++j)
+    		{
+    			avg_temp += avg_years[j][i];
+    		}
+    		avg_temp /= (double)YEARS;
+    		printf("\t%.1f",avg_temp);
+    	}
+    	printf("\n");
+    ```
+    
+    마찬가지로 3년 동안의 매월 평균 기온도 알 수 있다.
+    
+    실전에서는 만 개 이상의 데이터를 다룰 수 있기 때문에 배열의 활용 법을 익혀 두는 것이 좋다.
+    
+- ### [10.7] 배열을 함수에게 전달해주는 방법
+    
+    배열은 포인터와 유사하다
+    
+    배열은 내부적으로는 포인터처럼 처리한다.
+    
+    main이 아닌 따로 선언된 함수에서 배열을 받을 때는 배열이 아니라 포인터로 받는다
+    
+    각각 다르게 선언된 배열의 평균을 구하기 위해
+    
+    ```c
+    int main()
+    {
+    	double arr1[5] = { 10, 13, 12, 7, 8 };
+    	double arr2[3] = { 1.8, -0.2, 6.3 }; // size is different
+    
+    	printf("Address = %p\n", arr1);
+    	printf("Size = %zd\n", sizeof(arr1));
+    	printf("Address = %p\n", arr2);
+    	printf("Size = %zd\n", sizeof(arr2));
+    
+    	printf("Avg = %f\n", average(arr1, 5));
+    	printf("Avg = %f\n", average(arr2, 3));
+    
+    	
+    	return 0;
+    }
+    ```
+    
+    arr1는 5개의 배열이고 arr2는 3개의 배열이다. 각각의 사이즈와 평균을 알아보려면 중복된 기능을 다루기때문에
+    
+    따로 함수를 선언해주었다.
+    
+    ```c
+    double average(double data_array[], int n)
+    {
+    	printf("Size = %zd in function average\n", sizeof(data_array));
+    
+    	double avg = 0.0;
+    	for (int i = 0; i < n; ++i)
+    	{
+    		avg += data_array[i];
+    	}
+    	avg /= (double)n;
+    
+    	return avg;
+    }
+    ```
+    
+    이렇게 average(배열, 인수)처럼 따로 인수를 넣어주어서 배열내의 인수가 달라도 
+    
+    평균을 구할 수 있게 넣어준다.
+    
+- ### [10.8] 두 개의 포인터로 배열을 함수에게 전달해 주는 방법
+    
+    앞에서 배운 배열의 평균을 구할 때 parameter로 포인터를 사용해 줄 수있다.
+    
+    ```c
+    double average(double* start, double* end)
+    {
+    	int count = end - start;
+    	double avg = 0.0;
+    	while (start < end)
+    	{
+    		avg += *start++;
+    		//count++;
+    	}
+    	avg /= (double)count;
+    
+    	return avg;
+    ```
+    
+    배열의 정확한 사이즈를 모를 때에는 count++ 보다는
+    
+    사이즈 값을 넣을 수 있게 하는 방법도 있다.
+    
+- ### [10.9] 포인터의 연산 총 정리
+    
+    
+    포인터도 변수이고 변수처럼 선언도 가능하고 연산도 가능하다. 일반적인 연산과는 조금 다르다.
+    
+    ```c
+    int arr[5] = { 100, 200, 300, 400, 500 };
+    int* ptr1, * ptr2, * ptr3;
+    
+    ptr1 = arr;		// Assignment
+    ```
+    
+    이렇게 포인터에 배열을 넣어주고
+    
+    ```c
+    ptr3 = ptr1 + 4;
+    ```
+    
+    ptr3에는 ptr1의 0 1 2 3 4에서 4에 들어있는 값인 500이 들어간다.
+    
+    ```c
+    ptr3 = ptr3 - 4; // Subtracing an intger from a pointer
+    ```
+    
+    이렇게 빼는 것도 가능하고
+    
+    ```c
+    ptr1++;			// Incrementing, ptr1 = ptr1 + 1
+    ptr1--;			// Decrementing
+    --ptr1;
+    ++ptr1;
+    ```
+    
+    더해주거나 빼줄 수 있고 prefix, postfix도 사용 가능하다.
+    
+- ### [10.10] const와 배열의 포인터
+    
+    ```c
+    int main()
+    {
+    	// type qualifeiers: const, volatile, ...
+    
+    	const double PI = 3.14159;
+    	//PI = 2.14159;
+    
+    	const int arr[5] = { 1, 2, 3, 4, 5 };
+    	//arr[1] = 123;
+    
+    	const double arr2[3] = { 1.0, 2.0, 3.0 };
+    	//arr2[0] = 100.0;
+    
+    	const double* pd = arr2;
+    	//*pd = 3.0;		// pd[0] = 3.0; arr2[0] = 3.0;
+    	//pd[2] = 1024.0; // arr2[2] = 1024.0;
+    
+    	printf("%f %f", pd[2], arr2[2]);
+    
+    	pd++; // allowed
+    
+    	printf("%f %f", pd[2], arr2[2]);
+    
+    	return 0;
+    }
+    ```
+    
+    포인터로 배열에 접근할 때 const를 사용할 때 주의
+    
+    포인터 안에 들어있는 값을 못 바꾼다.
+    
+    cons pd 는 포인터 주소 값도 못 바꾼다
+    
+    그러나 pd++을 통해서 주소를 이동 시키는 것은 가능하다
+    
+    주소 이동도 불가능하게 하려면 포인터 앞에도 const를 붙여주면 된다.
+    
+- ### [10.11] 배열 매개변수와 const
+    - 사람이기 때문에 변경해서는 안되는 값을 건드릴 수도 있다.
+        
+        실수를 하지 않기 위한 예비 책으로 const를 붙여준다
+        
+        ```c
+        void add_value(int arr[], const int n, const int val)
+        {
+        	int i;
+        	for (i = 0; i < n; i++)
+        		arr[i] += val;
+        }
+        ```
+        
+    
+- ### [10.12] 2중 포인터의 작동원리
+    
+    ```c
+    int a = 7;
+    
+    int *ptr = &a;
+    
+    *ptr = 8;
+    
+    //int (*(*pptr)) = &ptr;
+    int **pptr = &ptr;
+    
+    **pptr = 9; //*(*pptr) = 9;
+    ```
+    
+
+- ### [10.13] 포인터의 배열과 2차원 배열
+    
+    ```c
+    int arr[2][3] = {{1, 2, 3},{4, 5, 6}};
+    
+    int* parr[2] = { arr[0], arr[1] };
+    ```
+    
+    포인터의 배열과 배열의 차이
+    
+    - 방법 1
+        
+        ```c
+        /* Two of 1D arrays */
+        int arr0[3] = { 1, 2, 3 };
+        int arr1[3] = { 4, 5, 6 };
+        
+        int* parr[2] = { arr0, arr1 };	// an array of pointers
+        
+        	for (int j = 0; j < 2; ++j)
+        	{
+        		for (int i = 0; i < 3; ++i)
+        			printf("%d(==%d. %d) ", parr[j][i], *(parr[j] + i),  ( * (parr + j))[i]);
+        		printf("\n");
+        	}
+        	printf("\n");
+        ```
+        
+    - 방법 2
+        
+        ```c
+        /* 2D arrays are arrays of 1D arrays */
+        
+        int arr[2][3] = { {1, 2, 3}, {4, 5, 6} };
+        
+        int* parr0 = arr[0];
+        int* parr1 = arr[1];
+        
+        for (int i = 0; i < 3; ++i)
+        	printf("%d ", parr0[i]);
+        printf("\n");
+        
+        for (int i = 0; i < 3; ++i)
+        	printf("%d ", parr1[i]);
+        printf("\n");
+        ```
+        
+    - 방법 3
+        
+        ```c
+        int arr[2][3] = { {1, 2, 3}, {4, 5, 6} };
+        
+        	//int* parr[2] = { arr[0], arr[1] };
+        	int* parr[2];
+        	parr[0] = arr[0];
+        	parr[1] = arr[1];
+        
+        	for (int j = 0; j < 2; ++j)
+        	{
+        		for (int i = 0; i < 3; ++i)
+        			printf("%d %d %d %d\n",
+        				arr[j][i], parr[j][i], *(parr[j] + i), *(*(parr + j) + i));
+        		printf("\n");
+        	}
+        	printf("\n");
+        ```
+        
+    
+    다음 방법들은 모두 2차원 배열을 포인터로 담은 것이다.
+    
+    ```c
+    /* Array of string of divers lengths example */
+    
+    	char* name[] = { "Aladdin", "Jasmin", "Magic Carpet", "Genie" };
+    
+    	const int n = sizeof(name) / sizeof(char*);
+    
+    	for (int i = 0; i < n; ++i)
+    		printf("%s at %u\n", name[i], (unsigned)name[i]); // Use ull in x64 build
+    	printf("\n");
+    
+    	char aname[][15] = {"Aladdin", "Jasmin", "Magic Carpet", "Genie", "Jafar"};
+    
+    	const int an = sizeof(aname) / sizeof(char[15]);
+    
+    	for (int i = 0; i < an; ++i)
+    		printf("%s at %u\n", aname[i], (unsigned)& aname[i]); // Use ull in x64 build
+    	printf("\n");
+    
+    	return 0;
+    ```
+    
+    한 가지 재밌는 예제도 있었다.
+    
+    다음과 같이 포인터로 선언된 배열은 주소의 크기가 일정하지 않고
+    
+    배열은 주소 차이가 항상 15인 것을 알 수 있다.
+    
+- ### [10.14] 2차원 배열과 포인터
+    
+    ```c
+    arr2d[0] 은 주소
+    arr2d[0][0] 은 배열안의 값
+    ```
+    
+    ---
+    
+    ```c
+    int main()
+    {
+    	float arr2d[2][4] = { {1.0f, 2.0f, 3.0f, 4.0f}, {5.0f, 6.0f, 7.0f, 8.0f} };
+    
+    	printf("%u\n", (unsigned)arr2d);		// Use unsigned long long in x64
+    	printf("%u\n", (unsigned)arr2d[0]);
+    	printf("\n");
+    
+    	// arr2d points to arr2d[0] (not arr2d[0][0]), KNK Ch. 12.4
+    
+    	printf("%u\n", (unsigned)* arr2d);
+    	printf("%u\n", (unsigned)& arr2d[0]);	// C language allows this
+    	printf("%u\n", (unsigned)& arr2d[0][0]);
+    	printf("%f %f\n", arr2d[0][0], **arr2d);
+    	printf("\n");
+    
+    	printf("%u\n", (unsigned)(arr2d + 1));
+    	printf("%u\n", (unsigned)(&arr2d[1]));
+    	printf("%u\n", (unsigned)(arr2d[1]));
+    	printf("%u\n", (unsigned)(*(arr2d + 1)));
+    	printf("%u\n", (unsigned)(&arr2d[0] + 1));
+    	printf("%u\n", (unsigned)(&arr2d[1][0]));
+    	printf("\n");
+    
+    	/* pointers to Multidimensional Arrays */
+    
+    	float(*pa)[4]; // a SINGLE pointer to an array of 2 floats
+    	float* ap[2];  // an array of TWO pointers-to-float
+    
+    	printf("%zu\n", sizeof(pa));	// 8 in x64
+    	printf("%zu\n", sizeof(ap));	// 16 in x64
+    	printf("\n");
+    
+    	pa = arr2d;
+    	//pz[0] = arr2d[0]; // error
+    	//pa[1] = arr2d[1]; // error
+    
+    	//ap = arr2d; //error
+    	ap[0] = arr2d[0];
+    	ap[1] = arr2d[1];
+    
+    	return 0;
+    }
+    ```
+    
+- ### [10.15] 포인터의 호환성
+    
+    ```c
+    int n = 5;
+    double x;
+    x = n;		// no error
+    int* p1 = &n;
+    double* pd = &x;
+    pd = p1;	// Warning
+    
+    int* pt;
+    int(*pa)[3];
+    int ar1[2][3] = { 3, };
+    int ar2[3][2] = { 7, };
+    int** p2;	// a pointer to a pointer
+    
+    pt = &ar1[0][0];	// pointer-to-int
+    
+    for (int i = 0; i < 6; ++i)
+    	printf("%d ", *(pt + i));
+    
+    pt = ar1[0];		// pointer-to-int
+    	//pt = ar1;			// Warning (Error)
+    pa = ar1;			// pointer-to-int[3]
+    
+    p2 = &pt;			// pointer-to-int *
+    *p2 = ar2[0];		// pointer-to-int
+    	//p2 = ar2;			// Warning (Error)
+    	//Notes
+    	// - p2: pointer to pointer to int
+    	// - ar2: a pointer to array-of-2-ints
+    
+    	/* Pointer and const */
+    
+    int x = 20;
+    const int y = 23;
+    int* p1 = &x;
+    const int* p2 = &y;
+    const int** pp2 = &p1;
+    p1 = p2;		// Warning (Error)
+    
+    *p2 = 123;		// Error
+    p2 = p1;
+    
+    int x2 = 30;
+    int* p3 = &x2;
+    *pp2 = p3;
+    pp2 = &p1;
+    ```
+    
+
+- ### [10.16] 다차원 배열을 함수에게 전달해주는 방법
+    
+    ```c
+    int sum2d_1(int ar[ROWS][COLS]);
+    int sum2d_2(int ar[][COLS], int row);
+    int sum2d_3(int* ar, int row, int col);
+    
+    int main()
+    {
+    	int data[ROWS][COLS] = {
+    								{1, 2, 3, 4},
+    								{5, 6, 7, 8},
+    								{9, 0, 1, 2}};
+    
+    	printf("%d\n", data[2][3]);
+    
+    	int* ptr = &data[0][0];
+    	printf("%d\n", *(ptr + 3 + COLS * 2));
+    
+    	printf("Sum of all elements = %d\n", sum2d_1(data));
+    	printf("Sum of all elements = %d\n", sum2d_2(data, ROWS));
+    	printf("Sum of all elements = %d\n", sum2d_3(&data[0][0], ROWS, COLS));
+    
+    	return 0;
+    }
+    
+    int sum2d_1(int ar[ROWS][COLS])
+    {
+    	int r, c, tot = 0;
+    	for (r = 0; r < ROWS; r++)
+    		for (c = 0; c < COLS; c++)
+    			tot += ar[r][c];
+    	return tot;
+    }
+    
+    int sum2d_2(int ar[][COLS], int row)
+    {
+    	int r, c, tot = 0;
+    	for (r = 0; r < row; r++)
+    		for (c = 0; c < COLS; c++)
+    			tot += ar[r][c];
+    	return tot;
+    }
+    
+    int sum2d_3(int* ar, int row, int col)
+    {
+    	int r, c, tot = 0;
+    	for (r = 0; r < row; r++)
+    		for (c = 0; c < col; c++)
+    			tot += *(ar + c + col * r); //ar[c + col * r]
+    	return tot;
+    }
+    ```
+    
+    여러가지 배열의 합을 출력하는 함수 중에서도 재밌는 부분은
+    
+    ```c
+    tot += *(ar + c + col * r); //ar[c + col * r]
+    ```
+    
+    sum2d_3의 이 부분이다.  보이는 것은 2차원 행렬이지만 내부적으로는 1차원으로 나열된 값들이기 때문에
+    
+    행렬의 열 부분인 col과 r을 곱 하면 행 부분을 표현할 수 있다.
+    
+- ### [10.17] 변수로 길이를 정할 수 있는 배열
+    
+    ```c
+    int main()
+    {
+    	printf("Input array length : ");
+    	scanf("%d", &n);
+    
+    	float my_arr[n];
+    
+    	for (int i = 0; i < n; ++i)
+    		my_arr[i] = (float)i;
+    	for (int i = 0; i < n; ++i)
+    		printf("%f\n", my_arr[i]);
+    
+    	return 0;
+    }
+    ```
+    
+    배열을 scanf로 받아서 입력 받은 수만큼 배열을 결정할 수 있다.
+    
+    우분투에서는 가능하지만 비주얼 스튜디오에서는 작동 하지 않는다.
+    
+    동적 할당 메모리를 많이 사용하기 때문에 사용 잘 하지 않는다.
