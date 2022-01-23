@@ -2688,7 +2688,7 @@ int main(void) 는 함수 정의 시작부분이고 나머지 중괄호 안은 �
 
     </br>
 
-    ## Chapter 10. 배열과 포인터
+## Chapter 10. 배열과 포인터
 
 - ### [10.1] 배열과 메모리
     
@@ -3428,3 +3428,441 @@ int main(void) 는 함수 정의 시작부분이고 나머지 중괄호 안은 �
     우분투에서는 가능하지만 비주얼 스튜디오에서는 작동 하지 않는다.
     
     동적 할당 메모리를 많이 사용하기 때문에 사용 잘 하지 않는다.
+
+    </br>
+
+## Chapter 11. 문자열 함수들
+
+- ### [11.1] 문자열을 정의하는 방법
+    
+    ```c
+    char arr[] = "Hello, world";
+    
+    char* str = "Hello, world";
+    //str[0] = 'M'; // ERROR!!!
+    ```
+    
+    문자열을 초기화하는 방법으로는 문자열 자체로 초기화하거나
+    
+    문자열이 배열의 일종처럼 메모리에 배치가 되어 있다면 
+    
+    함수에게 전달할 때는 첫 번째 주소를 포인터로 넘겨줄 수 있다.
+    
+    배열로 만드는 방법 넉넉한 사이즈를 주고 선언하고 문자열을 집어넣는다.
+    
+    ```c
+    char words[MAXLENGTH] = "A string in an array";
+    const char* pt1 = "A pointer to a string.";
+    ```
+    
+    symbolic constant도 매크로처럼 사용 가능하다
+    
+    ```c
+    #define MESSAGE "A symbolic string contant"
+    #define MAXLENGTH 81
+    ```
+    
+    포인터는 어딘가 선언된 주소의 첫 번째를 가져오는 것이기 때문에 나머지 주소가 일정하지 않을 수 있다.
+    
+    ```c
+    puts(words);	// char words[21] removes this warning
+    ```
+    
+    puts(words);에서 warning이 생기는 이유는 배열을 선언할 때 생긴 81개에서
+    
+    words가 받은 21개만 초기화가 되고 나머지 60개는 초기화 되지 않았기 때문이다.
+    
+    추가로 배열의 값을 바꾸는 것은 오류가 나지 않지만
+    
+    ```c
+    pt1[8] = 'A'; // Error
+    ```
+    
+    포인터로 이미 선언된 문자열을 포인터의 배열로 바꾸려고 하면
+    
+    런타임 오류가 발생한다.
+    
+    ```c
+    printf("%s, %p, %c\n", "We", "are", *"excellent programmers");
+    ```
+    
+     두 번째 are이 들어갈 부분이 포인터 형식 지정자 %p 인데 are의 포인터 주소는 첫 글자 a가 저장된 주소가 출력
+    
+    배열에는 또한 실수나 음수가 들어갈 수 없음. 부호 없는 정수만 가능하다
+    
+- ### [11.2] 메모리 레이아웃과 문자열
+    
+    ```c
+    /* Array Versus Pointer */
+    const char* pt2 = "I am a string!.";
+    const char* pt3 = "I am a string!.";
+    const char* pt4 = "I am a string!!!!!"; // <- different
+    const char ar1[] = "I am a string!.";
+    const char ar2[] = "I am a string!.";
+    const char ar3[] = "I am a string!!."; // <- different
+    
+    printf("rodata low \t%llu %llu %llu %llu\n",
+    		(unsigned long long)pt2, (unsigned long long)pt3, (unsigned long long)pt4,
+    		(unsigned long long)"I am a string!.");
+    
+    printf("Stack high \t%llu %llu %llu \n",
+    		(unsigned long long)ar1, (unsigned long long)ar2, (unsigned long long)ar3); 
+    			// check address numbers!
+    ```
+    
+    출력 예시
+    
+    ```c
+    rodata low      16677704 16677704 16677724 16677704
+    Stack high      7600600 7600576 7600548
+    ```
+    
+    출력 해보면 포인터의 주소는 pt2, pt3 그리고 “I am a string!.” 이 주소가 일치하지만
+    
+    배열의 주소는 서로 각각 다르다.
+    
+    배열은 각자 메모리를 갖지만, 포인터는 문자열 첫 번째 글자의 주소만 가지고 있는다.
+    
+    그렇다면 어떻게 포인터는 I am a string!. 이란 글자까지 주소가 같은 것일까?
+    
+    여기서 스택, 힙, 정적 변수의 개념이 나온다
+    
+    ```markdown
+    스택(Stack) 메모리 = 지역 변수들, 메모리 크기를 컴파일러가 예측 가능한 경우, 빠름
+    
+    자유 공간
+    
+    힙(Heap) 메모리 = 메모리 크기가 얼마가 될지 알 수 없는 경우 
+    
+    > 초기화되지 않은 전역/정적 변수들 - 크기고정
+    
+    > 초기화된 전역/정적 변수들 - 크기고정
+    
+    > 프로그램 코드 - 크기고정
+    ```
+    
+    메모리는 이와 같은 구조를 가지며 
+    
+    컴파일러 입장에서 같은 문자열이 반복될 경우 메모리를 아끼기 위해 
+    
+    I am a string이란 문자열을 한 곳에 저장해놓고 여러번 사용하는 식이다. 
+    
+    배열은 초기화된 전역변수 또는 지역변수라면 스택 메모리로 들어간다.
+    
+    배열 자체가 메모리를 확보 해놓고 있기 때문에 배열마다 메모리 주소가 모두 다르게 나온다.
+    
+    포인터는 text segment에 있기 때문에 읽기 전용이고 크기가 고정되어있어 값들을 바꿀 수 없다.
+    
+    읽기 전용 메모리로 들어가기 때문에 값을 바꾸려고 하면 에러가 발생한다.
+    
+    ```c
+    const char* str1 = "When all the lights ar low, ...";
+    const char* copy;
+    
+    copy = str1;
+    ```
+    
+    text segment의 주소만 옮겨 가고 있음
+    
+- ### [11.3] 문자열의 배열
+    
+    
+    ```c
+    /* Arrays of Character Strings */
+    
+    	const char* mythings[5] = {
+    		"Dancing in the rain",
+    		"Counting apples",
+    		"Watching movies with friends",
+    		"Writing sad letters",
+    		"Studying the C language",
+    	};
+    
+    	char yourthings[5][40] = {
+    		"Studying the C++ language",
+    		"Eating",
+    		"Watching Netflix",
+    		"Walking around till dark",
+    		"Deleting spam emails"
+    	};
+    
+    	const char* temp1 = "Dancing in the rain";
+    	const char* temp2 = "Studying the C++ language";
+    
+    	printf("%s %u %u\n", mythings[0], (unsigned)mythings[0], (unsigned)temp1);
+    	printf("%s %u %u\n", yourthings[0], (unsigned)yourthings[0], (unsigned)temp2);
+    ```
+    
+    출력 예시
+    
+    ```c
+    Dancing in the rain 9599792 9599792
+    Studying the C++ language 9369884 9599924
+    ```
+    
+    포인터 변수 자체는 스택에, 문자열 자체는 text segment에 있다.
+    
+    그래서 포인터로 같은 문자열을 사용하면 메모리를 아낄 수 있으나 값을 바꿀 수는 없다.
+    
+- ### [11.4] 문자열을 입력받는 다양한 방법들
+    
+    ```c
+    char words[STRLEN] = "";			// Warning without initialization
+    	gets(words);						// gets receives pointer. No idea when stringe ends.
+    	//gets_s(words, sizeof(words));		// C11
+    	//int result = scanf("%s", words);
+    	printf("START\n");
+    	printf("%s", words);				// no \n at the end
+    	puts(words);						// puts() adds \n at the end
+    	puts("END.");
+    ```
+    
+    gets()는 문자열을 읽어내는 함수 이다.
+    
+    scanf()와의 차이는 함수 한 줄을 다 읽을 수 있다. 
+    
+    또한 마지막 \n줄 바꿈을 없애고 \0인 null character을 추가한다.
+    
+    마찬가지로
+    
+    puts()는 문자열을 출력하는 함수 이고
+    
+    printf() 차이는 마지막에 줄 바꿈을 자동 추가한다.
+    
+    ```c
+    /* fgets() and fputs() */
+    
+    	char words[STRLEN] = "";
+    	fgets(words, STRLEN, stdin);		// does NOT remove \n
+    
+    	// TODO: replace '\n' with '\0'
+    	int i = 0;
+    	while (words[i] != '\n' && words[i] != '\0')
+    		i++;
+    	if (words[i] == '\n')
+    		words[i] = '\0';
+    
+    	fputs(words, stdout);				// does NOT remove \n
+    	fputs("END", stdout);
+    
+    	/* Small array */
+    
+    	char small_array[5];
+    	puts("Enter long strings:");
+    	fgets(small_array, 5, stdin);		// FILE *_Stream
+    	//printf("%p\n", small_buffer);
+    	//printf("%p\n", fgets(small_buffer, 5, stdin));	// Return value of fgets
+    	fputs(small_array, stdout);
+    ```
+    
+    fgets()와 fputs()는 파일을 입출력하는 함수이다.
+    
+    gets()와 puts()의 차이점은 선언한 배열보다 많은 문자열을 받았을 때 
+    
+    런타임 에러가 나지 않고 버퍼에 임시로 저장 해 놓았다가 출력하여 에러가 나지 않는다.
+    
+    버퍼 덕분에 많은 문자를 받아도 작은 배열도 문제 없이 출력 가능하다.
+    
+- ### [11.5] 문자열을 출력하는 다양한 방법들
+    
+    ```c
+    /* 
+    		puts() : add \n at the end
+    */
+    
+    char str[60] = "String array initialized";
+    const char* ptr = "A pointer initialized";
+    
+    puts("String without \\n");
+    puts("END");
+    puts(TEST);
+    puts(TEST + 5);
+    puts(&str[3]);
+    //puts(str[3]); // Error
+    puts(ptr + 3);
+    ```
+    
+    puts()는 \0인 NULL character을 만날 때 까지 함수를 찾음
+    
+    ```c
+    char str[] = { 'H', 'I', '!' }; // No \0 at the end
+    puts(str);	// VS warns you!
+    ```
+    
+    NULL character 없는 배열을 출력을 하면 ASCII코드에서 \0이 얻어 걸릴 때까지 아무 문자나 출력한다
+    
+    ```c
+    char input[100] = "";
+    int ret = scanf("%10s", input);	// Input : "Just do it, do it!\n" (Note %10s)
+    printf("%s\n", input);	// Output : "Just"
+    ret = scanf("%10s", input);		// Reads remaning buffer
+    printf("%s\n", input);			// Output : "do"
+    ```
+    
+    scanf()는 빈칸을 만나면 읽어 들이지 않는다.
+    
+    Just do it을 입력하면 Just만 출력하고 나머지 do it은 버퍼에서 ret으로 들어가버리고
+    
+    나중에 출력하면 그 다음 단어인 do가 나온다.
+    
+- ### [11.6] 다양한 문자열 함수들
+    
+    strlen() 문자의 길이
+    
+    strcat() 문자열을 합쳐주는 함수
+    
+    strncat(char1, char2, int) int의 수 만큼 char2의 문자 수 합쳐줌
+    
+    strcmp() and strncmp() 문자열 비교
+    
+    true & false 아님
+    
+    같으면 0 아스키 순서상 빠르면 -1 느리면 1
+    
+    뒤에 문자열이 길면 -1, 앞의 문자열이 길면 1
+    
+    strncmp는 인수만큼만 비교
+    
+    sprintf()는 printf()를 선언된 문자열에 출력
+    
+- ### [11.7] 선택 정렬 문제 풀이
+    
+    선택 정렬 알고리즘을 C언어로 구현하는 예제이다.
+    
+    [https://www.geeksforgeeks.org/selection-sort/](https://www.geeksforgeeks.org/selection-sort/)
+    
+    **선택 정렬**은 [제자리 정렬](https://ko.wikipedia.org/wiki/%EC%A0%95%EB%A0%AC_%EC%95%8C%EA%B3%A0%EB%A6%AC%EC%A6%98#%EC%A0%9C%EC%9E%90%EB%A6%AC_%EC%A0%95%EB%A0%AC) 알고리즘의 하나로, 다음과 같은 순서로 이루어진다.
+    
+    1. 주어진 리스트 중에 최소값을 찾는다.
+    2. 그 값을 맨 앞에 위치한 값과 교체한다(패스(pass)).
+    3. 맨 처음 위치를 뺀 나머지 리스트를 같은 방법으로 교체한다.
+    
+    선택 정렬 flowchart
+    
+    ```c
+    void swap(int* xp, int* yp)
+    {
+    	int temp = *xp;
+    	*xp = *yp;
+    	*yp = temp;
+    }
+    
+    void selectionSort(int arr[], int n)
+    {
+    	int min_index = 0;
+    
+    	for (int i = 0; i < n - 1; i++)
+    	{
+    		min_index = i;
+    		for (int j = i + 1; j < n; j++)
+    		{
+    			if (arr[j] < arr[min_index])
+    				min_index = j;
+    		}
+    		swap(&arr[min_index], &arr[i]);
+    	}
+    }
+    ```
+    
+    오름차순으로 정렬했을 때의 작동 방식이다.
+    
+- ### [11.8] 문자열의 포인터를 정리하기
+    
+    문자열을 선택 정렬 알고리즘으로 정렬할 때 숫자를 정렬할 때와 다른 점은
+    
+    ```c
+    void swap(char** xp, char** yp)
+    {
+    	char* temp = *xp;
+    	*xp = *yp;
+    	*yp = temp;
+    }
+    
+    void selectionSort(char* arr[], int n)
+    {
+    	int min_index = 0;
+    
+    	for (int i = 0; i < n - 1; i++)
+    	{
+    		min_index = i;
+    		for (int j = i + 1; j < n; j++)
+    		{
+    			if (strcmp(arr[j], arr[min_index]) < 0)
+    				min_index = j;
+    		}
+    		swap(&arr[min_index], &arr[i]);
+    	}
+    }
+    ```
+    
+    swap함수 부분이 이중 포인터를 사용했고, strcmp()를 사용해서 0보다 작으면 오름차순, 크면 내림차순으로 정렬할 수 있다.
+    
+- ### [11.10] 명령줄 인수
+    
+    ```c
+    int main(int argc, char* argv[])
+    {
+    	int count;
+    
+    	printf("The command line has %d arguments:\n", argc);
+    
+    	for (count = 0; count < argc; count++)
+    		printf("Arg %d : %s\n", count, argv[count]);
+    	printf("\n");
+    
+    	return 0;
+    }
+    ```
+    
+    항상 비어있던 main함수에 인자를 넣으면 빌드를 하고 exe파일을 실행 할 때 입력한 값이
+    
+    main함수의 인수로 들어간다
+    
+    예를 들어 cmd에서 > 3 hello를 입력하면 이렇게 출력된다.
+    
+    ```c
+    The command line has 3 arguments:
+    Arg 0 : E:\TIL\TBC\CH11\Debug\CH11_10.exe
+    Arg 1 : 3
+    Arg 2 : hello
+    ```
+    
+- ### [11.11] 문자열을 숫자로 바꾸는 방법들
+    
+    다음은 문자열을 숫자로 바꾸는 함수들이다.
+    
+    ```c
+    /*
+    		string to integer, double, long
+    		atoi(), atof(), atol()
+    */
+    
+    if (argc < 3)
+    		printf("Worng Usage of %s\n", argv[0]);
+    else
+    	{
+    		/* Example 1 */
+    
+    		int times = atoi(argv[1]);
+    		// atof(), atol()
+    
+    		for (int i = 0; i < times; i++)
+    			puts(argv[2]);
+    
+    		/* Example 2 */
+    
+    		//printf("Sum = %d\n", atoi(argv[1]) + atoi(argv[2]));
+    
+    	}
+    
+    char str1[] = "-1024Hello";
+    	char* end;
+    	long l = strtol(str1, &end, 10);
+    	printf("%s %ld %s %d\n", str1, l, end, (int)*end);
+    
+    	char str2[] = "10FFHello";
+    	l = strtol(str2, &end, 16);
+    	printf("%s %ld %s %d\n", str2, l, end, (int)*end);
+    ```
+    
+     숫자를 문자열로 바꿀 수 있는 함수들이다.
