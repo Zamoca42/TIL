@@ -160,7 +160,7 @@
           1. HTTP 버전
           2. HTTP 상태 코드 : 요청 성공, 실패를 나타냄
           3. 이유 문구 : 사람이 이해할 수 있는 짧은 상태 코드 설명 글
-     - header 헤더
+     - [header 헤더](#http-헤더)
         - HTTP 전송에 필요한 모든 부가정보
         - 표준 헤더가 너무 많음
           - [표준 헤더 - 위키피디아](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields)
@@ -234,16 +234,176 @@
     
  ## HTTP 상태코드
    - 클라이언트가 보낸 요청의 처리 상태를 응답에서 알려주는 기능
+     - 1xx (Informational) : 요청이 수신되어 처리 중
+       - 거의 사용하지 않음
+     - 2xx (Successful) : 요청 성공적으로 처리
+       - 200 OK : 요청 성공
+       - 201 Created : 새로운 리소스 생성 (Location 헤더 필드로 식별)
+       - 202 Accepted : 접수되었으나 처리가 완료되지 않았음
+       - 204 No content : 요청을 성공적으로 수행했지만, 본문에 보낼 데이터가 없음
+     - 3xx (Redirection) : 리다이렉션, 요청을 완료하려면 추가 행동이 필요
+       - 300 Multiple Choices
+       - 301 Moved Permanently
+       - 302 Found
+       - 303 See Other
+       - 304 Not Modified
+       - 307 Temporary Redirect
+       - 308 Permanent Redirect
+     - 4xx (Client Error) : 클라이언트 오류, 잘못된 문법등으로 서버가 요청을 수행할 수 없음
+       - 400 Bad Request : 클라이언트의 잘못된 요청으로 서버가 처리할 수 없음
+       - 401 Unauthorized : 인증 되지 않음
+       - 403 Forbidden : 서버가 요청을 이해했지만 승인을 거부 - 접근 권한이 불충분
+       - 404 Not Found : 요청 리소스가 서버에 없거나, 숨기고 싶을 때
+     - 5xx (Server Error) : 서버 오류, 서버가 정상 요청을 처리하지 못함
+       - 500 Internal Server Error : 서버 내부문제
+       - 503 Service Unavailable : 서버가 일시적인 과부하
    - 만약 모르는 상태 코드가 나타나면?
+     - 클라이언트는 상위 상태코드로 해석
+     - 미래에 새로운 상태코드가 추가되어도 상위코드만 알고 있으면 대략적으로 알 수 있음
+       - 299 ??? -> 2xx (Successful)
+       - 451 ??? -> 4xx (Client Error)
    - 리다이렉션 이해
+     - 3xx (Redirection) : 요청을 완료하기 위해 유저 에이전트의 추가 조치 필요  
+     - 자동 리다이렉션 흐름  
+      <img src = "https://user-images.githubusercontent.com/96982072/150898156-cde8331c-84ff-41ea-9225-f50270d90d74.png" width="50%" height="50%">  
+     - 영구 리다이렉션 - 특정 리소스의 URI가 영구적으로 이동
+       - 301 Moved Permanently - 리다이렉트 요청 메서드가 GET으로 변하고, 본문이 제거될 수 있음
+       - 308 Permanent Redirect - 301과 기능은 같음, 리다이렉트시 요청 메서드와 본문 유지
+     - 일시 리다이렉션 - 리소스의 URI가 일시적인 변경
+       - 302 Found - 리다이렉트 요청 메서드가 GET으로 변하고, 본문이 제거될 수 있음
+       - 307 Temporary Redirect - 302와 기능은 같음, 리다이렉트시 요청 메서드와 본문 유지
+       - 303 See Other - 리다이렉트시 요청 메서드가 GET으로 변경
+       - PRG : Post/Redirect/Get  
+         1. POST로 주문후에 새로 고침으로 인한 중복 주문 방지
+         2. POST로 주문 후에 주문 결과 화면을 GET 메서드로 리다이렉트
+         3. 새로고침해도 결과 화면을 GET으로 조회
+         4. 결과 화면만 GET으로 다시 요청   
+     - 특수 리다이렉션
+       - 300 Multiple Choices : 안쓴다
+       - 304 Not Modified
+         - 캐시를 목적으로 사용
+         - 클라이언트에게 리소스가 수정되지 않았음을 알려준다, 저장된 캐시를 재사용
+         - 조건부 GET, HEAD 요청시 사용  
  ## HTTP 헤더
+ > 요청 : 클라이언트 -> 서버  
+ > 응답 : 서버 -> 클라이언트
    - 개요
-   - 협상
+     - HTTP 전송에 필요한 모든 부가정보
+     - RFC 2616(과거 - 폐기)
+       - General 헤더 : 메시지 전체에 적용되는 정보 - 예) connection: close
+       - Request 헤더 : 요청 정보 - 예) User-Agent: Mozila/5.0
+       - Responcse 헤더 : 응답정보 - 예) Server: Apache
+       - Entity 헤더 : 엔티티 바디 정보 - 예) Content-Type: text/html, Content-Length: 3423  
+       - message body : 엔티티 바디를 전달하는데 사용, 전달할 실제 데이터
+     - RFC 7230 ~ 7235 (2014년 등장 - 최신)
+       - 엔티티(Entity) -> 표현(Representation)
+       - 표현 = 표현 메타데이터 + 표현 데이터
+       - message body : 표현 데이터 전달, 전달할 실제 데이터
+         1. Content-Type : 표현 데이터의 형식 - 예) charset = utf-8
+         2. Content-Encoding : 표현 데이터의 압축 방식 - 예) gzip
+         3. Content-Language : 표현 데이터의 자연 언어 - 예) ko, en, en-US
+         4. Content-Encoding : 표현 데이터의 길이 - 예) 5 byte
+   - 협상(콘텐츠 네고시에이션) : 클라이언트가 선호하는 표현 요청, 요청 시 사용
+     - Accept : 클라이언트가 선호하는 미디어 타입 전달
+     - Accept-Charset : 선호하는 문자 인코딩
+     - Accept-Encoding : 선호하는 압축 인코딩
+     - Accept-Language : 클라이언트가 선호하는 자연 언어
+     - Accept-Language 적용 후  
+       <img src = "https://user-images.githubusercontent.com/96982072/150902244-5dae3b71-42f5-460e-b288-abfb35ba3153.png" width="50%" height="50%"> 
+     - 우선 순위 : Quality Values(q) 값 사용
+        - 0~1, 클수록 높은 우선 순위
+        - 생략하면 1
+        - Accept-Language : ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7
+          1. ko-KR;q=1 (생략)
+          2. ko;q=0.9
+          3. en-US;q=0.8
+          4. en;q=0.7
    - 전송 방식
+     - 단순 전송 - Content-Length
+     - 압축 전송 - Content-Encoding
+     - 분할 전송 - Transfer-Encoding 
+     - 범위 전송 - Range, Content-Range
    - 일반 정보
+     - From : 유저 에이전트의 이메일 정보
+       - 일반적으로 잘 사용되지 않음
+       - 검색 엔진 같은 곳에서 주로 사용
+       - 요청에서 사용
+     - Referer : 이전 웹 페이지 주소
+       - 현재 페이지의 이전 웹 페이지 주소
+       - 유입경로 분석 가능
+       - 참고 : referer는 단어 referrer의 오타
+       - 요청에서 사용
+     - User-Agent : 유저 에이전트 애플리케이션 정보
+       - 애플리케이션 정보 (웹 브라우저 정보 등등)
+       - 통계 정보
+       - 어떤 종류의 브라우저에서 장애가 발생하는지 파악 가능
+       - 요청에서 사용
+     - Server : 요청을 처리하는 오리진 서버의 소프트웨어 정보
+       - Server: Apache/2.2.22(Debian)
+       - server: nginx
+       - 응답에서 사용
+     - Date : 메시지가 생성된 날짜
+       - 응답에서 사용
    - 특별한 정보
+     - Host : 요청한 호스트 정보(도메인)
+       - 하나의 IP 주소에 여러 도메인이 적용되어 있을 때
+       - 하나의 서버가 여러 도메인을 처리해야 할 때
+     - Location : 페이지 리다이렉션
+       - 웹 브라우저는 3xx 응답의 결과에 Location 헤더가 있으면, Location 위치로 자동 이동
+       - 응답코드 3xx에서 설명
+       - 201 (Created) : Location 값은 요청에 의해 생성된 리소스 URI
+       - 3xx (Redirection) : Location 값은 요청을 자동을 리디렉션하기 위한 대상 리소스를 가리킴
+     - Allow : 허용 가능한 HTTP 메서드
+       - 405 (Method Not Allowed) 에서 응답에 포함해야함
+       - Allow : GET, HEAD, PUT
+     - Retry-After : 유저 에이전트가 다음 요청을 하기까지 기다려야 하는 시간
+       - 503 (Service Unavailable) : 서비스가 언제까지 불능인지 알려 줄 수 있음
+       - Retry-After: Fri, 31 Dec 1999 23:59:59 GMT (날짜 표기)
+       - Retry-After: 120 (초단위 표기)
    - 인증
+     - Authorization: 클라이언트 인증 정보를 서버에 전달
+     - WWW-Authenticate: 리소스 접근시 필요한 인증 방법 정의
+       - 401 Unauthorized 응답과 함ㅁ께 사용
+       - WWW-Authenticate: Newauth realm ="apps", type=1, title="Login to \"apps\"", Basic realm="simple"
    - 쿠키
+     - HTTP는 무상태 프로토콜이기 때문에 이전 상태를 기억하기 어려움
+        - 쿠키에 데이터를 저장해 이전 상태를 기억할 수 있음
+        - 쿠키를 사용하면 모든 요청에 쿠키 정보 자동 포함
+        - 주의! : 보안에 민감한 데이터는 저장하지 않는다(주민번호, 신용카드 번호 등등) 
+     - Set-Cookie: 서버에서 클라이언트로 쿠키 전달(응답)
+     - Cookie: 클라이언트가 서버에서 받은 쿠키를 저장하고, HTTP 요청시 서버로 전달
+     - 사용처
+       - 사용자 로그인 세션 관리
+       - 광고 정보 트래킹
+     - 쿠기 정보는 항상 서버에 전송됨
+       - 네트워크 트래픽 추가 유발
+       - 최소한의 정보만 사용(세션 id, 인증 토큰)
+       - 서버에 전송하지 않고, 웹 브라우저 내부에 저장하고 싶으면 웹 스토리지 참고
+     - 생명주기 (Expires, max-age)
+       - Set-Cookie: **expires**=Sat, 26-Dec-2020 04:39:21 GMT
+         - 만료일이 되면 쿠키 삭제
+       - Set-Cookie: **max-age**=3600 (3600초)
+       - 세션 쿠키 : 만료 날짜를 생략하면 브라우저 종료시 까지만 유지
+       - 영속 쿠키 : 만료 날짜를 입력하면 해당 날짜까지 유지
+     - 도메인 (Domain)
+       - 명시 : 명시한 무서 기준 도메인 + 서브도메인 포함
+       - 생략 : 현재 문서 기준 도메인만 적용
+     - 경로 (path)
+       - 예) path=/home
+       - 이 경로를 포함한 하위 경로 페이지만 쿠키 접근
+       - 일반적으로 path=/ 루트로 지정
+     - 보안 (Secure, HttpOnly, SameSite)
+       - Secure
+         - 쿠키는 http, https를 구분하지 않고 전송
+         - Secure를 적용하면 https인 경우에만 전송
+     - HttpOnly
+         - XSS 공격방지
+         - 자바스크립트에서 접근 불가(document.cookie)
+         - HTTP 전송에만 사용
+     - SameSite
+         - XSRF 공격방지
+         - 요청 도메인과 쿠키에 설정된 도메인이 같은 경우만 쿠키 전송
+
  ## HTTP 헤더 - 캐시
 
 
