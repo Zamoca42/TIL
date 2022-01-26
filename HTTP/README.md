@@ -150,7 +150,7 @@
       - 크게 성공하는 표준 기술은 단순하지만 확장 가능한 기술
  ## HTTP 메세지
    - 메세지 구조  
-    <img src = "https://user-images.githubusercontent.com/96982072/150739603-32232c84-5bd4-4ff8-8aff-ba09561f4e84.png" width="50%" height="50%">
+    <img src = "https://user-images.githubusercontent.com/96982072/150739603-32232c84-5bd4-4ff8-8aff-ba09561f4e84.png" width="70%">
      - start-line 시작라인
        - 요청 메세지 예시 : Get /serach?q=hello&hl=ko HTTP/1.1
           1. HTTP 메서드 (GET : 조회)
@@ -265,7 +265,7 @@
    - 리다이렉션 이해
      - 3xx (Redirection) : 요청을 완료하기 위해 유저 에이전트의 추가 조치 필요  
      - 자동 리다이렉션 흐름  
-      <img src = "https://user-images.githubusercontent.com/96982072/150898156-cde8331c-84ff-41ea-9225-f50270d90d74.png" width="50%" height="50%">  
+      <img src = "https://user-images.githubusercontent.com/96982072/150898156-cde8331c-84ff-41ea-9225-f50270d90d74.png" width="70%">  
      - 영구 리다이렉션 - 특정 리소스의 URI가 영구적으로 이동
        - 301 Moved Permanently - 리다이렉트 요청 메서드가 GET으로 변하고, 본문이 제거될 수 있음
        - 308 Permanent Redirect - 301과 기능은 같음, 리다이렉트시 요청 메서드와 본문 유지
@@ -309,7 +309,7 @@
      - Accept-Encoding : 선호하는 압축 인코딩
      - Accept-Language : 클라이언트가 선호하는 자연 언어
      - Accept-Language 적용 후  
-       <img src = "https://user-images.githubusercontent.com/96982072/150902244-5dae3b71-42f5-460e-b288-abfb35ba3153.png" width="50%" height="50%"> 
+       <img src = "https://user-images.githubusercontent.com/96982072/150902244-5dae3b71-42f5-460e-b288-abfb35ba3153.png" width="70%"> 
      - 우선 순위 : Quality Values(q) 값 사용
         - 0~1, 클수록 높은 우선 순위
         - 생략하면 1
@@ -363,7 +363,7 @@
    - 인증
      - Authorization: 클라이언트 인증 정보를 서버에 전달
      - WWW-Authenticate: 리소스 접근시 필요한 인증 방법 정의
-       - 401 Unauthorized 응답과 함ㅁ께 사용
+       - 401 Unauthorized 응답과 함께 사용
        - WWW-Authenticate: Newauth realm ="apps", type=1, title="Login to \"apps\"", Basic realm="simple"
    - 쿠키
      - HTTP는 무상태 프로토콜이기 때문에 이전 상태를 기억하기 어려움
@@ -405,7 +405,80 @@
          - 요청 도메인과 쿠키에 설정된 도메인이 같은 경우만 쿠키 전송
 
  ## HTTP 헤더 - 캐시
-
-
+   - 캐시 기본 동작
+     - 캐시가 없을 때
+       - 데이터가 변경되지 않아도 계속 네트워크를 통해 데이터를 다운로드
+       - 인터넷 네트워크는 매우 느리고 비싸다
+       - 브라우저 로딩 속도가 느리다
+       - 느린 사용자 경험
+     - 캐시가 있을 때
+       - 캐시 덕분에 캐시 가능 시간 동안 네트워크를 사용하지 않는다
+       - 비싼 네트워크 사용량을 줄인다
+       - 브라우저 로딩 속도가 빠르다
+       - 빠른 사용자 경험
+     - 캐시 시간 초과
+       - 캐시 유효 시간이 초과하면, 서버를 통해 데이터를 다시 조회하고, 캐시를 갱신한다.
+         1. 서버에서 기존 데이터를 변경한다
+         2. 서버에서 기존 데이터를 변경하지 않는다
+       - 이때 다시 네트워크 다운로드가 발생한다
+   - 검증 헤더 추가
+     - 캐시 시간 초과 후 갱신 할 때 클라이언트와 서버의 데이터가 같다는 사실을 확인하면  
+       캐시를 재사용 할 수 있다. 이 때 확인하는 방법으로 검증 헤더를 추가한다
+     - Last-Modified, ETag
+   - 조건부 요청 헤더
+     - 검증 헤더로 조건에 따른 분기
+     - If-Modified-Since: 이후에 데이터가 수정 되었으면?
+       - 데이터 미변경 예시
+         - 캐시: 2020년 11월 10일 10:00:00 vs 서버: 2020년 11월 10일 10:00:00
+         - **304 Not Modified** (리디렉션), 헤더 데이터만 전송 (BODY 미포함)
+         - 전송 용량 0.1M (헤더 0.1M)
+       - 데이터 변경 예시
+         - 캐시: 2020년 11월 10일 10:00:00 vs 서버: 2020년 11월 10일 **11**:00:00
+         - **200 OK**, 모든 데이터 전송 (BODY 포함)
+         - 전송 용량 1.1M (헤더 0.1M, 바디 1.0M)
+       - 단점
+         - 1초 미만(0.x초) 단위로 캐시 조정 불가능
+         - 날짜 기반의 로직 사용
+         - 데이터를 수정해서 날짜가 다르지만, 같은 데이터를 수정해서 결과가 똑같은 경우
+         - 서버에서 별도의 캐시 로직을 관리하고 싶을 경우
+     - If-None-Match: ETag(Entity Tag) 사용
+         - 캐시용 데이터에 임의의 고유한 버전 이름을 달아둠
+         - 데이터가 변경되면 이 이름을 바꾸어서 변경(Hash를 다시 생성)
+         - 단순하게 ETag만 보내서 같으면 유지, 다르면 다시 받기
+         - 캐시 제어 로직을 서버에서 완전 관리
+   - 캐시 제어 헤더
+     - Cache-Control: 캐시 제어
+       - max-age: 캐시 유효 시간, 초 단위
+       - no-cache: 데이터는 캐시해도 되지만, 항상 origin 서버에 검증하고 사용
+       - no-store: 민감한 정보가 있으므로 저장하지 않는다 (사용하고 최대한 빨리 삭제)
+     - Pragma: 캐시 제어(하위 호환)
+       - 거의 사용 안함
+     - Expires: 캐시 유효 기간(하위 호환)
+       - 캐시 만료일을 정확한 날짜로 지정
+       - HTTP 1.0 부터 사용
+       - 더 유연한 Cache-Control: max-age 권장
+       - Cache-Control: max-age와 함께 사용하면 Expires는 무시
+   - 프록시 캐시
+       - CDN, 클라우드 프론트  
+         <img src = "https://user-images.githubusercontent.com/96982072/151139651-6274759c-e787-46fa-b032-a80892edbdfa.png" width = "70%">
+       - Cache-Control: 
+         - public: 응답이 public 캐시에 저장 되어도 됨
+         - private: 응답이 해당 사용자 만을 위한 것임, private 캐시에 저장해야 함
+         - s-maxage: 프록시 캐시에만 적용되는 max-age
+         - Age: 60(HTTP 헤더): 오리진 서버에서 응답 후 프록시 캐시 내에 머문 시간(초)
+   - 캐시 무효화
+     - Cache-Control:
+       - no-cache: 데이터는 캐시해도 되지만, 항상 origin 서버에 검증하고 사용
+       - no-store: 데이터에 민감한 정보가 있으므로 저장하지 않는다
+       - must-revalidate
+         - 캐시 만료 후 최초 조회시 origin 서버에 검증
+         - origin 서버 접근 실패시 반드시 오류가 발생해야함 - 504(Gateway Timeout)
+         - must-revalidate는 캐시 유효 시간이라면 캐시를 사용함
+     - no-cache vs must-revalidate
+       - no-cache  
+         <img src = "https://user-images.githubusercontent.com/96982072/151141278-458f0d05-95e4-4ffa-9f5f-7f35025878ef.png" width = "70%">
+       - must-revalidate  
+         <img src = "https://user-images.githubusercontent.com/96982072/151141142-f20883d7-1553-40f4-94fd-95292a34415a.png" width = "70%">
+         
 
 
