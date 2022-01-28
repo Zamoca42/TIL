@@ -16,7 +16,7 @@ HTML 태그
 큰 제목
 태그를 닫지 않으면 끝나지 않고 지속되는 상태
 열린 순서대로 닫아줘야함
-
+```html
 <ul></ul> unordered list 순서가 없는 리스트
 <ul>
     <li>beer</li>
@@ -24,6 +24,7 @@ HTML 태그
     <li>meat</li>
     <li>milk</li>
 </ul>
+```
 
 # 2.4
 
