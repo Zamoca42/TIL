@@ -9,13 +9,16 @@ HTML / CSS
 
 HTML는 브라우저에게 이 것이 뭔지 알려주는 역할
 HTML 태그
+```html
 예시 <food>김치</food>
-<open tag>content</close tag>
+<open tag> content </close tag>
 
 <h1>Hello this is my website!</h1>
-큰 제목
+```
+
 태그를 닫지 않으면 끝나지 않고 지속되는 상태
 열린 순서대로 닫아줘야함
+
 ```html
 <ul></ul> unordered list 순서가 없는 리스트
 <ul>
