@@ -3865,3 +3865,876 @@ int main(void) 는 함수 정의 시작부분이고 나머지 중괄호 안은 �
     ```
     
      숫자를 문자열로 바꿀 수 있는 함수들이다.
+
+</br>
+
+ ## Chapter 12. Storage Classes, Linkage and Memory Management
+
+- ### [12.1] 메모리 레이아웃 훑어보기
+    
+    프로그램의 일부에서 큰 메모리가 필요한 경우 메모리 사용에 부담을 느낄 수 있다.
+    
+    그래서 특정 영역에서만 사용할 수 있는 지역 변수를 사용한다
+    
+    지역 변수는 포함된 영역의 함수를 실행할 때만 스택 메모리에 들어가고
+    
+    그 외의 상황에서는 메모리를 차지하지 않는다.
+    
+    스택 메모리는 필요한 상황에서 늘어났다가 필요 없을 때는 줄어들기 때문에
+    
+    효율적으로 사용할 수 있다. 
+    
+    메인 함수에 코드를 작성하는 것 보다 따로 작은 영역의 함수를 사용하는 것이
+    
+    더 효율적으로 메모리를 사용한다.
+    
+    대부분의 경우 필요한 메모리의 크기를 미리 알 수 없다.
+    
+    익숙하게 받아들이게 되면 실력 향상에 도움이 된다.
+    
+    ```c
+    int main()
+    {
+    	int n = 0;
+    	// n from files, internet, scanf, etc.
+    	char* arr = (char*)malloc(sizeof(char) * n);
+    	// ...
+    	free(arr);
+    	
+    	return 0;
+    }
+    ```
+    
+    동적 할당 메모리에서 메모리를 할당 받거나 반납 할 때에 시간이 좀 걸릴 수 있다.
+    
+    메모리를 할당할 때 프로그래머에게 자유를 주기 위해 반납은 안 할 수도 있지만 
+    
+    반납을 안하면 런타임 에러가 발생한다.
+    
+- ### [12.2] 객체와 식별자, lvalue와 rvalue
+    
+    객체(Object) 와 식별자(identifier) 차이 위주 설명
+    
+    객체는 값을 저장할 수 있는 메모리의 블럭이다.
+    
+    C언어에서의 객체는 메모리의 공간을 가지고 있으면 객체라고 불린다.
+    
+    그 외 C++, JAVA 같은 언어에서의 객체는 객체를 확장시킨 개념이고 후에 
+    
+    객체지향프로그래밍에 대해 배우게 된다.
+    
+    식별자는 변수, 함수, 매크로, 그 외의 것들의 이름이다.
+    
+    ```c
+    int var_name = 3;		// creates an object call 'var_name'
+    ```
+    
+    객체와 식별자가 같아 보이지만 C언어가 그렇게 보이게 도와주는 것이다.
+    
+    ```c
+    *pt = 1;				// *pt is not an identifier. *pt designates an object.
+    ```
+    
+    포인터는 객체를 가리킬 수 있다.
+    
+    ```c
+    int arr[100];			// arr is an identifier. Is arr an object?
+    arr[0] = 7;				// arr[0] is an object.
+    ```
+    
+    arr은 첫 원소에 대한 주소이고 객체는 아니다. arr[0]은 메모리 공간에 접근할 수 있기 때문에 객체이다.
+    
+    L-value : 왼쪽 올 수 있고, 객체를 ‘참조‘ 하는 표현식이다.
+    
+    R-value : 오른쪽에 오는 변수, 상수, 표현식이다.
+    
+    ```c
+    pt = &var_name;
+    int* ptr = arr;
+    *pt = 7;				// *pt is not an identifier but an modifiable lvalue expression
+    ```
+    
+    *pt는 식별자는 아니지만, L-value 표현식으로 값을 바꿀 수는 있다.
+    
+    ```c
+    int* ptr2 = arr + 2 * var_name; // address rvalue
+    *(arr + 2 * var_name) = 456;	// lvalue expression
+    ```
+    
+    arr+2 * var_name 은 R-value로 주소 값을 갖지만, *로 indirection해주면 L_value로 사용할 수 있다
+    
+    ```c
+    char str2[] = "String in an array";
+    str2[0] = 'A';	//OK
+    //puts(str2);
+    ```
+    
+    배열은 메모리를 직접 할당, 포인터는 메모리를 가리킴
+    
+- ### [12.3] 변수의 영역(Scope)과 연결 상태(Linkage), 객체의 지속 기간(Duration)
+    
+    변수의 영역에는 네 가지가 있다.
+    
+    block, function, function prototype, file
+    
+    ```c
+    int g_i = 123;	// global variable
+    int g_j;		// global variable
+    
+    void func1()
+    {
+    	g_i++;	// uses g_i
+    }
+    
+    void func2()
+    {
+    	g_i += 2;	// uses g_i
+    
+    	//local = 456;	// Error
+    }
+    
+    int main()
+    {
+    	int local = 1234;
+    
+    	func1();
+    	func2();
+    
+    	printf("%d\n", g_i); // uses g_i
+    	printf("%d\n", g_j); // Not initialized
+    	printf("%d\n", local);
+    
+    	return 0;
+    }
+    ```
+    
+    file scope
+    
+    file은 모든 함수 영역의 밖에 선언되는 변수다. 전역 변수 혹은 파일 변수
+    
+    전역 변수는 어떤 영역이든 사용 가능
+    
+    컴파일러가 translation하는 unit의 단위가 파일이다.
+    
+    파일이 2개라면 따로 컴파일 하기 때문에 서로 무엇이 있는지 알 수 없다.
+    
+    하지만 그 사이를 연결해주는 것이 링커이다
+    
+    ```c
+    int el;				// file scope with external linkage (global variable)
+    static int i1;		// file scope with internal linkage
+    
+    int main()
+    {
+    	el = 1024;
+    
+    	testLinkage();
+    
+    	printf("%d\n", el);
+    
+    	return 0;
+    }
+    ```
+    
+    이런 파일과
+    
+    ```c
+    extern int el;
+    
+    void testLinkage()
+    {
+    	printf("DoSomething called\n");
+    	printf("%d\n", el);
+    
+    	el++;
+    
+    }
+    ```
+    
+    이 한 소스에 같이 있을 때 실행을 돌려보면
+    
+    ```c
+    DoSomething called
+    1024
+    1025
+    ```
+    
+    이렇게 둘 다 실행되어 출력 가능한게 보인다
+    
+    여기서
+    
+    ```c
+    extern int el;
+    ```
+    
+    extern은 다른 파일의 선언된 변수를 가져올 수 있다
+    
+    ```c
+    static int i1;
+    ```
+    
+    여기서 static은 이 영역에서만 변수를 사용 하는 것으로 제한하는 키워드이다.
+    
+    static이 선언된 곳과 다른 곳에서 변수를 사용하려고 하면 링크에러가 발생한다.
+    
+    다음으로 Duration은 메모리의 지속 기간을 의미한다.
+    
+    Duration은 4가지 방법이 있는데
+    
+    - static storage duration ( 앞의 static 변수와는 다르다 )
+    - automatic storage duration
+    - allocated storage duration (동적 할당과 관련)
+    - thread storage duration (멀티 쓰레딩 관련)
+    
+    이렇게 네 가지 메모리 지속 방법을 가진다.
+    
+    ```c
+    void count()
+    {
+    	int ct = 0;
+    	printf("count = %d\n", ct);
+    	ct++;
+    }
+    
+    void static_count()
+    {
+    	static int ct = 0;
+    	printf("static count = %d\n", ct);
+    	ct++;
+    }
+    
+    int main()
+    {
+    	count();
+    	count();
+    	static_count();
+    	static_count();
+    
+    	return 0;
+    }
+    ```
+    
+    출력하면
+    
+    ```c
+    count = 0
+    count = 0
+    static count = 0
+    static count = 1
+    ```
+    
+    이렇게 static count는 메모리가 사라지지 않고 ct++;이 실행되어 적용한다.
+    
+- ### [12.4] 저장 공간의 다섯 가지 분류
+    저장공간분류|메모리에서의위치|지속 기간|영역|연결 상태|선언 방법  
+    ---|---|---|---|---|--- 
+     자동 |스택| 자동적| 블록 안| 없음| 블록 안
+     레지스터 | 레지스터| 자동적| 블록 안| 없음| register 키워드 사용
+     고정적, 내부연결| 데이터| 고정적| 파일 안| 번역 단위의 내부| 모든 함수들 밖에서 static 키워드
+     고정적, 외부연결| 데이터| 고정적| 파일 안| 번역 단위의 외부| 모든 함수들 밖
+     고정적, 연결없음| 데이터| 고정적| 블록 안| 없음| 블록 안에서  static 키워드
+     할당 메모리| 힙heap| 프로그래머가 결정| NA| NA| 운영체제에게 요청
+     - 레지스터는 cpu단위이기 때문에 더 빠를 수 있음
+- ### [12.5] 자동 변수
+    
+    메모리를 효율적으로 공유하면서 사용할 수 있는 구조
+    
+    자동 변수는 블록 안에서 선언 지역 변수와 같음
+    
+    ```c
+    auto int a;	// keyword auto : a storage-class specifier
+    ```
+    
+    지역변수를 선언할 때 사용하지만 굳이 auto를 붙이지 않아도 된다.
+    
+    자동변수는 초기화를 하지 않으면 오류가 생긴다
+    
+    자동적으로 초기화 해주지 않는 이유는 C언어 철학상 프로그래머를 믿기 때문이다.
+    
+- ### [12.6] 레지스터 변수
+    
+    레지스터는 cpu의 일부이고, 메모리는 램의 일부이다
+    
+    레지스터는 메모리처럼 작동할 수 있다.
+    
+    cpu의 일부라 메모리보다 빠르게 작동한다.
+    
+    빠른 작업이 필요할 때 register 키워드 사용할 수 있다.
+    
+    ```c
+    int main()
+    {
+    	register int r;
+    	r = 123;
+    
+    	//printf("%p\n", &r);
+    	//int* ptr = &r;
+    
+    	return 0;
+    }
+    ```
+    
+- ### [12.7] 블록 영역의 정적 변수
+    
+    블록영역의 함수에서 static을 선언하면
+    
+    그렇지 않은 함수의 영역과의 차이가 존재한다
+    
+    ```c
+    void count()
+    {
+    	int ct = 0;
+    	printf("count = %d %lld\n", ct, (long long)& ct);
+    	ct++;
+    
+    	//TODO: return &ct;
+    }
+    ```
+    
+    함수를 실행할 때마다 초기화가 된다
+    
+    ```c
+    void static_count()
+    {
+    	static int ct = 0;	// initialized only once!
+    	printf("static count = %d %lld\n", ct, (long long)& ct);
+    	ct++;
+    
+    	//TODO: return &ct;
+    }
+    ```
+    
+    선언된 ct가 한번만 초기화가 되고 전체 실행이 끝날 때까지 메모리를 가지고 있다.
+    
+- ### [12.8] 정적 변수의 외부 연결 external linkage
+    
+    static 변수들은 초기화를 안 해도 자동으로 알아서 0으로 초기화를 하지만
+    
+    특별한 일이 없다면 초기화 하는 것을 권장한다.
+    
+    영역 외에 선언된 전역 변수와 영역 안에 선언 된 지역변수 중에 이름이 같다면
+    
+    전역 변수가 숨겨진다.
+    
+    ```c
+    extern int g_int;
+    ```
+    
+    해당 파일 밖에 있는 변수, 다른 파일의 변수g_int을 가져올 수 있다.
+    
+    다른 소스 파일에서 변수를 가져 올 수는 있으나, 값을 초기화 할 수 없다.
+    
+    파일 영역(scope)에서는 초기화가 가능하나, 해당 파일에서 한번 초기화 했다면
+    
+    다른 파일에서 동시에 초기화 할 수는 없다.
+    
+- ### [12.9] 정적 변수의 내부 연결 internal linkage
+    
+    파일 외부에서 사용 가능한 변수가 있다면,
+    
+    다른 파일에서는 사용을 제한하고 해당 파일에서만 사용 가능하게 하는 것도 가능하다
+    
+    파일 영역(scope)에서 선언된 전역 변수에서 static 키워드를 사용하면 고정된 상태이면서
+    
+    다른 파일 영역(scope)에서는 사용 불가능하다.
+    
+
+- ### [12.11] 함수의 저장 공간 분류
+    
+    함수는 기본적으로 extern이라고 가정하고, 다른 파일에 있는 함수를 가져올 때 extern을 생략할 수 있다
+    
+    ```c
+    int g_int = 123;
+    
+    void fun();
+    void fun_second();
+    
+    int main()
+    {
+    	fun();
+    	fun_second();
+    	
+    	return 0;
+    }
+    
+    void fun()
+    {
+    	extern int g_int;
+    
+    	g_int += 10;
+    
+    	printf("g_int is fun() %d %p\n", g_int, &g_int);
+    	
+    }
+    ```
+    
+    이렇게 되어있고 다른 파일에 fun_second()함수가 있다고 할때
+    
+    ```c
+    extern int g_int;
+    
+    static void fun_second()
+    {
+    	g_int += 10;
+    
+    	printf("g_int is fun() %d %p\n", g_int, &g_int);
+    
+    }
+    ```
+    
+    void fun_second() 함수에 static을 붙이면 링킹 에러가 나타난다.
+    
+    파일을 분리할 떄는 모듈이라는 개념으로 분리를 한다.
+    
+    같은 기능을 하는 함수를 모아서 파일 단위로 정리한다고 생각할 수 있다.
+    
+    해당 파일에서만 작동하는 함수를 만들고 싶다면 함수 앞에 static을 붙인다.
+    
+- ### [12.12] 난수 생성기 모듈 만들기 예제
+    
+    랜덤하게 숫자를 생성하는 모듈이다
+    
+    rand()라는 함수를 사용하면 난수를 생성할 수 있지만 실행할 때마다 값은 안 바뀌는 것을 알 수 있다.
+    
+    이때 seed를 바꾸어 주면 숫자가 변하는데, 수동으로 바꿔야 하는 번거로움이 있다. 이 때 time()을 사용한다.
+    
+    seed값이 자동으로 바뀌어서 설정되는 효과를 보여주게 된다.
+    
+    ```c
+    //srand(3);	// random seed
+    	srand((unsigned int)time(0));
+    	for (int i = 0; i < 10; ++i)
+    	{
+    		printf("%d\n", rand());
+    		//printf("%d\n", rand() % 6 + 1);
+    	}
+    ```
+    
+    오버플로우를 이용한 난수 생성 예시
+    
+    ```c
+    unsigned int next = 1;
+    
+    	for (int i = 0; i < 10; ++i)
+    	{
+    		next = next * 1103515245 + 1234;
+    		next = (unsigned int)(next / 65536) % 32768;
+    		printf("%d\n", (int)next);
+    	}
+    ```
+    
+    난수 생성을 모듈로 쪼개서 작성 해보기
+    
+    main.c
+    
+    ```c
+    #define _CRT_SECURE_NO_WARNINGS
+    #include <stdio.h>
+    #include <time.h>
+    #include "my_rand.h"
+    
+    int main()
+    {
+    	my_srand((unsigned int)time(0));
+    
+    	for (int i = 0; i < 10; ++i)
+    	{
+    		printf("%d\n", my_rand() % 6 + 1);
+    	}
+    
+    	return 0;
+    }
+    ```
+    
+    my_rand.h 헤더파일
+    
+    ```c
+    #pragma once
+    
+    int my_rand();
+    void my_srand(unsigned int seed);
+    ```
+    
+    my_rand.c
+    
+    ```c
+    static unsigned int next = 1;
+    
+    int my_rand()
+    {
+    	next = next * 1103515245 + 1234;
+    	next = (unsigned int) (next / 65536) % 32768;
+    	
+    	return (int)next;
+    }
+    
+    void my_srand(unsigned int seed)
+    {
+    	next = seed;
+    }
+    ```
+    
+- ### [12.13] 메모리 동적 할당 (Dynamic Storage Allocation)
+    
+    저장공간분류|메모리에서의위치|지속 기간|영역|연결 상태|선언 방법 
+    ---|---|---|---|---|--- 
+    동적 할당 메모리|힙(heap)|프로그래머가 결정|NA|NA|운영체제에게 요청
+    
+    메모리를 요청과 반납을 프로그래머가 직접 작성하면서 관리 해주어야 함
+    
+    필요한 메모리의 크기를 미리 알 수 없는 경우
+    
+    즉, 컴파일 타임에는 메모리가 얼마인지 알 수 없고,런타임이 되어야 알 수 있는 경우에는
+    
+    힙(heap)에 있는 자유 공간을 이용해 동적 할당 메모리를 받아서 사용하는 것이다.
+    
+    동적 할당 메모리를 불러올 때에는 stdlib.h의 malloc을 사용한다.
+    
+    동적 할당 메모리를 사용한 후는 반납을 하는 함수인 free()를 사용해야 한다.
+    
+    malloc()은 void type 포인터를 반환한다. 포인터 연산을 사용할 수 없다.
+    
+    따라서 사용하는 쪽에서 자료형을 정해 포인터에 넣어줄 수 있다.
+    
+    ```c
+    double* ptr = NULL;
+    
+    ptr = (double*)malloc(30 * sizeof(double));
+    ```
+    
+    동적 할당 메모를 사용하고 후에 반납하고 나서 ptr을 출력하면
+    
+    메모리를 반환하였는데도 주소 값은 그대로 출력하는 것을 볼 수 있다.
+    
+    ptr은 변수이기 때문에 메모리를 반환하여도 주소의 이름은 계속 가지고 있는 것이다.
+    
+    일반적으로 메모리를 반환하고 ptr = NULL을 이용해 명확하게 초기화 할 수 있다.
+    
+    malloc함수를 사용해서 메모리를 받아왔을 때는 초기화 해주지 않는다.
+    
+    Java나 Python같은 다른 언어를 사용할 때에는 자동으로 메모리를 반납해 준다.
+    
+- ### [12.14] 메모리 누수와 free()의 중요성
+    
+    메모리를 반납을 하지 않으면 메모리 누수가 생김
+    
+    메모리를 일부러 누수 시켜 보는 예제
+    
+    ```c
+    int main()
+    {
+    	printf("Dummy Output\n");
+    
+    	int* ptr_backup = NULL;
+    
+    	{
+    		int n = 100000000;
+    		int* ptr = (int*)malloc(n * sizeof(int));
+    
+    		if (!ptr)// if(ptr == NULL)
+    		{
+    			printf("Malloc() failed\n");
+    			exit(EXIT_FAILURE);
+    		}
+    		for (int i = 0; i < n; ++i)
+    			ptr[i] = i + 1;
+    
+    		printf("%d %d\n", ptr[0], ptr[1]);
+    		
+    		ptr_backup = ptr;
+    
+    		//free(ptr);
+    		ptr = NULL;
+    	}
+    
+    	// what happens ?
+    	printf("%d %d\n", ptr_backup[0], ptr_backup[1]);
+    	printf("Dummy Output\n");
+    
+    	return 0;
+    }
+    ```
+    
+    ptr이 영역(scope)을 벗어나면서 숨겨졌지만 동적 할당 메모리는 사라지지 않는다.
+    
+    여기서 영역(scope)을 벗어나기 전에 free(ptr)을 해주면 heap에 있던 메모리를 반납한다.
+    
+    ptr을 잃어버리기 전에 다른 스코프에 주소를 옮겨두면 누수 없이 메모리를 반납하거나 값을 바꿔줄 수 있다
+    
+    위의 작성한 프로그램을 반복 없이 for문으로 반복하면 메모리 한도에 도달해 문제가 발생한다.
+    
+
+- ### [12.15] 동적 할당 메모리를 배열처럼 사용하기
+    
+    동적 할당 메모리를 배열처럼 사용할 수 있다.
+    
+    ```c
+    	/*
+    		One variable
+    	*/
+    
+    	int* ptr = NULL;
+    
+    	ptr = (int*)malloc(sizeof(int) * 1);
+    	if (!ptr) exit(1);
+    
+    	*ptr = 1024 * 3;
+    	printf("%d\n", *ptr);
+    
+    	free(ptr);
+    	ptr = NULL;
+    ```
+    
+     일반적인 변수를 사용해 동적 할당 메모리를 만든다.
+    
+    ```c
+    	/*
+    		1D array
+    	*/
+    
+    	int n = 3;
+    	int * ptr = (int*)malloc(sizeof(int) * n);
+    	if (!ptr) exit(1);
+    
+    	ptr[0] = 123;
+    	*(ptr + 1) = 456;
+    	*(ptr + 2) = 789;
+    	
+    	free(ptr);
+    	ptr = NULL;
+    ```
+    
+    이렇게 1차원 배열로 작성할 수 있다.
+    
+    ```c
+    	int row = 3, col = 2;
+    	int(*ptr2d)[2] = (int(*)[2])malloc(sizeof(int) * row * col);
+    	//int(*ptr2d)[col] = (int(*)[col])malloc(sizeof(int) * row * col);// VLA
+    	if (!ptr2d) exit(1);
+    
+    	for (int r = 0; r < row; r++)
+    		for (int c = 0; c < col; c++)
+    			ptr2d[r][c] = c + col * r;
+    	
+    	for (int r = 0; r < row; r++)
+    	{
+    		for (int c = 0; c < col; c++)
+    			printf("%d ", ptr2d[r][c]);
+    		printf("\n");
+    	}
+    ```
+    
+    VLA로도 선언할 수 있지만, 컴파일러에 따라 지원을 하지 않을 수 있다.
+    
+    ```c
+    	/*
+    		Using 1D array as 2D arrays
+    
+    		row = 3, col = 2
+    
+    		(r,c)
+    
+    		2d
+    		(0, 0) (0, 1)
+    		(1, 0) (1, 1)
+    		(2, 0) (2, 1)
+    
+    		1d
+    		(0, 0) (0, 1)(1, 0) (1, 1)(2, 0) (2, 1)
+    		 0		1	  2		 3	   4      5		= c + col * r
+    	*/
+    
+    	
+    	int row = 3, col = 2;
+    	int* ptr = (int*)malloc(row * col * sizeof(int));
+    	if (!ptr) exit(1);
+    
+    	for (int r = 0; r < row; r++)
+    		for (int c = 0; c < col; c++)
+    			ptr[c + col * r] = c + col * r;
+    
+    	for (int r = 0; r < row; r++)
+    	{
+    		for (int c = 0; c < col; c++)
+    			printf("%d ", *(ptr + c + col * r));
+    		printf("\n");
+    	}
+    	
+    ```
+    
+    2차원 배열도 1차원으로 들어있는 메모리의 나열이기 때문에 열의 값을 넘길 때, 
+    
+    줄 바꿈을 하는 식을 세운다면 2차원 배열처럼 보일 수 있다.
+    
+- ### [12.16] calloc(), realloc()
+    
+    calloc(count, size) - contiguous allocation
+    
+    malloc과 비슷하지만 차이점은 malloc은 초기화를 해주지 않지만, calloc은 초기화를 해준다
+    
+    ```c
+    	int n = 10;
+    
+    	int* ptr = NULL;
+    
+    	ptr = (int*)calloc(n, sizeof(int));// contiguous allocation
+    	if (!ptr)
+    		exit(1);
+    
+    	for (int i = 0; i < n; ++i)
+    		printf("%d ", ptr[i]);
+    	printf("\n");
+    ```
+    
+    realloc()은 요청한 사이즈보다 커진다면 그대로 사이즈만큼 한번 더 복사하지만 초기화 해주진 않는다.
+    
+    ```c
+    	/*
+    		realloc() KNK p. 422
+    		- doesn't initialize the bytes added
+    		- returns NULL if can't enlarge the memory block
+    		- If first argument is NULL, it behaves like malloc()
+    		- if second argument is 0, it frees the memory block
+    	*/
+    
+    	for (int i = 0; i < n; ++i)
+    		ptr[i] = i + 1;
+    
+    	n = 20;
+    
+    	int* ptr2 = NULL;
+    	ptr2 = (int*)realloc(ptr, n * sizeof(int));
+    	//ptr = (int*)realloc(ptr, n * sizeof(int));
+    
+    	printf("%p %p\n", ptr, ptr2);
+    
+    	printf("%d\n", ptr[0]);
+    
+    	if (!ptr2)
+    		exit(1);
+    	else
+    		ptr = NULL;
+    
+    	for (int i = 0; i < n; ++i)
+    		printf("%d ", ptr2[i]);		// copies data
+    	printf("\n");
+    
+    	free(ptr2);
+    ```
+    
+- ### [12.18] 자료형 한정자들 const, volatile, restrict
+    
+    const의 특징은 여러 번 사용하여도 똑같이 적용된다.
+    
+    ```c
+    	/*
+    		const
+    	*/
+    
+    	// C99 ideompotent
+    	const const const int n = 6; // const int n = 6;
+    
+    	typedef const int zip;
+    	const zip q = 8; // const const int zip
+    
+    	//const int i; // NOT inintialized!
+    	//i = 12;	  // Error
+    	
+    	const int j = 123;
+    	const int arr[] = { 1, 2, 3 };
+    
+    	float f1 = 3.14f, f2 = 1.2f;
+    
+    	const float* pf1 = &f1;
+    	//*pf1 = 5.0f //Error
+    	pf1 = &f2; // Allowed
+    
+    	float* const pf2 = &f1;
+    
+    	*pf2 = 6.0f;
+    	//pf2 = &f2; //Error
+    
+    	const float* const pf3 = &f1;
+    	//*pf3 = 7.0f; //Error
+    	//pf3 = &pf2; //Error
+    ```
+    
+    하지만 자료형에 한번 변수 앞에 한번 넣어주게 되면 변수 값과 자료형 둘 다 값을 바꿀 수 없다.
+    
+    ```c
+    	/*
+    		volatile
+    		- Do not optimize
+    		- (ex: hardward clock)
+    	*/
+    
+    	volatile int vi = 1;	// volatile location
+    	volatile int* pvi = &vi;	// points to a volatile location
+    
+    	int i1 = vi;
+    
+    	// ...
+    
+    	int i2 = vi;
+    ```
+    
+    volatile은 휘발성이라는 뜻을 갖고 있지만, c언어에서는 최적화를 하지 않고 값이 유연하게 바뀔 수 있다고
+    
+    생각하면 된다.
+    
+    ```c
+    	/*
+    		restrict (__restrict in VS)
+    		- sole initial means of accessing a data object
+    		- compiler can't check this restriction
+    	*/
+    
+    	int ar[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+    	int* par = ar;
+    	
+    	int* __restrict restar = (int*)malloc(10 * sizeof(int));
+    	if (!restar) exit(1);
+    
+    	ar[0] += 3;
+    	par[0] += 5;
+    	// par[0] += 8;
+    
+    	restar[0] += 3;
+    	restar[0] += 5;
+    	//restar[0] += 8; // Equalivalent
+    
+    	free(restar);
+    ```
+    
+    restrict는 현재 선언된 변수를 통해서만 값을 바꾸는 한정자다.
+    
+- ### [12.19] 멀티쓰레딩
+    
+    멀티쓰레드는 하나의 프로그램으로 여러가지의 일을 동시에 처리할 수 있도록 해준다.
+    
+    C언어 자체에서 멀티쓰레드를 지원하지 않으므로 운영체제에서 지원하는 API를 사용한다.
+    ```c
+    #define _CRT_SECURE_NO_WARNINGS
+    #include <stdio.h>
+    #include <Windows.h>
+
+    //_Atomic int acnt = 0; //NA
+
+    DWORD WINAPI ThreadFunc(void* data)
+    {
+	    int n = 1;
+	    Sleep(1000);
+	
+	    //acnt += n;	//NA
+	    printf("Printing from Thread \n");
+	    return 0;
+    }
+
+    int main()
+    {
+	    HANDLE thread = CreateThread(NULL, 0, ThreadFunc, NULL, 0, NULL);
+
+	    if (thread)
+		    WaitForSingleObject(thread, INFINITE);
+    }
+    ```
