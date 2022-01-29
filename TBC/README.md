@@ -4738,3 +4738,492 @@ int main(void) 는 함수 정의 시작부분이고 나머지 중괄호 안은 �
 		    WaitForSingleObject(thread, INFINITE);
     }
     ```
+
+</br>
+
+## Chapter 13.  파일 입출력
+
+- ### [13.1] 파일 입출력의 작동 원리
+    
+    입출력 스트림은 버퍼를 사용한다.
+    
+    키보드 입력은 stdin을 사용한다.
+    
+    주소록 백업/복원, 게임 로드/세이브와 같이
+    
+    파일을 읽어오거나 저장하고 싶을 때
+    
+    C언어에서 파일 스트림은 두가지로 나누어진다.
+    
+    - 텍스트파일 IO스트림
+        
+        메모장 등으로 사람이 직접 읽기 위해 사용한다.
+        
+        fprintf()를 사용하여 데이터를 문자로 저장한다.
+        
+        예시 ) 23456(줄바꿈)(EOF)
+        
+        운영체제마다 인코딩 방식이 다르다.
+        
+        줄바꿈과 EOF도 운영체제마다 다르다
+        
+        - 줄바꿈
+            - MS : \r,\n
+            - MAC : \r
+            - Linux : \n
+        - EOF
+            - MS : ^Z
+            - MAC : ^D
+            - Linux : 없음
+    
+    - 바이너리 파일 IO 스트림
+        
+        순수하게 데이터만 저장
+        
+        fwrite()를 이용하여 이진수를 저장
+        
+        운영체제마다 저장 방식이 다르다
+        
+        Big Endian 혹은 Little Endian 방식으로 저장
+        
+    
+- ### [13.2] 텍스트 파일 입출력 예제
+    
+    메모장에 작성한 파일을 읽어 들이고 글자 수가 얼마인지 출력 해주는 프로그램 예제이다.
+    
+    ```c
+    int main(int argc, char* argv[])
+    {
+    	int ch;
+    	FILE* fr;	//TODO: file pointer to write
+    
+    	/*
+    	typedef struct _iobuf
+    	{
+    		char* _ptr;
+    		int	  _cnt;
+    		char* _base;
+    		int   _flag;
+    		int   _file;
+    		int   _charbuf;
+    		int   _bufsiz;
+    		char* _tmpfname;
+    	} FILE;
+    	*/
+    
+    	//const char* out_filename = "output.txt";	//TODO: Use this
+    
+    	unsigned long count = 0;
+    
+    	if (argc != 2)
+    	{
+    		printf("Usage: %s filename\n", argv[0]);
+    		exit(EXIT_FAILURE);
+    	}
+    
+    	if ((fr = fopen(argv[1], "r")) == NULL)	// Open a text file for reading
+    	{
+    		printf("Can't open %s\n", argv[1]);
+    		exit(EXIT_FAILURE);
+    	}
+    
+    	/*
+    		fopen mode strings for text files
+    		- r : reading
+    		- w : creating-and-writing or over-writing
+    		- a : appending or creating-and-writing
+    		- r+: both reading and writing
+    		- w+: reading and writing, over-writing or creating
+    		- a+: reading and writing, appending or creating
+    	*/
+    
+    	//TODO : open file to write with "w" mode string
+    
+    	while ((ch = fgetc(fr)) != EOF) // getc(fr)
+    	{
+    		//putc(ch, stdout); // same as putchar(ch);
+    		fputc(ch, stdout);
+    
+    		//TODO : use fputs() to write a file stream!
+    
+    		count++;
+    	}
+    
+    	fclose(fr);
+    	//TODO: 
+    
+    	printf("FIlE %s has %lu characters\n", argv[1], count);
+    
+    	return 0;
+    }
+    ```
+    
+    fopen() mode를 “w”로 변경하면 입력된 파일을 그대로 복사도 가능하다
+    
+    ```c
+    #define _CRT_SECURE_NO_WARNINGS
+    #include <stdio.h>
+    #include <stdlib.h>
+    
+    int main(int argc, char* argv[])
+    {
+    	int ch;
+    	FILE* fr, * fw;	//TODO: file pointer to write
+    
+    	const char* out_filename = "output.txt";
+    
+    	unsigned long count = 0;
+    
+    	if (argc != 2)
+    	{
+    		printf("Usage: %s filename\n", argv[0]);
+    		exit(EXIT_FAILURE);
+    	}
+    
+    	if ((fr = fopen(argv[1], "r")) == NULL)	// Open a text file for reading
+    	{
+    		printf("Can't open %s\n", argv[1]);
+    		exit(EXIT_FAILURE);
+    	}
+    
+    	if ((fw = fopen(argv[1], "w")) == NULL)
+    	{
+    		printf("Can't open %s\n", out_filename);
+    		exit(EXIT_FAILURE);
+    	}
+    
+    	while ((ch = fgetc(fr)) != EOF) // getc(fr)
+    	{
+    		//putc(ch, stdout); // same as putchar(ch);
+    		fputc(ch, stdout);
+    		fputc(ch, fw);
+    		count++;
+    	}
+    
+    	fclose(fr);
+    	fclose(fw);
+    
+    	printf("FIlE %s has %lu characters\n", argv[1], count);
+    	printf("Copied to %s\n", out_filename);
+    
+    	return 0;
+    }
+    ```
+    
+- ### [13.3] 텍스트 인코딩과 코드 페이지
+    
+    앞에서 작성한 프로그램으로 한글로 작성한 텍스트 파일을 읽어 들이도록 실행했을 때
+    
+    글자가 깨지는 것을 알 수 있다. 하지만 사본을 보면 다시 한글이 잘 보인다.
+    
+    문자를 저장할 때는 바이너리로 저장하고, 디코딩 할 때의 규칙을 모르기 때문에 한글이 깨진다.
+    
+    여기서 인코딩방식을 utf-8이 아닌 ansi로 바꾸면 콘솔창에서도 한글이 잘 보인다
+    
+    ```c
+    #define _CRT_SECURE_NO_WARNINGS
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <Windows.h> // SetConsoleOutputCP()
+    
+    int main()
+    {
+    	const UINT default_cp = GetConsoleOutputCP();
+    	printf("%u\n", default_cp);
+    
+    	int ch;
+    	FILE* fr, * fw;
+    
+    	const char* in_filename = "원본.txt";
+    	const char* out_filename = "사본.txt";
+    
+    	unsigned long count = 0;
+    
+    	if ((fr = fopen(in_filename, "r")) == NULL)	// Open a text file for reading
+    	{
+    		printf("Can't open %s\n", in_filename);
+    		exit(EXIT_FAILURE);
+    	}
+    
+    	if ((fw = fopen(out_filename, "w")) == NULL)
+    	{
+    		printf("Can't open %s\n", out_filename);
+    		exit(EXIT_FAILURE);
+    	}
+    
+    	SetConsoleOutputCP(CP_UTF8); // UTF-8 mode
+    
+    	while ((ch = fgetc(fr)) != EOF) // getc(fr)
+    	{
+    		//putc(ch, stdout); // same as putchar(ch);
+    		fputc(ch, stdout);
+    		fputc(ch, fw);
+    		count++;
+    	}
+    
+    	fclose(fr);
+    	fclose(fw);
+    
+    	SetConsoleOutputCP(default_cp); // ISO 2022 Korean
+    
+    	printf("FIlE %s has %lu characters\n", in_filename, count);
+    	printf("Copied to %s\n", out_filename);
+    
+    	return 0;
+    }
+    ```
+    
+- ### [13.4] 텍스트 파일 입출력 함수들
+    
+    콘솔창에서 입력한 문자들을 txt파일로 출력해보는 예제이다.
+    
+    fopen()의 r+모드는 읽기와 쓰기 둘 다 가능하지만, 파일이 없다면 종료한다.
+    
+    w+ 모드는 읽기와 쓰기가 가능하고, 파일이 없다면 생성하고, 입력한 문자들을 덮어쓰기 한다.
+    
+    a+ 모드 역시 읽기와 쓰기가 가능하고, 파일이 없다면 생성하고, w+와 다른 점은 덮어쓰지 않고 입력 받은 내용을 추가한다.
+    
+    ```c
+    #define _CRT_SECURE_NO_WARNINGS
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <string.h>
+    
+    #define MAX 31
+    
+    int main(void)
+    {
+    	FILE* fp;
+    	char words[MAX] = { '\0', };
+    
+    	const char* filename = "record.txt";
+    
+    	if ((fp = fopen(filename, "w+")) == NULL) // Try r+, w+, a+
+    	{
+    		fprintf(stderr, "Can't open \"%s\" file.\n", filename);
+    		exit(EXIT_FAILURE);
+    	}
+    
+    	while ((fscanf(stdin, "%30s", words) == 1) && (words[0] != '.'))
+    		fprintf(fp, "%s\n", words);
+    
+    	rewind(fp); /* go back to beginning of file */
+    
+    	while (fscanf(fp, "%s", words) == 1)
+    		fprintf(stdout, "%s\n", words);
+    
+    	if (fclose(fp) != 0)
+    		fprintf(stderr, "Error closing file\n");
+    
+    	return 0;
+    }
+    ```
+    
+    fscanf()대신 fgets()를 쓸 수 있는데
+    
+    fscanf()와 fgets()의 차이점은 
+    
+    fscanf()는 한 줄에 여러 문자열을 넣더라도 출력할 때 띄어쓰기한 부분은 줄 바꿈으로 출력한다.
+    
+    fgets()는 띄어 쓰더라도 한 줄에 모두 입력 받기가 가능하다.
+    
+    ```c
+    while ((fgets(words, MAX, stdin) != NULL) && (words[0] != '.'))
+    	fputs(words, fp);
+    ```
+    
+    위에 사용된 fscanf()와 사용법에서도 조금 차이를 보인다.
+    
+- ### [13.5] 바이너리 파일 입출력
+    
+    C11에서 fopen()에서 ‘x’ mode가 추가 되었는데, ‘x’ mode는 파일이 존재할 때, 덮어쓰지 않고 종료한다.
+    
+    ```c
+    int main()
+    {
+    	/*
+    	fopen() mode string for binary IO
+    	- "rb", "wb", "ab"
+    	- "ab+", "a+b"
+    	- "wb+", "w+b"
+    	- "ab+", "a+b"
+    
+    	C11 'x' mode fails if the file exists, instead of overwriting it.
+    	- "wx", "wbx", "w+x", "wb+x", "w+bx"
+    	*/
+    
+    	// Writing example
+    	{
+    		FILE* fp = fopen("binary_file", "wb");
+    		
+    		double d = 1.0 / 3.0;
+    		int n = 123;
+    		int* parr = (int*)malloc(sizeof(int) * n);
+    		if (!parr) exit(1);
+    		for (int n = 0; n < 123; ++n)
+    			* (parr + n) = n * 2;
+    
+    		fwrite(&d, sizeof(d), 1, fp);
+    		fwrite(&n, sizeof(n), 1, fp);
+    		fwrite(parr, sizeof(int), n, fp);
+    
+    		fclose(fp);
+    		free(parr);
+    
+    		// Total size is 8 * 1 + 4 * 1 + 123 * 4 = 504 bytes
+    	}
+    
+    	// Reading examle, feof(), ferror()
+    	{
+    		FILE* fp = fopen("binary_file", "rb");
+    		double d;
+    		int n = 0;
+    		fread(&d, sizeof(d), 1, fp);
+    		fread(&n, sizeof(n), 1, fp);
+    
+    		int* parr = (int*)malloc(sizeof(int) * n);
+    		if (!parr) exit(1);
+    
+    		fread(parr, sizeof(int), n, fp);
+    
+    		printf("feof = %d\n", feof(fp));
+    
+    		printf("%f\n", d);
+    		printf("%d\n", n);
+    		for (int i = 0; i < n ; ++i)
+    			printf("%d ", *(parr + i));
+    		printf("\n");
+    
+    		printf("feof = %d\n", feof(fp));
+    
+    		fread(&n, sizeof(n), 1, fp);		// read one more toward EOF
+    
+    		printf("feof = %d\n", feof(fp));	// returns non-zero at EOF
+    		printf("ferror = %d\n", ferror(fp));// returns 0 : OK
+    
+    		fwrite(&n, sizeof(n), 1, fp);		// try writing to make an error
+    
+    		printf("ferror = %d\n", ferror(fp));// 0 is ok, non-zero otherwise.
+    
+    		fclose(fp);
+    		free(parr);
+    	}
+    
+    	return 0;
+    }
+    ```
+    
+- ### [13.6] 파일 임의 접근
+    
+    ```c
+    /*
+    	ABCDEF ...
+    	Current position 0 and read -> A
+    	Current position 1 and read -> B
+    	...
+    */
+    
+    int main()
+    {
+    	int ch;
+    	long cur;
+    
+    	FILE* fp = fopen("test.txt", "r");
+    
+    	cur = ftell(fp);
+    	printf("ftell() = %ld\n", cur);	//Runtime error
+    
+    	fseek(fp, 2L, SEEK_SET);
+    	cur = ftell(fp);
+    	printf("ftell() = %ld\n", cur);
+    	ch = fgetc(fp);
+    	printf("%d %c\n", ch, ch);
+    	cur = ftell(fp);
+    	printf("ftell() = %ld\n", cur);
+    
+    	fseek(fp, -2L, SEEK_CUR);
+    	cur = ftell(fp);
+    	printf("ftell() = %ld\n", cur);
+    	ch = fgetc(fp);
+    	printf("%d %c\n", ch, ch);
+    
+    	/* SEEK_END */
+    
+    	fseek(fp, 0L, SEEK_END);
+    	ch = fgetc(fp);
+    	printf("%d %c\n", ch, ch);
+    
+    	fseek(fp, -1L, SEEK_END);
+    	ch = fgetc(fp);
+    	printf("%d %c\n", ch, ch);
+    
+    	fseek(fp, -2L, SEEK_END);
+    	ch = fgetc(fp);
+    	printf("%d %c\n", ch, ch);
+    
+    	return 0;
+    }
+    ```
+    
+    파일에 있는 임의의 위치에 접근하는 방법이다.
+    
+    ```c
+    fseek(fp, 2L, SEEK_SET);
+    ```
+    
+    fseek함수를 사용해서 SEEK_SET을 이용하면 시작 점으로 가고 2L을 입력하면 2bytes 떨어진 곳으로 이동한다.
+    
+    SEEK_END를 사용하면 문자열 뒤에서부터 시작해 인수만큼 이동한다.
+    
+- ### [13.7] 기타 입출력 함수들
+    
+    
+    ```c
+    ungetc((int)ch, fp);
+    ```
+    
+    읽어 들인 글자를 다시 버퍼에 집어넣는 함수이다.
+    
+    ```c
+    char buffer[32] = ('\0', );
+    
+    setvbuf(fp, buffer, _IOFBF, sizeof(buffer)); // _IOLBF, _IOFBF, _IONBF
+    ```
+    
+    setvbuf()함수는 버퍼의 설정을 바꿀 수 있는 함수이다.
+    
+    ```c
+    fflush(fp);
+    ```
+    
+    버퍼에 쌓여있던 데이터를 클리어하는 함수이다.
+    
+- ### [13.8] 텍스트 파일을 바이너리처럼 읽어보기
+    
+    ```c
+    #define _CRT_SECURE_NO_WARNINGS
+    #include <stdio.h>
+    #include <Windows.h>	// SetConsoleOutputCP()
+    
+    int main()
+    {
+    	FILE* fp = fopen("test.txt", "rb");
+    
+    	unsigned char ch;
+    
+    	SetConsoleOutputCP(CP_UTF8); // UTF-8 mode
+    
+    	while (fread(&ch, sizeof(unsigned char), 1, fp) > 0)
+    	{
+    		printf("%hhu %c", ch, ch);
+    	}
+    
+    	fclose(fp);
+    
+    	return 0;
+    }
+    ```
+    
+    텍스트파일로 읽었지만 데이터는 바이너리로 저장되기 때문에
+    
+    출력도 바이너리로 가능하고, 문자로도 나타낼 수 있다.
