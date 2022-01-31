@@ -5227,3 +5227,1138 @@ int main(void) 는 함수 정의 시작부분이고 나머지 중괄호 안은 �
     텍스트파일로 읽었지만 데이터는 바이너리로 저장되기 때문에
     
     출력도 바이너리로 가능하고, 문자로도 나타낼 수 있다.
+
+</br>
+
+## Chapter 14. 구조체
+
+- ### [14.1] 구조체가 필요한 이유
+    
+    환자의 정보를 입력하는 프로그래밍을 한다고 했을 때,
+    
+    이름, 키, 몸무게를 입력하는데 환자 한명마다 변수를 입력하기에는 번거로울 것이다.
+    
+    그 때 사용하는 것이 배열이다.
+    
+    배열은 자료형이 같은 데이터 오브젝트들이 나열된 형태다.
+    
+    자료형이 서로 다르지만 함께 사용하면 편리한 데이터 오브젝트들끼리 모아놓을 수는 없을까?
+    
+    이 때 구조체를 사용한다. 태그 정도로 생각하면 될 것 같다.
+    
+    ```c
+    /* Structures */
+    
+    struct Patient
+    {
+    	char name[MAX_NAME];
+    	float height;
+    	float weight;
+    	int age;
+    };
+    
+    struct Patient p1, p2, p3;  //structure variables
+    //struct Patent pat[MAX_PATIENTS];
+    ```
+    
+    구조체를 사용할 때 p1.name, p1.height, p1.weight 처럼 p1.[object]로 나올 수 있는데
+    
+    멤버p1에 대해 접근하고 싶을 때는 Dot(.) operator를 사용한다.
+    
+    ```c
+    struct Patient // 쿠키틀
+    {
+    	// 이부분이 덩어리
+    };
+    ```
+    
+    구조체에서 struct patient를 쿠키틀같은 것으로, 중괄호{}안의 나머지를 덩어리라고 보면 된다.
+    
+
+- ### [14.2] 구조체의 기본적인 사용법
+    
+    구조체의 초기화 방법은 배열과 비슷하다. 배열과의 차이점은
+    
+    배열은 같은 자료형의 나열인데, 구조체는 선언한 구조체와 같은 순서로 나열한다.
+    
+    ```c
+    struct person	/* Person is a tag of structure */
+    {
+    	char name[MAX];	//member
+    	int age;		//member
+    	float height;	//member
+    };
+    ```
+    
+    이렇게 구조체를 선언했다면
+    
+    ```c
+    struct person princess = { "Naomi Scott", 18, 160.0f }; // name, age, height
+    ```
+    
+    이렇게 나열 가능하고
+    
+    ```c
+    struct person princess2 = {
+    		"Naomi Scott",
+    		18,
+    		160.0f
+    	};
+    ```
+    
+    이렇게 작성해도 문법상으로 동일하다.
+    
+    ```c
+    strcpy(princess.name, "Naomi Scott");
+    princess.age = 18;
+    princess.height = 160.0f;
+    ```
+    
+    이렇게 따로 작성하는 것도 가능하고
+    
+    ```c
+    /* Designated initializers */
+    
+    	struct person beauty = {
+    		.age = 19,
+    		.name = "Bell",
+    		.height = 150.0f
+    	};
+    ```
+    
+    넣고 싶은 데이터를 지정해주면 순서대로 작성하지 않아도 가능하다.
+    
+    ```c
+    struct person* someone;
+    
+    someone = &genie;
+    //someone = (struct Person*)malloc(sizeof(struct Person));	// and free later
+    
+    /* Indirect member(ship) operator (or structure pointer operator) */
+    
+    someone->age = 1001;	// arrow(->) operator
+    ```
+    
+    포인터로 사용한 구조체는 Dot(.) 대신 Arrow(→)를 사용한다.
+    
+    ```c
+    /* typedef and structure */
+    
+    typedef struct person my_person;
+    
+    my_person p3;
+    ```
+    
+    typedef를 사용하면 이후에는 struct를 사용하지 않고 my_person만으로 자료형처럼 변수를 선언할 수 있다.
+    
+    ```c
+    typedef struct person person;
+    
+    person p4;
+    ```
+    
+    일반적으로는 이렇게 사용을 많이하고
+    
+    ```c
+    typedef struct {
+    		char name[MAX];
+    		char hobby[MAX];
+    } friend;
+    
+    friend f4;
+    ```
+    
+    이렇게 No tag로 선언한 다음 friend 단독으로 사용 가능하다.
+    
+- ### [14.3] 구조체의 메모리 할당
+    
+    구조체를 선언하는 자체로는 메모리를 할당하지 않는다.
+    
+    ```c
+    struct Aligned
+    	{
+    		int a;
+    		float b;
+    		double c;
+    	};
+    ```
+    
+    이렇게 구조를 구성하겠다는 templete을 제시한 것이기 때문에 메모리를 할당하는 것은 아니다.
+    
+    ```c
+    /* without padding
+    	0 1 2 3 4 5 6 7|8 9 10 11 12 13 14 15|16
+    	|a|float b|double c         | ? ? ?
+    	1 + 4 + 8 = 13
+    */
+    
+    /* with padding
+    	0 1 2 3 4 5 6 7|8 9 10 11 12 13 14 15|16	
+    	|char a|float b|double c		      	 |
+    	4(char ?) + 4 + 8 = 16
+    */
+    ```
+    
+    메모리 패딩(padding)은 구조체의 비어있는 메모리만큼 채워 넣는 형식이다.
+    
+    32bit에서는 4 bytes씩, 64bit에서는 8 bytes씩 메모리를 보내는데 1word = 4bytes이다
+    
+    패딩을 하지않으면 메모리가 여러개로 나눠져서 전송하게 된다. 
+    
+    효율적으로 전송하기 위해 1word를 패딩을해서 한번에 전송하려고 한다.
+    
+    한번에 보내기 위해 컴파일러상에서 패딩을 해주는 것이다.
+    
+    패딩은 옵션에서 설정으로 바꿀 수 있다.
+    
+
+- ### [14.4] 구조체의 배열 연습문제
+    
+    구조체를 사용하여 책의 이름, 저자, 가격을 입력 받고 최종적으로 입력 받은 것들을 출력해주는 예제이다.
+    
+    ```c
+    #define _CRT_SECURE_NO_WARNINGS
+    #include <stdio.h>
+    #include <string.h>
+    #define MAX_TITLE 40
+    #define MAX_AUTHOR 40
+    #define MAX_BOOKS 3	/* maximum number of books */
+    
+    char* s_gets(char* st, int n)
+    {
+    	char* ret_val;
+    	char* find;
+    
+    	ret_val = fgets(st, n, stdin);	// vs. scanf()
+    	if (ret_val)
+    	{
+    		find = strchr(st, '\n');	// look for newline
+    		if (find)					// if the address is not NULL
+    			*find = '\0';			// place a null character there
+    		else
+    			while (getchar() != '\n')
+    				continue;			// dispose of rest of line
+    	}
+    	
+    	return ret_val;
+    }
+    
+    struct book
+    {
+    	char title[MAX_TITLE];
+    	char author[MAX_AUTHOR];
+    	float price;
+    };
+    
+    int main()
+    {
+    	struct book library[MAX_BOOKS] = { {"Empty","Empty", 0.0f}, }; /* array of book structures */
+    
+    	int count = 0;
+    
+    	while (1)
+    	{
+    		printf("Input a book title or press [Enter] to stop.\n>>");
+    		if(s_gets(library[count].title, MAX_TITLE) == NULL) 
+    			break;
+    		if (library[count].title[0] == '\0')
+    			break;
+    			
+    		printf("Input the author.\n>>");
+    		s_gets(library[count].author, MAX_AUTHOR);
+    
+    		printf("Input the price.\n>>");
+    		int flag = scanf("%f",&library[count].price);
+    		while (getchar() != '\n')
+    			continue;	/* clear input line */
+    
+    		count++;
+    
+    		if (count == MAX_BOOKS)
+    		{
+    			printf("No more books.\n");
+    			break;
+    		}
+    
+    		if (count > 0)
+    		{
+    			printf("\nThe list of books:\n");
+    			for (int index = 0; index < count; index++)
+    				printf("\"%s\" written by %s: $%.1f\n", library[index].title, library[index].author, library[index].price);
+    		}
+    		else
+    			printf("No books to show.\n");
+    	}
+    
+    	return 0;
+    }
+    ```
+    
+
+- ### [14.5] 구조체를 다른 구조체의 멤버로 사용하기
+    
+    구조체를 사용하였을 때, 좀 더 간결하고, 재사용이 가능하고, 코딩 시간을 줄여준다.
+    
+    ```c
+    #define _CRT_SECURE_NO_WARNINGS
+    #include <stdio.h>
+    #define LEN 20
+    
+    struct names 
+    {
+    	char given[LEN];
+    	char family[LEN];
+    };
+    
+    struct reservation		// Another structure
+    {	
+    	struct names guest;	// a nested structure
+    	struct names host;	// one more nested structure
+    	char food[LEN];
+    	char place[LEN];
+    
+    	// time
+    	int year;
+    	int month;
+    	int day;
+    	int hours;
+    	int minutes;
+    
+    };
+    
+    int main()
+    {
+    	struct reservation res = {
+    		.guest = {"Nick", "Carraway"},
+    		.host = {"Jay", "Gatsby"},
+    		.place = {"the Gatsby mansion"},
+    		.food = {"Escargot"},
+    		.year = 1925,
+    		.month = 4,
+    		.day = 10,
+    		.hours = 18,
+    		.minutes = 30
+    	};
+    	
+    	printf("Dear %s %s,\n", res.guest.given, res.guest.family);
+    	printf("I would like to serve you %s.\n", res.food);
+    	printf("Please visit %s", res.place);
+    	printf("on %d/%d/%d at %d:%d.\n", res.day, res.month, res.year, res.hours, res.minutes);
+    	printf("Sincerely,\n%s %s", res.host.given, res.host.family);
+    
+    	return 0;
+    }
+    ```
+    
+- ### [14.6] 구조체와 포인터
+    
+    ```c
+    #define _CRT_SECURE_NO_WARNINGS
+    #include <stdio.h>
+    #define LEN 20
+    
+    struct names
+    {
+    	char given[LEN];
+    	char family[LEN];
+    };
+    
+    struct friend
+    {
+    	struct names full_name;
+    	char mobile[LEN];
+    };
+    
+    int main(void)
+    {
+    	struct friend my_friends[2] = {
+    		{ {"Ariana", "Grande"}, "1234-1234" },
+    		{ {"Taylor", "Swift"}, "6550-8888" }
+    	};
+    
+    	struct friend* girl_friend;
+    
+    	girl_friend = &my_friends[0];
+    
+    	printf("%zd\n", sizeof(struct friend));
+    	printf("%lld %s\n", (long long)girl_friend, girl_friend->full_name.given);
+    	// -> : indirect member access operator
+    
+    	girl_friend++;
+    
+    	printf("%lld %s\n", (long long)girl_friend, (*girl_friend).full_name.given);
+    	// . has higher precedence than *
+    
+    	return 0;
+    }
+    ```
+    
+    구조체를 이용해서 포인터를 사용할 때
+    
+    ```c
+    printf("%lld %s\n", (long long)girl_friend, girl_friend->full_name.given);
+    ```
+    
+    arrow(→) 연산자도 가능하지만
+    
+    ```c
+    printf("%lld %s\n", (long long)girl_friend, (*girl_friend).full_name.given);
+    ```
+    
+    괄호를 사용해서 *을 붙이고 dot(.)을 사용하는 것도 가능하다.
+    
+    출력 했을 때
+    
+    ```c
+    60
+    5241820 Ariana
+    5241880 Taylor
+    ```
+    
+    구조체 사이즈인 60만큼 주소 차이가 난다는 것을 알 수 있다.
+    
+    다른 예제를 하나 더 알아보자
+    
+    ```c
+    #define _CRT_SECURE_NO_WARNINGS
+    #include <stdio.h>
+    #include <stdlib.h>
+    
+    struct my_data
+    {
+    	int a;
+    	char c;
+    	float arr[2];
+    };
+    
+    int main()
+    {
+    	struct my_data d1 = { 1234, 'A', };
+    
+    	d1.arr[0] = 1.1f;
+    	d1.arr[1] = 2.2f;
+    
+    	printf("%d %c %lld\n", d1.a, d1.c, (long long)d1.arr);
+    	printf("%f %f\n", d1.arr[0], d1.arr[1]);
+    	printf("%lld %lld\n\n", (long long)&d1.arr[0], (long long)&d1.arr[1]);
+    
+    	struct my_data d2 = d1;
+    
+    	printf("%d %c %lld\n", d2.a, d2.c, (long long)d2.arr);
+    	printf("%f %f\n", d2.arr[0], d2.arr[1]);
+    	printf("%lld %lld\n\n", (long long)&d2.arr[0], (long long)&d2.arr[1]);
+    
+    	return 0;
+    }
+    ```
+    
+    구조체도 그대로 대입이 가능하다.
+    
+    ```c
+    struct my_data d2 = d1;
+    ```
+    
+    출력을 해보았을때
+    
+    ```c
+    //d1
+    1234 A 20446552
+    1.100000 2.200000
+    20446552 20446556
+    
+    //d2 = d1
+    1234 A 20446528
+    1.100000 2.200000
+    20446528 20446532
+    ```
+    
+    d2의 구조체에 d1을 복사해도 값은 그대로 복사 되지만, 메모리도 그대로 복사하는 것은 아니다.
+    
+    ```c
+    #define _CRT_SECURE_NO_WARNINGS
+    #include <stdio.h>
+    #include <stdlib.h>
+    
+    struct my_data
+    {
+    	int a;
+    	char c;
+    	float* arr;
+    };
+    
+    int main()
+    {
+    	struct my_data d1 = { 1234, 'A', NULL };
+    	d1.arr = (float*)malloc(sizeof(float) * 2);
+    	d1.arr[0] = 1.1f;
+    	d1.arr[1] = 2.2f;
+    
+    	printf("%d %c %lld\n", d1.a, d1.c, (long long)d1.arr);
+    	printf("%f %f\n", d1.arr[0], d1.arr[1]);
+    	printf("%lld %lld\n\n", (long long)&d1.arr[0], (long long)&d1.arr[1]);
+    
+    	struct my_data d2 = d1;
+    
+    	printf("%d %c %lld\n", d2.a, d2.c, (long long)d2.arr);
+    	printf("%f %f\n", d2.arr[0], d2.arr[1]);
+    	printf("%lld %lld\n\n", (long long)& d2.arr[0], (long long)& d2.arr[1]);
+    
+    	return 0;
+    }
+    ```
+    
+    구조체를 동적 할당 메모리로 받는 예제이다.
+    
+    ```c
+    d1.arr = (float*)malloc(sizeof(float) * 2);
+    ```
+    
+    이번에는 출력 해보았을 때,
+    
+    ```c
+    1234 A 11360504
+    1.100000 2.200000
+    11360504 11360508
+    
+    1234 A 11360504
+    1.100000 2.200000
+    11360504 11360508
+    ```
+    
+    float* arr을 사용하는 같은 메모리에 대한 공간을 가리키고 있기 때문에 주소 값을 그대로 복사한다.
+    
+    구조체도 배열과 포인터에 따라 결과 값이 다르다.
+    
+    차이를 이해한다면 실수도 줄일 수 있을 것이다.
+    
+- ### [14.7] 구조체를 함수로 전달하는 방법
+    
+    포인터와 구조체를 이용하여 투자금과 저축을 더하는 예제이다
+    
+    ```c
+    #define _CRT_SECURE_NO_WARNINGS
+    #include <stdio.h>
+    #include <string.h>
+    #define FUNDLEN 50
+    
+    struct fortune
+    {
+    	char	bank_name[FUNDLEN];
+    	double	bank_saving;
+    	char	fund_name[FUNDLEN];
+    	double	fund_invest;
+    };
+    
+    double sum(double x, double y);
+    
+    int main()
+    {
+    	struct fortune my_fortune = {
+    		"Wells-Fargo",
+    		4032.27,
+    		"JPMorgan Chase",
+    		8543.94
+    	};
+    
+    	printf("Total : $%.2f.\n",
+    		//sum(&my_fortune.bank_saving, &my_fortune.fund_invest)
+    		sum(&my_fortune)
+    	);
+    
+    	return 0;
+    }
+    
+    double sum(const double x, const double y)	//TODO: try pointers
+    {
+    	return x + y;
+    }
+    ```
+    
+    포인터를 사용할 수도 있지만
+    
+    ```c
+    double sum(const double* x, const double* y)
+    {
+    	return *x + *y;
+    }
+    ```
+    
+    구조체를 그대로 함수의 인수로 넣어줄 수도 있다.
+    
+    인수는 다르지만 내용물은 같고 값이 복사가 된다.
+    
+    구조체의 내용이 많을 경우 복사하는데 시간이 더 걸릴 수 있다.
+    
+    ```c
+    double sum(struct fortune mf)
+    {
+    	return mf.bank_saving + mf.fund_invest;
+    }
+    ```
+    
+    구조체의 내용이 많을 경우 값을 바꿀 필요가 없으면
+    
+    복사하는 시간을 줄이기 위해 주소만 가져오는 포인터를 사용한다.
+    
+    ```c
+    double sum(const struct fortune *mf)
+    {
+    	return mf->bank_saving + mf->fund_invest;
+    }
+    ```
+    
+
+- ### [14.8] 구조체와 함수 연습문제
+    
+    ```c
+    #define _CRT_SECURE_NO_WARNINGS
+    #include <stdio.h>
+    #include <string.h>
+    
+    #define NLEN 30
+    
+    struct name_count 
+    {
+    	char first[NLEN];
+    	char last[NLEN];
+    	int num;
+    };
+    
+    void receive_input(struct name_count*);
+    void count_characters(struct name_count*);
+    void show_result(const struct name_count*);
+    
+    int main()
+    {
+    	struct name_count user_name;
+    
+    	receive_input(&user_name);
+    	count_characters(&user_name);
+    	show_result(&user_name);
+    
+    	return 0;
+    }
+    
+    void receive_input(struct name_count* ptr)
+    {
+    	int flag;
+    
+    	printf("Input your first name:\n>> ");	
+    	//s_gets(ptr_nc->first, NLEN);
+    	flag = scanf("%[^\n]%*c", ptr->first);
+    	if (flag != 1)
+    		printf("Wrong input");
+    
+    	printf("Input your last name:\n>> ");
+    	//s_gets(ptr_nc->last, NLEN);
+    	flag = scanf("%[^\n]%*c", ptr->last);
+    	if (flag != 1)
+    		printf("Wrong input");
+    
+    }
+    
+    void count_characters(struct name_count* ptr)
+    {
+    	ptr->num = strlen(ptr->first) + strlen(ptr->last);
+    }
+    void show_result(const struct name_count* ptr)
+    {
+    	printf("Hi, %s %s. Your name hs %d characters.\n", ptr->first, ptr->last, ptr->num);
+    }
+    ```
+    
+    구조체를 이용하여 이름과 이름의 글자 수를 출력 해주는 예제다.
+    
+    ```c
+    flag = scanf("%[^\n]%*c", ptr_nc->first);
+    ```
+    
+    scanf에서 [^\n]은 줄 바꿈이 나타날 때까지 입력을 받으라는 뜻이고 %*c는 글자 하나를 무시하라는 뜻인데, 
+    
+    여기서는 줄 바꿈을 나타날 때까지 입력을 받고 줄 바꿈 하나를 무시하라는 뜻이 된다.
+    
+    Tip)
+    
+    c++에서는 구조체 안에 함수를 넣는 것도 가능하다
+    
+    객체지향 언어에서는 구조체는 데이터를 묶어 놓고, 기능까지 집어넣을 수 있는 것이 객체 지향 class이다.
+    
+    ```c
+    #define _CRT_SECURE_NO_WARNINGS
+    #include <stdio.h>
+    #include <string.h>
+    
+    #define NLEN 30
+    
+    struct name_count
+    {
+    	char first[NLEN];
+    	char last[NLEN];
+    	int num;
+    };
+    
+    struct name_count receive_input();
+    struct name_count count_characters(struct name_count);
+    void show_result(const struct name_count);
+    char* s_gets(char* st, int n);
+    
+    int main()
+    {
+    	struct name_count user_name;
+    
+    	user_name = receive_input();
+    	user_name = count_characters(user_name);
+    	show_result(user_name);
+    
+    	return 0;
+    }
+    
+    char* s_gets(char* st, int n)
+    {
+    	char* ret_val;
+    	char* find;
+    
+    	ret_val = fgets(st, n, stdin);	// vs. scanf()
+    	if (ret_val)
+    	{
+    		find = strchr(st, '\n');	// look for newline
+    		if (find)					// if the address is not NULL
+    			*find = '\0';			// place a null character there
+    		else
+    			while (getchar() != '\n')
+    				continue;			// dispose of rest of line
+    	}
+    
+    	return ret_val;
+    }
+    
+    struct name_count receive_input()
+    {
+    	struct name_count nc;
+    
+    	int flag;
+    
+    	printf("Input your first name:\n>> ");
+    
+    	s_gets(nc.first, NLEN);
+    
+    	printf("Input your last name:\n>> ");
+    
+    	s_gets(nc.last, NLEN);
+    
+    	return nc;
+    }
+    
+    struct name_count count_characters(struct name_count ptr)
+    {
+    	ptr.num = strlen(ptr.first) + strlen(ptr.last);
+    
+    	return ptr;
+    }
+    void show_result(const struct name_count ptr)
+    {
+    	printf("Hi, %s %s. Your name has %d characters.\n", ptr.first, ptr.last, ptr.num);
+    }
+    ```
+    
+    앞의 예제와 같지만 다른 스타일로 작성하는 예제이다.
+    
+- ### [14.9] 구조체와 할당 메모리
+    
+    앞의 예제와 같지만 동적 할당 메모리를 이용하여 작성하는 예제이다.
+    
+    ```c
+    #define _CRT_SECURE_NO_WARNINGS
+    #include <stdio.h>
+    #include <string.h> // strlen(),strcmp()
+    #include <stdlib.h> // malloc(),free()
+    #define SLEN 81
+    
+    struct namect {
+    	char* fname;	// Use malloc()
+    	char* lname;	// Use malloc()
+    	int letters;
+    };
+    
+    void getinfo(struct namect*);			// allocate memory
+    void makeinfo(struct namect*);
+    void showinfo(const struct namect*);
+    void cleanup(struct namect*);			// free memory when done
+    
+    int main()
+    {
+    	struct namect person;
+    
+    	getinfo(&person);
+    	makeinfo(&person);
+    	showinfo(&person);
+    	cleanup(&person);
+    
+    	return 0;
+    }
+    
+    void getinfo(struct namect* person)
+    {
+    	char buffer[SLEN] = { 0, };
+    	int f2;
+    
+    	printf("Input your first name:\n>> ");
+    	f2 = scanf("%[^\n]%*c", buffer);
+    	if (f2 != 1)
+    		printf("Worng input");
+    	else
+    	{
+    		person->fname = (char*)malloc(strlen(buffer) + 1);
+    		if (person->fname != NULL)
+    			strcpy(person->fname, buffer);
+    		else
+    			printf("Malloc() failed");
+    	}
+    
+    	printf("Input your last name:\n>> ");
+    	f2 = scanf("%[^\n]%*c", buffer);
+    	if (f2 != 1)
+    		printf("Worng input");
+    	else
+    	{
+    		person->lname = (char*)malloc(strlen(buffer) + 1);
+    		if (person->lname != NULL)
+    			strcpy(person->lname, buffer);
+    		else
+    			printf("Malloc() failed");
+    	}
+    	printf("%s %s\n", person->fname, person->lname);
+    }
+    
+    void makeinfo(struct namect* person)
+    {
+    	person->letters = strlen(person->fname) + strlen(person->lname);
+    }
+    void showinfo(const struct namect* person)
+    {
+    	printf("Hi, %s %s. Your name has %d characters.\n", person->fname, person->lname, person->letters);
+    }
+    
+    void cleanup(struct namect* person)
+    {
+    	free(person->fname);
+    	free(person->lname);
+    }
+    ```
+    
+
+- ### [14.10] 복합 리터럴
+    
+    구조체의 값을 임시로 사용할 때 편하게 사용할 수 있는 복합 리터럴에 대해 알아보자
+    
+    ```c
+    book_to_read = (struct book){ "Alice in Wonderland", "Lewis Carroll", 20.3f };
+    ```
+    
+    복합 리터럴은 이렇게 사용한다.
+    
+    복합 리터럴은 L-value 이므로 주소를 가져와서 전달 할 수 있다.
+    
+    ```c
+    struct rectangle rec1 = { 1.0, 2.0 };
+    double area = rect_area(rec1);
+    area = rect_area((struct rectangle) { 1.0, 2.0 });
+    
+    area = rect_area_ptr(&(struct rectangle) { .height = 3.0, .width = -2.0 }); // Designated initialized
+    printf("%f\n", area);
+    ```
+    
+    복합 리터럴의 주소를 가져와서 rect_area_ptr()함수에게 전달해주고 있다.
+    
+- ### [14.11] 신축성(Flexible)이 있는 배열 멤버
+    
+    배열이 신축성이 있다는 것은 길이가 변할 수 있다는 것을 의미한다.
+    
+    ```c
+    struct flex
+    	{
+    		size_t count;
+    		double average;
+    		double values[];		// flexible array member (last member!)
+    	};
+    ```
+    
+    구조체에 배열을 선언하고
+    
+    ```c
+    const size_t n = 3;
+    
+    struct flex* pf = (struct flex*)malloc(sizeof(struct flex) + n * sizeof(double));
+    if (pf == NULL) exit(1);
+    ```
+    
+    원하는 배열 만큼 n * sizeof(double)로 동적 할당한다.
+    
+    n의 값만큼 동적 할당 배열처럼 사용할 수 있다
+    
+- ### [14.12] 익명 구조체
+    
+    ```c
+    struct names
+    {
+    	char first[20];
+    	char last[20];
+    };
+    
+    struct person
+    {
+    	int id;
+    	struct names name;	// nested structure member
+    };
+    ```
+    
+    중첩 구조체는 구조체 안에 구조체를 다시 tag와 함께 사용하는 것이다.
+    
+    ```c
+    struct person2
+    {
+    	int id;
+    	struct { char first[20]; char last[20]; }; // anonymous structure
+    };
+    ```
+    
+    이렇게 사용하면 중첩 구조체와 비슷하지만 구조체 안에 구조체가 tag가 없는 것을 익명 구조체라고 한다.
+    
+    이는 뒤에 나오는 Union과 연결된다.
+    
+    ```c
+    puts(ted.name.first);
+    puts(ted3.name.first);
+    ```
+    
+    중첩 구조체는 ted.name.first처럼 dot(.)을 두 번 사용해야하지만,
+    
+    ```c
+    puts(ted2.first);
+    ```
+    
+    익명 구조체는 member access가 한번 줄어들어 dot(.)을 한 번 사용한다.
+    
+- ### [14.13] 구조체의 배열을 사용하는 함수
+    
+    복합 리터럴을 사용해서 구조체의 배열을 초기화하고 출력하는 예제이다.
+    
+    ```c
+    struct book
+    {
+    	char name[SLEN];
+    	char author[SLEN];
+    };
+    
+    void print_books(const struct book books[], int n);
+    
+    int main()
+    {
+    	struct book my_books[3];	// = {{"The Great Gatsby", "F. Scott Fitzgerald"}, ...};
+    	my_books[0] = (struct book){ "The Great Gatsby", "F. Scott Fitzgerald" };
+    	my_books[1] = (struct book){ "Hamlet", "William Shakespeare" };
+    	my_books[2] = (struct book){ "The Odyssey", "Homer" };
+    
+    	print_books(my_books, 3);
+    
+    	return 0;
+    }
+    
+    void print_books(const struct book books[], int n)
+    {
+    	for (int count = 0; count < n; ++count)
+    		printf("Book %d : \"%s \" written by \"%s\"\n", count + 1, books[count].name, books[count].author);
+    }
+    ```
+    
+    출력 예시
+    
+    ```c
+    Book 1 : "The Great Gatsby " written by "F. Scott Fitzgerald"
+    Book 2 : "Hamlet " written by "William Shakespeare"
+    Book 3 : "The Odyssey " written by "Homer"
+    ```
+    
+    동적 할당 배열을 사용할 경우 어떻게 바뀌는지 작성 해보았다.
+    
+    ```c
+    struct book my_books[3];	// = {{"The Great Gatsby", "F. Scott Fitzgerald"}, ...};
+    ```
+    
+    이 부분을
+    
+    ```c
+    struct book* my_books = (struct book*)malloc(sizeof(struct book) * 3);
+    
+    	if (!my_books)
+    	{
+    		printf("Malloc failed");
+    		exit(1);
+    	}
+    ```
+    
+    이렇게 바꿔주면 동적 할당 배열로 사용할 수 있고, 초기화 경고 문구도 사라진다.
+    
+- ### [14.14] 구조체 파일 입출력 연습문제
+    
+    파일에 저장했던 구조체를 다시 읽어들이는 방법에 대해서 알아보자
+    
+    [14.13]에서 작성했던 책 제목과 저자를 구조체에 저장하고 txt파일로 내보내거나
+    
+    txt파일에 추가한 내용이 있다면 다시 출력해주는 예제이다.
+    
+    ```c
+    void write_books(const char* filename, const struct book* books, int n)
+    {
+    	FILE* file = fopen(filename, "w");
+    
+    	if (file == NULL) 
+    	{
+    		fputs("Can't open file.", stderr);
+    		exit(1);
+    	}
+    
+    	fprintf(file, "%d\n", n);	// number of books
+    
+    	for (int i = 0; i < n; ++i)
+    		fprintf(file, "%s %s\n", books[i].name, books[i].author);
+    
+    	fclose(file);
+    }
+    ```
+    
+    txt파일로 작성해주는 함수다.
+    
+    ```c
+    struct book* read_books(const char* filename, int* n_ptr)
+    {
+    	FILE* file = fopen(filename, "r");
+    
+    	if (file == NULL)
+    	{
+    		fputs("Can't open file.", stderr);
+    		exit(1);
+    	}
+    
+    	int flag;
+    	flag = fscanf(file, "%d%*c", n_ptr); // Remove last \n
+    	if (flag != 1)
+    	{
+    		fprintf("File read failed");
+    		exit(1);
+    	}
+    
+    	struct book* books = (struct book*)calloc(sizeof(struct book), *n_ptr); // Note: calloc()
+    
+    	if (!books)
+    	{
+    		printf("Malloc() failed");
+    		exit(1);
+    	}
+    
+    	for (int i = 0; i < *n_ptr; ++i)
+    	{
+    		flag = fscanf(file, "%[^\n]%*c%[^\n]%*c", books[i].name, books[i].author);
+    
+    		if (flag != 2)
+    		{
+    			printf("File read failed");
+    			exit(1);
+    		}
+    	}
+    
+    	fclose(file);
+    
+    	//*books_dptr = books;
+    }
+    ```
+    
+    추가된 내용이 있다면 다시 읽어서 출력해주는 함수다.
+    
+    ```c
+    int main()
+    {
+    	int temp;
+    	int n = 3;
+    
+    	struct book* my_books = (struct book*)malloc(sizeof(struct book) * n);
+    
+    	if (!my_books) {
+    		printf("Malloc failed");
+    		exit(1);
+    	}
+    
+    	my_books[0] = (struct book){ "The Great Gatsby", "F. Scott Fitzgerald" };
+    	my_books[1] = (struct book){ "Hamlet", "William Shakespeare" };
+    	my_books[2] = (struct book){ "The Odyssey", "Homer" };
+    
+    	print_books(my_books, n);
+    
+    	printf("\nWriting to a file.\n");
+    	write_books("books.txt", my_books, n);
+    	free(my_books);
+    	n = 0;
+    	printf("Done.\n");
+    
+    	printf("\nPress any key to read data from a file.\n\n");
+    	temp = _getch();
+    
+    	my_books = read_books("books.txt", &n);
+    	//read_books2("books.txt", &my_books, &n);
+    	print_books(my_books, n);
+    	free(my_books);
+    	n = 0;
+    
+    	return 0;
+    }
+    ```
+    
+    메인 함수는 이렇게 작성되었다.
+    
+- ### [14.15] 공용체의 원리
+    
+    공용체의 원리를 이해하기 위해서 메모리의 구조를 이해하는 것부터 시작한다.
+    
+    ```c
+    union my_union 
+    {
+    		int		i;
+    		double	d;
+    		char	c;
+    };
+    ```
+    
+    형식은 서로 다른 자료형을 사용하는 것은 구조체와 비슷해 보이지만,
+    
+    구조체와의 차이점은 union은 메모리 공간을 같이 사용한다
+    
+    ```c
+    union my_union uni;
+    
+    	printf("%zd\n", sizeof(union my_union));
+    	printf("%lld\n", (long long)&uni);
+    	printf("%lld %lld %lld\n", (long long)&uni.i, (long long)&uni.d, (long long)&uni.c);
+    
+    	union my_union save[10];
+    
+    	printf("%zd\n", sizeof(save));
+    ```
+    
+    사이즈와 메모리 주소를 출력하면
+    
+    ```c
+    8
+    7339468
+    7339468 7339468 7339468
+    80
+    ```
+    
+    같은 메모리 공간을 공유한다.
+    
+    [https://binaryconvert.com/](https://binaryconvert.com/)
+    
+    메모리 상의 이진법, 16진법 등을 쉽게 변환하여 볼 수 있다.
+    
+    공용체는 유연하게 사용 가능하지만, 의도를 명확하게 알 수 없고
+    
+    쉽게 실수 할 수 있다.
