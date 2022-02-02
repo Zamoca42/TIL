@@ -6362,3 +6362,577 @@ int main(void) 는 함수 정의 시작부분이고 나머지 중괄호 안은 �
     공용체는 유연하게 사용 가능하지만, 의도를 명확하게 알 수 없고
     
     쉽게 실수 할 수 있다.
+
+- ### [14.16] 공용체와 구조체를 함께 사용하기
+    
+    공용체를 활용하는 방법은 구조체와 함께 사용한다.
+    
+    ```c
+    struct personal_owner {
+    	char rrn1[7];	// Resident Registration Number
+    	char rrn2[8];	// ex: 830422-1185600
+    };
+    
+    struct company_owner {
+    	char crn1[4];	// Company Registration Number
+    	char crn2[3];	// ex: 111-22-33333
+    	char crn3[6];
+    };
+    
+    union data {
+    	struct personal_owner	po;
+    	struct company_owner	co;
+    };
+    ```
+    
+    이렇게 구조체를 선언하고 공용체 안에 선언한 구조체를 넣으면
+    
+    둘 중 하나만 필요한 데이터를 만들 때 유용하다.
+    
+    ```c
+    struct car_data {
+    	char model[15];
+    	int status;	/* 0 = personal, 1 = company */
+    	union data ownerinfo;
+    };
+    
+    void print_car(struct car_data car)
+    {
+    	printf("---------------------------------\n");
+    	printf("Car model : %s\n", car.model);
+    
+    	if (car.status == 0) /* 0 = personal, 1 = company */
+    		printf("Personal owner : %s-%s\n", car.ownerinfo.po.rrn1, car.ownerinfo.po.rrn2);
+    	else
+    		printf("Company owner : %s-%s-%s\n", car.ownerinfo.co.crn1, car.ownerinfo.co.crn2, car.ownerinfo.co.crn3);
+    	printf("---------------------------------\n");
+    }
+    ```
+    
+    자동차 소유주에 관한 정보를 입력하고 출력 할때, car.ownerinfo.po.rrn1 같이 출력하는데 사용할 수 있다.
+    
+- ### [14.17] 익명 공용체
+    
+    익명 구조체와 비슷한 면이 많다.
+    
+    ```c
+    union data {
+    	struct personal_owner	po;
+    	struct company_owner	co;
+    };
+    
+    struct car_data {
+    	char model[15];
+    	int status;	/* 0 = personal, 1 = company */
+    	union data ownerinfo;
+    };
+    ```
+    
+    앞의 예제에서 사용한 공용체와 구조체를
+    
+    ```c
+    struct car_data {
+    	char model[15];
+    	int status;	/* 0 = personal, 1 = company */
+    	union {
+    		struct personal_owner	po;
+    		struct company_owner	co;
+    	};
+    };
+    ```
+    
+    이렇게 ownerinfo 부분을 줄일 수 있다.
+    
+    ```c
+    void print_car(struct car_data car)
+    {
+    	printf("---------------------------------\n");
+    	printf("Car model : %s\n", car.model);
+    
+    	if (car.status == 0) /* 0 = personal, 1 = company */
+    		printf("Personal owner : %s-%s\n", car.po.rrn1, car.po.rrn2);
+    	else
+    		printf("Company owner : %s-%s-%s\n", car.co.crn1, car.co.crn2, car.co.crn3);
+    	printf("---------------------------------\n");
+    }
+    ```
+    
+    다른 함수에서도 ownerinfo를 없애서 간결하게 줄인다.
+    
+    ```c
+    struct Vector2D{
+    	union {
+    		struct { double x, y;   };
+    		struct { double i, j;   };
+    		struct { double arr[2]; };
+    	};
+    };
+    
+    typedef struct Vector2D vec2;
+    
+    vec2 v = { 3.14, 2.99 };
+    printf("%.2f %.2f\n", v.x, v.y);
+    printf("%.2f %.2f\n", v.i, v.j);
+    printf("%.2f %.2f\n", v.arr[0], v.arr[1]);
+    ```
+    
+    2차원 벡터를 사용할 때 좋은 또 다른 예제다.
+    
+- ### [14.18] 열거형 (Enumerated Types)
+    
+    만약에 색깔을 넣는다고 가정했을 때, 색깔을 나타내는 자료형은 없으므로
+    
+    색깔에 정수를 넣어서 기억하는 식으로 프로그램을 작성해볼 수 있다.
+    
+    ```c
+    int c = 0; // red:0, orange:1, yellow:2, green:3, ...
+    if (c == 2)
+    	printf("yellow");
+    ```
+    
+    하지만 그 숫자에 무슨 색을 하기로 했는지 기억하기는 어렵다.
+    
+    이때 우리가 할 수 있는 방법으로는 
+    
+    ```c
+    #define RED		1
+    #define ORANGE	2
+    #define YELLOW	3
+    
+    int c = YELLOW;
+    if (c == YELLOW)
+    	pirntf("yellow");
+    ```
+    
+    define 매크로를 사용하는 것이다. 하지만 컴파일러 입장에서 YELLOW를 3으로 복사 붙여 넣는 식이기 때문에 오류를 잡아줄 수 없다.
+    
+    이 때 열거형이라는 문법을 사용하면 편하게 프로그래밍을 할 수 있다.
+    
+    열거형을 사용하면 가독성이 증가하고 유지 보수가 편하다
+    
+    사용하는 방법은 정수 상수에게 기호적인 이름을 붙여주는 것이다.
+    
+    ```c
+    enum spectrum { red, orange, yellow, green, blue, violet };
+    //               0     1     2       3      4     5  
+    ```
+    
+    여기서 선언된 spectrum 열거형의 yellow는 정수형이지 문자열이 아니다
+    
+    ```c
+    if (color == yellow)
+    		printf("yellow");	//Note: enumerators are not strings
+    ```
+    
+    문자열처럼 보이지만 가독성을 높이기 위해 바꾼 것일 뿐 내부는 정수형이다.
+    
+    ```c
+    enum levels { low = 100, medium = 500, high = 2000 };
+    
+    	int scroe = 800; //TODO: user input
+    	if (score > high)
+    		printf("High score!\n");
+    	else if (score > medium)
+    		printf("Good job\n");
+    	else if (score > low)
+    		printf("Not bad\n");
+    	else
+    		printf("Do your best\n");
+    ```
+    
+    점수대를 설정해서 가독성을 높일 수 있다.
+    
+- ### [14.20] 이름 공간(namespace) 공유하기
+    
+    프로그램 전체에서 이름이 인식될 수 있는 공간을 namespace라고 한다.
+    
+    ```c
+    {
+    		int myname = 345;
+    		//double myname = 3.14;//ERROR
+    }
+    ```
+    
+    영역 안에 선언된 myname은 같은 영역 안에서는 같은 이름으로 선언 될 수 없다.
+    
+    ```c
+    struct rect { double x; double y; };
+    
+    int rect = 123;	// OK in C (Not OPK in C++)
+    struct rect rect = { 1.1, 2.2 };  // struct rect and rect are in different categories
+    ```
+    
+    구조체의 rect와 변수의 rect는 category가 다르다고 할 수 있다. 그래서 같은 이름으로 사용할 수 있다.
+    
+    구조체 rect와 같은 태그의 rect도 사용 가능하다.
+    
+    이름이 겹치는 것은 헷갈리므로 추천하지 않는다.
+    
+    ```c
+    int iamfunction()
+    {
+    	return 0;
+    }
+    
+    int main()
+    {
+    	int iamfunction = iamfunction();//ERROR
+    	
+    	return 0;
+    }
+    ```
+    
+    함수에 사용된 이름을 변수로 다시 사용할 수 없다.
+    
+- ### [14.21] 함수 포인터의 원리
+    
+    함수 포인터는 다른 포인터처럼 주소 값을 저장하는 변수에 불과하다.
+    
+    어떠한 함수의 주소 값을 저장해줄 수 있는지는
+    
+    ```c
+    void f1()
+    {
+    	return;
+    }
+    
+    int f2(char i)
+    {
+    	return i + 1;
+    }
+    
+    int main()
+    {
+    	void (*pf1)() = f1;
+    	//void (*pf1)() = &f1;
+    
+    	int (*pf2)(char) = f2;
+    
+    	(*pf1)();//call f1 via pf1;
+    	//pf1();
+    
+    	int a = pf2('A');
+    	//int a = (*pf2)('A');
+    
+    	printf("%d\n", a);//66
+    
+    	return 0;
+    }
+    ```
+    
+    이런 예제를 통해 알 수 있다.
+    
+    ```c
+    void (*pf1)() = f1;
+    ```
+    
+    함수의 포인터는 함수와 마찬가지로 자료형과 반환 값, 파라미터가 중요하다.
+    
+    함수의 주소 값을 저장하는 특이한 성질을 갖게 된다.
+    
+    ```c
+    (*pf1)();//call f1 via pf1;
+    //pf1();
+    ```
+    
+    나중에 포인터를 통해 함수를 호출할 수 있다.
+    
+    함수 포인터의 성질은
+    
+    실행파일을 실행할 때, 운영체제에서 프로그램 자체를 메모리에 자체에 복사해서 올려야하는데
+    
+    프로그램 코드 자체가 저장되는 곳을 TEXT segment에 저장된다. TEXT segment는 읽기 전용이고
+    
+    만약 문자열 리터럴에 대한 주소만 가지고 있을 경우 포인터의 메모리에 접근해 값을 바꾸려고 시도하면
+    
+    런타임 에러가 발생한다.
+    
+    마찬가지로 함수 포인터도 주소 값을 가지고 있고 스택에 저장된다.
+    
+- ### [14.22] 함수 포인터의 사용 방법
+    
+    프로그래밍을 유연하게 만드는 함수 포인터의 사용 방법을 알아 보자.
+    
+    ```c
+    #define _CRT_SECURE_NO_WARNINGS
+    #include <stdio.h>
+    #include <ctype.h> // toupper(), tolower()
+    
+    void ToUpper(char* str)
+    {
+    	while (*str)
+    	{
+    		*str = toupper(*str);
+    		str++;
+    	}
+    }
+    
+    void ToLower(char* str)
+    {
+    	while (*str)
+    	{
+    		*str = tolower(*str);
+    		str++;
+    	}
+    }
+    ```
+    
+    이렇게 같은 자료형을 반환하는 함수는 함수 포인터를 사용하면 같이 사용할 수 있다
+    
+    ```c
+    void (*pf)(char*);
+    ```
+    
+    함수 포인터를 실행시키기 위해서는 함수의 반환 값과 파라미터를 알아야 하기 때문이다.
+    
+    ```c
+    int main()
+    {
+    	char str[] = "Hello, World!";
+    
+    	void (*pf)(char*);
+    
+    	pf = ToUpper;	// Name of a function is a popinter
+    	//pf = &ToUpper;// Acceptable
+    	//pf = ToUpper(str);//Not acceptable in C
+    
+    	printf("String literal %lld\n", (long long)("Hello, World!"));
+    	printf("Function pointer %lld\n", (long long)ToUpper);
+    	printf("Variable %lld\n", (long long)str);
+    
+    	(*pf)(str);
+    	//pf(str);	//K&R X, ANSI OK
+    
+    	printf("ToUpper %s\n", str);
+    
+    	pf = ToLower;
+    
+    	pf(str);
+    
+    	printf("ToLower %s\n", str);
+    
+    	return 0;
+    }
+    ```
+    
+    함수의 포인터를 통해 대문자를 바꿔주는 함수나, 소문자로 바꿔주는 함수를 둘 다 함수 포인터에 넣어서 사용할 수 있다.
+    
+    그렇다면 공통적인 부분을 묶어서 하나의 함수처럼 사용할 수 있지 않을까?
+    
+    공통적인 부분을 합치는 것도 함수 포인터를 통해 가능하다.
+    
+    ```c
+    void UpdateString(char* str, int(*pf)(int))
+    {
+    	while (*str)
+    	{
+    		*str = (*pf)(*str);
+    		str++;
+    	}
+    }
+    ```
+    
+    함수 포인터를 매개변수로 받아서 실행시키는 방법이다.
+    
+    ```c
+    /*
+    		passing function pointers to functions
+    */
+    
+    UpdateString(str, toupper);
+    	
+    printf("ToUpper %s\n", str);
+    
+    UpdateString(str, tolower);
+    
+    printf("ToLower %s\n", str);
+    ```
+    
+    함수들을 조립해서 사용하는 느낌으로 사용한다.
+    
+- ### [14.23] 자료형에게 별명을 붙여주는 typedef
+    
+    typedef는 자료형의 이름을 새롭게 정의해준다.
+    
+    ```c
+    typedef unsigned char BYTE;	//Note the scope of BYTE
+    ```
+    
+    BYTE는 부호가 없는 문자형을 바꿔서 부르게 해준다. 하지만 이렇게 선언 한다고 해서
+    
+    이 외의 문자형을 못 쓰는게 아니다. 이름이 바뀌는 것이지 없던 자료형이 생겨나는 것은 아니다.
+    
+    긴 자료형을 짧게 줄여쓰기 위해 typedef를 사용한다.
+    
+    typedef를 통해 이식성이 높은 프로그래밍을 할 수 있다.
+    
+    typedef vs #define
+    
+    typedef 대신 #define를 사용하여 매크로를 설정해주는 것의 차이는
+    
+    #define은 전처리기에 속하기 때문에 컴파일 전에 단순히 치환된다.
+    
+    typedef는 컴파일러가 처리해준다.
+    
+    ```c
+    #define STRING char *
+    	
+    STRING name, sign;
+    ```
+    
+    #define으로 사용한 STRING은
+    
+    ```c
+    char * name, sign;
+    ```
+    
+    전처리기가 이렇게 단순히 복사해서 붙여 넣는 식으로 바꾼다.
+    
+    이렇게 되면 name만 포인터이고, sign은 char 자료형이 되어 문제가 발생할 수 있다.
+    
+    ```c
+    typedef struct complex {
+    		float real;
+    		float imag;
+    	} COMPLEX;	// typedef struct complex COMPLEX
+    ```
+    
+    typedef를 구조체로 선언할 때는 이렇게 사용할 수 있다.
+    
+- ### [14.24] 복잡한 선언(Declaration)을 해석하는 요령
+    
+    선언을 할 때 복잡하게 느끼는 세 가지의 조합이다.
+    
+    ```c
+    *	indicates a pointer
+    ()	indicates a function
+    []	indicates an array
+    ```
+    
+    포인터(*), 우선순위, 함수의 매개변수인 괄호(), 배열을 의미하는 [] 까지 세 가지다.
+    
+    복잡한 선언을 해석할 때에는 먼저 안쪽부터 바깥쪽으로 읽고, *보다 ()와 []가 우선순위가 높다는 것을 기억하면 된다.
+    
+    ```c
+    int* ap[10]; // Identifier ap is an array of pointers
+    ```
+    
+    ap는 int 포인터의 10개 짜리 배열이라고 해석할 수 있다.
+    
+    typedef를 사용하면 더 쉽게 이해할 수 있다.
+    
+    ```c
+    typedef int* pint;
+    pint ap2[10];
+    ```
+    
+    ap2는 pint의 10개 짜리 배열이고, pint는 int의 포인터라는 것을 알 수 있다.
+    
+    ```c
+    void (*pf)(int);
+    /*
+    	void (*pf)(int);
+    		   1		    1. pointer to
+    			    2		2. function with int argument
+    	 3				    3. returning void
+    */
+    ```
+    
+    마찬가지로 int를 매개변수로 갖는 포인터 함수라는 것을 알 수 있다.
+    
+    ```c
+    int* (*x[10])(void);
+    ```
+    
+    복잡하지만, 함수인데, 매개변수는 없고, int에 대한 포인터를 반환해주는 포인터의 배열인 것을 알 수 있다.
+    
+    불가능한 선언도 존재한다.
+    
+    ```c
+    int f(int)[];  // Wrong
+    ```
+    
+    함수는 배열을 반환 할 수 없다.
+    
+    그러나 배열에 대한 포인터를 반환할 수 있다.
+    
+    ```c
+    int(*f(int))[];
+    ```
+    
+    함수가 함수를 리턴할 수 없다
+    
+    ```c
+    int g(int)(int); // Wrong
+    ```
+    
+    그러나 함수의 포인터를 리턴할 수 있다.
+    
+    ```c
+    int (*g(int))(int);
+    ```
+    
+    함수의 배열은 불가능하지만, 함수의 포인터의 배열은 가능하다.
+    
+    ```c
+    int a[10](int); //Wrong
+    
+    int (*x2[10])(int);  //OK
+    ```
+    
+    typedef로 나누어보면
+    
+    ```c
+    typedef int FCN(int);
+    typedef FCN* FCN_PTR;
+    typedef FCN_PTR FCN_PTR_ARRAY[10];
+    FCN_PTR_ARRAY x3;
+    ```
+    
+    이렇게 이해할 수 있다.
+    
+- ### [14.25] qsort 함수 포인터 연습문제
+    
+    함수 포인터의 장점을 이해하기 위한 예제다.
+    
+    빠른정렬 함수 qsort를 이용한 구조체를 정렬해보는 문제이다.
+    
+    ```c
+    #define _CRT_SECURE_NO_WARNINGS
+    #include <stdio.h>
+    #include <stdlib.h>
+    
+    struct kid
+    {
+    	char name[100];
+    	int height;
+    };
+    
+    int compare(const void* first, const void* second);
+    
+    int main()
+    {
+    	struct kid my_friends[] = {
+    		"Jack Jack", 40, "Geenie", 300, "Aladdin", 170, "Piona", 150
+    	};
+    
+    	const int n = sizeof(my_friends) / sizeof(struct kid);
+    
+    	qsort(my_friends, n, sizeof(struct kid), compare);
+    
+    	for (int i = 0; i < n; i++)
+    		printf("%s\t%d\n", my_friends[i].name, my_friends[i].height);
+    
+    	return 0;
+    }
+    
+    int compare(const void* first, const void* second)
+    {
+    	if (((struct kid*)first)->height > ((struct kid*)second)->height)
+    		return 1;
+    	else if (((struct kid*)first)->height < ((struct kid*)second)->height)
+    		return -1;
+    	else
+    		return 0;
+    }
+    ```
