@@ -6936,3 +6936,693 @@ int main(void) 는 함수 정의 시작부분이고 나머지 중괄호 안은 �
     		return 0;
     }
     ```
+
+## Chapter 15. 비트 다루기
+
+- ### [15.1] 비트단위 논리 연산자
+    
+    지금까지 사용해온 논리 연산자들은 자료형의 변수나 상수들에 
+    
+    적용하는 and(&&), or(||), not(!) 같은 논리 연산자들 이였다.
+    
+    지금부터는 비트단위 논리연산자인 Bitwise NOT(~), AND(&), OR(|), XOR(^)에 대해 알아본다
+    
+    Bitwise 연산자는 왜 필요할까?
+    
+    자료형의 최소 단위인 char을 사용하면 1byte가 필요하다.
+    
+    하지만 true, false같은 1또는 0만 필요한 형식에서 1byte를 사용하기에는 나머지 비트가 낭비된다.
+    
+    비트 낭비를 막기 위해서, 또는 조금 더 효율적으로 사용하기 위해 Bitwise연산자를 사용한다.
+    
+    ```c
+    unsigned char a = 6;
+    unsigned char b = 5;
+    
+    printf("%hhu", a & b);
+    ```
+    
+    6과 5의 Bitwise AND(&)를 사용한 값은 4이다.
+    
+    6의 이진수 00000110 과 5의 이진수 00000101의 AND를 해보면
+    
+    세번째자리 1에서 true가 나오기 때문에 00000100이 된다.
+    
+    ```c
+    unsigned char a = 6;
+    
+    printf("%hhu", ~a);
+    ```
+    
+    6에 Bitwise Not(~)을 사용하면 6의 이진수 00000110에서 반대로 한 이진수인
+    
+    249의 이진수 11111001이 나온다. Bitwise Not은 단항연산자다.
+    
+- ### [15.2] 이진수를 십진수로 바꾸기 연습문제
+    
+    ```c
+    printf("%d\n", to_decimal("00000110"));	// 1*(2^2) + 1*(2^1) = 4 + 2 = 6
+    printf("%d\n", to_decimal("00010110")); // 1*(2^4) + 1*(2^2) + 1*(2^1) = 16 + 4 + 2 = 22
+    printf("%d\n", to_decimal("10010100"));
+    ```
+    
+    문자로 입력한 이진수를 십진수로 바꿔주는 함수로 출력하는 방법을 작성 해보았다.
+    
+    pow()함수를 이용하여 작성할 수 있다
+    
+    pow(2,3) == 8
+    
+    ```c
+    unsigned char to_decimal(const char bi[])
+    {
+    	const size_t bit = strlen(bi);
+    	unsigned char sum = 0;
+    	for (size_t i = 0; i < bit; ++i)
+    	{
+    		if (bi[i] == '1')
+    			sum += (int)pow(2, bit - 1 - i);
+    	}
+    
+    	return sum;
+    	//printf("Binary %s == Decimal %d\n", bi, sum);
+    }
+    ```
+    
+    출력하면
+    
+    ```c
+    Binary (string) to Decimal conversion
+    6
+    22
+    148
+    ```
+    
+- ### [15.3] &를 이용해서 십진수를 이진수로 바꾸기 연습
+    
+    위의 예제에 더해서 비트연산자를 이용하여 십진수로 바꾼 것을 다시 이진수로 출력해주는 함수를 작성하는 예제다.
+    
+    ```c
+    #define _CRT_SECURE_NO_WARNINGS
+    #include <stdio.h>
+    #include <math.h>	// pow()
+    #include <string.h> // strlen()
+    #include <stdlib.h> // exit()
+    #include <stdbool.h>
+    
+    unsigned char to_decimal(const char bi[]);
+    void print_binary(const unsigned char num);
+    
+    int main()
+    {
+    	unsigned char i = to_decimal("01000110");
+    	unsigned char mask = to_decimal("00000101");
+    
+    	print_binary(i);
+    	print_binary(mask);
+    	print_binary(i & mask);
+    
+    	return 0;
+    }
+    ```
+    
+    작성한 to_decimal함수는 15.3의 예제를 그대로 옮겨왔다
+    
+    print_binary함수는
+    
+    ```c
+    2^7 : ( i = 01000110 & mask = 10000000) != mask) print 0
+    2^6 : ( i = 01000110 & mask = 01000000) == mask) print 1
+    2^5 : ( i = 01000110 & mask = 00100000) != mask) print 0
+    2^4 : ( i = 01000110 & mask = 00010000) != mask) print 0
+    2^3 : ( i = 01000110 & mask = 00001000) != mask) print 0
+    ...
+    ```
+    
+    비교해 나가면서 출력할 수 있도록 함수를 작성한다
+    
+    ```c
+    void print_binary(const unsigned char num)
+    {
+    	printf("Decimal  %d", num);
+    	printf("\t == Binary ");
+    
+    	const size_t bit = sizeof(num) * 8;
+    
+    	for (int i = 0; i < bit; ++i)
+    	{
+    		size_t mask = pow(2, bit - 1 - i);
+    		if ((num & mask) == mask)
+    			printf("%d", 1);
+    		else
+    			printf("%d", 0);
+    	}
+    	printf("\n");
+    }
+    ```
+    
+    출력하면
+    
+    ```c
+    Decimal  70     == Binary 01000110
+    Decimal   5     == Binary 00000101
+    Decimal   4     == Binary 00000100
+    ```
+    
+- ### [15.4] 비트단위 논리 연산자 확인해보기
+    
+    작성한 함수를 통해서 비트 논리 연산자가 제대로 작동하는지 확인해본다.
+    
+    위에서 작성한 print_binary 와 to_decimal을 통해서 AND(&), OR(|), XOR(^), NOT(~)을 출력해보았다.
+    
+    ```c
+    unsigned char a = 6;
+    unsigned char b = 5;
+    
+    printf("%hhu\n", a);
+    print_binary(a);
+    
+    printf("%hhu\n", b);
+    print_binary(b);
+    
+    printf("%hhu\n", a & b);
+    print_binary(a & b);
+    
+    printf("%hhu\n", a | b);
+    print_binary(a | b);
+    
+    printf("%hhu\n", a ^ b);
+    print_binary(a ^ b);
+    
+    printf("%hhu\n", ~a);
+    print_binary(~a);
+    ```
+    
+    출력하면
+    
+    ```c
+    6
+    Decimal   6     == Binary 00000110
+    5
+    Decimal   5     == Binary 00000101
+    4
+    Decimal   4     == Binary 00000100
+    7
+    Decimal   7     == Binary 00000111
+    3
+    Decimal   3     == Binary 00000011
+    249
+    Decimal 249     == Binary 11111001
+    ```
+    
+- ### [15.5] 2의 보수 표현법 확인해보기
+    
+    2의 보수를 표현하는 방법은
+    
+    각 비트를 0이면 1로 1이면 0으로 바꾼 뒤 1을 더 해준다.
+    
+    전의 예제에서 print_binary를 사용해서 가능한지 확인해보자
+    
+    ```c
+    void print_binary(const char num)
+    {
+    	printf("Decimal  %3d \t== Binary", num);
+    	
+    	const size_t bit = sizeof(num) * 8;
+    
+    	for (size_t i = 0; i < bit; ++i)
+    	{
+    		const char mask = (char)pow((double)2, (double)(bit - 1 - i));
+    
+    		if ((num & mask) == mask)
+    			printf("%d", 1);
+    		else
+    			printf("%d", 0);
+    	}
+    	printf("\n");
+    }
+    ```
+    
+    print_binary를 통해서 2의 보수 범위인 -127~127의 경계값인
+    
+    -127과 127을 확인하고 ~127+1이 어떻게 되는지도 출력해본다.
+    
+    ```c
+    int main()
+    {
+    	print_binary(127);
+    	print_binary(-127);
+    	print_binary(~127 + 1);
+    
+    	print_binary(12);
+    	print_binary(-12);
+    	print_binary(~12 + 1);
+    
+    	return 0;
+    }
+    ```
+    
+    추가적으로 다른 숫자도 보수가 가능한지 확인해보자.
+    
+    출력하면
+    
+    ```c
+    Decimal  127    == Binary01111111
+    Decimal  -127   == Binary10000001
+    Decimal  -127   == Binary10000001
+    Decimal   12    == Binary00001100
+    Decimal  -12    == Binary11110100
+    Decimal  -12    == Binary11110100
+    ```
+    
+    음수 값과 2의 보수를 실행한 값도 똑같이 나온다.
+    
+    ```c
+    print_binary(7);
+    print_binary(-7);
+    print_binary(~-7+1);
+    ```
+    
+    반대로 음수 값에 2의 보수를 취하면 양수의 값이 나오는지 확인해보면
+    
+    ```c
+    Decimal    7    == Binary00000111
+    Decimal   -7    == Binary11111001
+    Decimal    7    == Binary00000111
+    ```
+    
+    음수에 2의 보수를 실행하면 양수 값이 나온다.
+    
+- ### [15.6] 비트단위 쉬프트 연산자
+    
+    Shift 연산자는 식당에서 늦게 온 사람에게 자리를 만들어 주기 위해 먼저 온 사람들이 모두 일어나서
+    
+    옆으로 한 칸 이동하는 모습을 떠올려 보세요
+    
+    Bitwise shift 연산자는
+    
+    Left shift와 Right shift로 나뉜다
+    
+    Left shift는 말 그대로 왼쪽으로 이동하는 연산자고, number << n처럼 <<을 사용한다.
+    
+    2^n을 곱할 때 사용한다.
+    
+    Right shift는 오른쪽으로 이동하는 연산자고, number >> n처럼 >>을 사용한다.
+    
+    2^n을 나눌 때 사용한다.
+    
+    ```c
+    // 8 bit integer cases
+    //									        76543210    	    76543210      76543210
+    printf("%hhd\n", 1 << 3);				//  00000001 ->		  0000001??? ->	  00001000
+    printf("%hhd\n", 8 >> 1);				//  00001000 ->       ?00001000	 ->	  00000100
+    ```
+    
+    1 << 3 을 해주면 이진수 00000001에서 왼쪽으로 3만큼 이동 시키고 나머지는 0을 채워서 00001000이 되어 십진수 8이 된다.
+    
+    마치 2^3을 곱해줘서 8이된 것 처럼 된다. 하지만 이 것은 작은 숫자에서만 곱한 것처럼 보이고 큰 숫자에서는 다르게 바뀔 수 있다.
+    
+    마찬가지로 8을 오른쪽으로 1만큼 이동시키면 이진수 00000100이 되어 4가 되기 때문에 2^1로 나누는 효과가 발생한다.
+    
+    ```c
+    printf("%hhd\n", -119 >> 3);		    //	10001001 ->			???10001001 ->	11110001 (-15)
+    printf("%hhd\n",  137 >> 3);		    //	10001001 ->			???10001001 ->	00010001 (17)
+    ```
+    
+    음수일 때 이진수 맨 앞의 숫자가 1이 나올때는 Right shift의 빈칸만큼 1로 채워주기 때문에 -15가 나온다.
+    
+    Right shift가 나누기처럼 실행되는 것으로 보이지만 -119를 8로 나누면 -14가 나온다.
+    
+    그래서 반드시 나누기처럼 실행되는 것은 아니다. 음수에서는 예외일 수 있다.
+    
+    다음은 unsigned인 137인 경우 137 나누기 8 인 17과 Right shift를 한 값이 동일하다.
+    
+    ```c
+    void int_binary(const int num)
+    {
+    	printf("Decimal  %3d \t== Binary", num);
+    
+    	const size_t bit = sizeof(num) * 8;
+    
+    	for (size_t i = 0; i < bit; ++i)
+    	{
+    		const int mask = 1 << (bit - 1 - i);
+    
+    		if ((num & mask) == mask)
+    			printf("%d", 1);
+    		else
+    			printf("%d", 0);
+    	}
+    	printf("\n");
+    }
+    ```
+    
+    앞의 예제에서 배운 이진수 변환 함수에서 pow()대신 shift연산자를 이용해 함수를 작성할 수 있다.
+    
+- ### [15.7] 비트단위 연산자의 다양한 사용법
+    
+    게임같이 메모리와 cpu를 효율적으로 사용해야 하는 상황에서 
+    
+    비트 단위 연산자를 이용해 프로그래밍 작성할 때 유용하게 사용할 수 있다.
+    
+    ```c
+    /*
+    	bool has_sword = false;
+    	bool has_shield = false;
+    	bool has_potion = false;
+    	bool has_guntlet = false;
+    	bool has_hammer = false;
+    	bool has_key = false;
+    	bool has_ring = false;
+    	bool has_amulet = false;
+    	*/
+    
+    	char flags = 0;		// MASK flags
+    	char_binary(flags);
+    ```
+    
+    이와 같이 아이템을 가지고 있는지 가지고 있지 않는 지에 대해 char을 사용할 수도 있지만,
+    
+    1비트를 가지고 true, false로 나눌 수도 있다.
+    
+    ```c
+    //					     Shift	    Decimal	    Binary		Hex		Octet
+    #define MASK_SWORD		(1 << 0) // 2^0			00000001	0x01	01
+    #define MASK_SHIELD		(1 << 1) // 2^1			00000010	0x02	02
+    #define MASK_POTION		(1 << 2) // 2^2			00000100	0x04	04
+    #define MASK_GUNTLET	(1 << 3) // 2^3			00001000	0x08	010
+    #define MASK_HAMMER		(1 << 4) // 2^4			00010000	0x10	020
+    #define MASK_KEY		(1 << 5) // 2^5			00100000	0x20	040
+    #define MASK_RING		(1 << 6) // 2^6			01000000	0x40	0100
+    #define MASK_AMULET		(1 << 7) // 2^7			10000000	0x80	0200
+    ```
+    
+    shift 연산자를 통해 mask를 선언하여 원하는 부분만 비트로 선택할 수 있다.
+    
+    원하는 정보의 일부분만 보고 싶을 때 mask를 사용한다.
+    
+    ```c
+    char flags = 0;		// MASK flags
+    char_binary(flags);
+    ```
+    
+    게임에 들어와서 아무것도 없는 상태를 flags = 0이라고하면
+    
+    칼과 목걸이를 얻었다면 OR(|)을 이용해
+    
+    ```c
+    printf("\nTurning Bits On (Setting Bits)\n");
+    
+    flags = flags | MASK_SWORD;//flag |= MASK_SWORD;
+    char_binary(flags);
+    flags |= MASK_AMULET;
+    char_binary(flags);
+    ```
+    
+    이렇게 표현할 수 있다.
+    
+    ```c
+    Turning Bits On (Setting Bits)
+    Decimal    1    == Binary 00000001
+    Decimal  -127   == Binary 10000001
+    ```
+    
+    출력했을 때 이렇게 나타난다.
+    
+    ```c
+    printf("\nTurning Bits Off (Clearing Bits)\n");
+    
+    flags = flags | MASK_POTION;
+    char_binary(flags);
+    flags = flags & ~MASK_POTION;// flags &= ~MASK_POTION;
+    char_binary(flags);
+    ```
+    
+    마찬가지로 포션을 얻었을 때는 OR(|)로 더해주고
+    
+    포션을 잃었을 때는 AND(&)와 NOT(~)을 이용해 빼줄 수 있다.
+    
+    ```c
+    Turning Bits Off (Clearing Bits)
+    Decimal  -123   == Binary 10000101
+    Decimal  -127   == Binary 10000001
+    ```
+    
+    만약에 장비를 끼웠다가 해제할 때는 어떻게 사용할 수 있을까?
+    
+    XOR(^)연산자를 사용해서 장착, 해제를 표현할 수 있다.
+    
+    ```c
+    printf("\nToggling Bits\n");
+    
+    	flags = flags ^ MASK_HAMMER;
+    	char_binary(flags);
+    
+    	flags = flags ^ MASK_HAMMER;
+    	char_binary(flags);
+    
+    	flags = flags ^ MASK_HAMMER;
+    	char_binary(flags);
+    ```
+    
+    똑같은 코드지만
+    
+    ```c
+    Toggling Bits
+    Decimal  -111   == Binary 10010001
+    Decimal  -127   == Binary 10000001
+    Decimal  -111   == Binary 10010001
+    ```
+    
+    사용할 때마다 토글이 된다.
+    
+    또 만약에 키를 가지고 있는지 확인하고 싶을 때는
+    
+    ```c
+    printf("\nChecking the Value of a Bit\n");
+    
+    	if ((flags & MASK_KEY) == MASK_KEY)
+    		printf(">> You can enter.\n");
+    	else
+    		printf(">> You can not enter\n");
+    
+    	flags |= MASK_KEY; // Obtained a key!
+    
+    	if ((flags & MASK_KEY) == MASK_KEY)
+    		printf(">> You can enter.\n");
+    	else
+    		printf(">> You can not enter\n");
+    ```
+    
+    이렇게 해볼 수 있다.
+    
+- ### [15.8] RGBA 색상 비트 마스크 연습 문제
+    
+    비트 마스크를 이용해 RGBA 색상을 추출하는 문제를 연습해본다.
+    
+    ```c
+    #define BYTE_MASK 0xff
+    
+    int main()
+    {
+    	unsigned int rgba_color = 0x66CDAAFF;
+    	// 4 bytes, medium aqua marine (102, 205, 170, 255)
+    
+    	unsigned char red, green, blue, alpha;
+    
+    	//Use right shift >> operator
+    	alpha	= rgba_color & BYTE_MASK;
+    	blue	= (rgba_color >> 8 & BYTE_MASK);
+    	green	= (rgba_color >> 16 & BYTE_MASK);
+    	red		= (rgba_color >> 24 & BYTE_MASK);
+    
+    	printf("(R, G, B, A) = (%hhu, %hhu, %hhu, %hhu)\n", red, green , blue, alpha);
+    
+    	return 0;
+    }
+    ```
+    
+    RGBA 색상 0x66CDAAFF 중 66은 R, CD는 G, AA는 B, FF는 A를 나타내므로
+    
+    쉬프트 연산자 >>를 이용하여 추출할 수 있다.
+    
+- ### [15.9] 구조체 안의 비트 필드
+    
+    필드는 물리나 공학 분야에서 사용하는 전자기장, 벡터 필드, 스칼라 필드 같은 공간(장)을 의미한다.
+    
+    비트 필드는 비트가 연속적으로 나열된 형태를 의미한다.
+    
+    필드를 구현하기 위해서는 구조체를 사용한다.
+    
+    ```c
+    //						Shift		Decimal	    Binary		Hex		Octet
+    #define MASK_SWORD		(1 << 0) // 2^0			00000001	0x01	01
+    #define MASK_SHIELD		(1 << 1) // 2^1			00000010	0x02	02
+    #define MASK_POTION		(1 << 2) // 2^2			00000100	0x04	04
+    #define MASK_GUNTLET	(1 << 3) // 2^3			00001000	0x08	010
+    #define MASK_HAMMER		(1 << 4) // 2^4			00010000	0x10	020
+    #define MASK_KEY		(1 << 5) // 2^5			00100000	0x20	040
+    #define MASK_RING		(1 << 6) // 2^6			01000000	0x40	0100
+    #define MASK_AMULET		(1 << 7) // 2^7			10000000	0x80	0200
+    ```
+    
+    앞에서 배운 내용을 구조체를 이용해서 간단하게 바꿔보면
+    
+    ```c
+    struct
+    {
+    	bool has_sword		: 1;
+    	bool has_shield		: 1;
+    	bool has_potion		: 1;
+    	bool has_guntlet	: 1;
+    	bool has_hammer	  : 1;
+    	bool has_key	    : 1;
+    	bool has_ring	    : 1;
+    	bool has_amulet	  : 1;
+    } items_flag;
+    ```
+    
+    구조체로 바꿔줄 수 있고 콜론(:) 뒤에는 사용할 비트(bit)의 개수를 넣는다.
+    
+    ```c
+    flags = flags | MASK_SWORD;
+    ```
+    
+    이렇게 사용하던 마스크를
+    
+    ```c
+    items_flag.has_sword = 1;
+    ```
+    
+    이렇게 표현할 수 있다.
+    
+- ### [15.10] 비트필드의 사용방법
+    
+    ```c
+    struct items
+    	{
+    		bool has_sword		: 1;		//: number means bits to use!
+    		bool has_shield		: 1;
+    		bool has_potion		: 1;
+    		bool has_guntlet	: 1;
+    		bool has_hammer		: 1;
+    		bool has_key		: 1;
+    		bool has_ring		: 1;
+    		bool has_amulet		: 1;
+    	} items_flag;
+    ```
+    
+    구조체 안의 bool은 ‘1비트로 해석해라’ 라는 의미이고, 비트필드의 패딩과 관련이 있다.
+    
+    비트필드의 사이즈는 얼마일까?
+    
+    ```c
+    printf("size = %zd\n", sizeof(items_flag));
+    ```
+    
+    구조체의 사이즈를 출력해보면
+    
+    ```c
+    size = 1
+    ```
+    
+    1byte가 나온다.
+    
+    ```c
+    union {
+    	struct items bf;
+    	unsigned char uc;
+    } uni_flag;
+    
+    uni_flag.uc = 0;
+    uni_flag.bf.has_amulet = true;
+    uni_flag.uc |= (1 << 4);
+    
+    print_binary((char*)&uni_flag, sizeof(uni_flag));
+    ```
+    
+    공용체 union을 사용해서 비트필드를 이용해서 값을 바꿀 수 있고 비트단위 연산자를 이용해서 값을 바꿀 수 도 있다.
+    
+    DOS 예제를 통해 저장 공간을 아끼면서 시간과 날짜를 표현 하는 법을 알아보자
+    
+    ```c
+    /*
+    		KNK DOS example
+    	*/
+    
+    	struct file_time {
+    		unsigned int seconds : 5;		// 2^5 = 32, (0 ~ 29) 30*2 seconds
+    		unsigned int minutes : 6;		// 2^6 = 64, (0 ~ 59) 60 minutes
+    		unsigned int hours	 : 5;		// 2^5 = 32, (0 ~ 23) 24 hours
+    	};
+    
+    	struct file_date {
+    		unsigned int day	: 5;			// 2^5 = 32, 1 ~ 31
+    		unsigned int month	: 4;			// 2^4 = 16, 1 ~ 12
+    		unsigned int year	: 7;			// 2^7 = 128, 1980 ~
+    	} fd;
+    
+    	/* 1988 12 28 */
+    	fd.day = 28;			// try overflow, try 'signed int'
+    	fd.month = 12;
+    	fd.year = 8;
+    ```
+    
+    여기서 날짜에 31이상의 값인 32를 대입하면 오버플로우가 발생해 날짜에서 0을 출력한다.
+    
+- ### [15.11] 비트필드의 패딩
+    
+    앞선 챕터에서 구조체의 패딩에 대해 배운적 있다. 
+    
+    비트필드도 구조체형식으로 작성하므로 비트필드도 패딩이 존재한다.
+    
+    ```c
+    struct {
+    		bool option1 : 7;
+    		//bool		 : 0;
+    		bool option2 : 1;
+    		//unsigned long long option3 : 1;
+    	} bbf;
+    ```
+    
+    bool의 비트필드는 option1이 7비트 option2가 1비트 해서 총 1바이트가 나온다.
+    
+    ```c
+    struct {
+    		unsigned short option1 : 8;
+    		unsigned short option2 : 7;
+    		//unsigned short : 0;
+    		unsigned short option3 : 1;
+    	} usbf;
+    ```
+    
+    unsigned short의 비트필드는 총 16비트로 2바이트를 출력한다
+    
+    ```c
+    struct {
+    		unsigned int option1 : 1;
+    		//unsigned int : 0;
+    		unsigned int option2 : 1;
+    		//bool option3 : 1;
+    	} uibf;
+    ```
+    
+    unsigned int의 비트필드는 총 2비트지만 출력은 4byte가 나온다
+    
+    ```c
+    1 bytes //bool
+    2 bytes //unsigned short
+    4 bytes //unsigned int
+    ```
+    
+    멤버가 할당한 비트 크기와 상관없이 자료형의 크기에 따라 비트 필드의 크기가 결정된다.
+    
+    ```c
+    struct {
+    		bool option1 : 7;
+    		//bool		 : 0;
+    		bool option2 : 1;
+    		unsigned long long option3 : 1;
+    	} bbf;
+    ```
+    
+    unsigned long long을 사용하면 사이즈가 16바이트를 출력한다.
