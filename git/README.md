@@ -1,12 +1,30 @@
 # Git
+> 2022/02/08 - 제대로 파는 Git & GitHub by 얄코 수강  
 
 ## 새로 알게 된 점
+- ### Git에게 맡기지 않을 것들
+
+    - 포함할 필요가 없을 때
+        - 자동으로 생성 또는 다운로드되는 파일들 (빌드 결과물, 라이브러리)
+    - 포함하지 말아야 할 때
+        - 보안상 민감한 정보를 담은 파일
+    - .gitignore 파일을 사용해서 배제할 요소들을 지정
+        - [gitignore 형식](https://git-scm.com/docs/gitignore)
+
+- ### init
+
+    현재폴더에 .git을 생성하고 관리내역들을 저장, 삭제하면 다시 되돌릴 수 없음
+
+- ### status
+    
+    현재의 폴더에서 현재의 상황을 현재의 관점으로 보여주는 것
+
 - ### Revert와 reset의 차이
 
     revert와 reset의 차이는  
     명령어를 수행하고 난 뒤 되돌아 갈 수 있느냐 없느냐의 차이다  
-    revert를 사용하면 history에 revert했던 기록이 남는다  
-    reset을 사용하면 history조차 뜨지않고 이전 commit으로 돌아간다.
+    revert를 사용하면 revert했던 내역을 커밋으로 추가한다.  
+    reset을 사용하면 과거로 돌아간 다음 이후 커밋은 히스토리에서 지워진다.
 
  - ### Issue 해결  
     - vscode에서의 터미널에서는 push가 가능하지만, Sourcetree에서는 push를 하면  
