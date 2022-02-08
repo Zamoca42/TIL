@@ -7626,3 +7626,695 @@ int main(void) 는 함수 정의 시작부분이고 나머지 중괄호 안은 �
     ```
     
     unsigned long long을 사용하면 사이즈가 16바이트를 출력한다.
+
+</br>
+
+## Chapter 16. 전처리기와 라이브러리
+
+- ### [16.1] 전처리기가 해주는 일들
+    
+    컴파일러 전에 컴파일러를 도와주는 작업을 하는 것이 전처리기다.
+    
+    우리가 프로그램을 작성하면 전처리기 → 컴파일러 → 링커를 거쳐서 실행파일이 만들어진다.
+    
+    최근에는 전체과정을 빌드라는 용어로 더 많이 사용한다.
+    
+    전처리기가 하는 일은 대부분
+    
+    코드와 컴파일러 사이에서 연결해주는 역할을 한다.
+    
+    컴파일러가 이해할 수 있도록 번역해주고 프로그래머의 효율을 높여주는 기능을 한다.
+    
+    최근에는 다양한 플랫폼에서 배포를 하는 경우가 많기 때문에
+    
+    코드를 조건에 따라 어떻게 컴파일할지 결정하게 해주는 기능을 한다.
+    
+- ### [16.3] #define 매크로
+    
+    전처리 지시자(preprocessor directives)는 해쉬태그(#)로 시작한다.
+    
+    매크로는 여러 개의 명령어를 하나의 명령어로 축약 해 놓은 것이다.
+    
+    또는 똑같은 일을 여러 번 할 때 축약형으로 한번에 만들어 사용할 수 있게 하는 뜻으로도 사용한다.
+    
+    ```c
+    
+    #define			 SAY_HELLO		 printf("Hello, World!");
+    
+    prprocessor		Macro (name)	body (or replacement list)
+    directive
+    
+    Macro expansion
+    
+    ```
+    
+    매크로 이름이 body로 교체되는 것을 매크로 확장이라 부른다.
+    
+    ```c
+    Object-like macros vs Function-like macros
+    
+    #define ONE 1
+    #define SQUARE(X) X*X
+    ```
+    
+    매크로는 단순 치환하는 방법과 함수처럼 사용할 수 있다.
+    
+
+- ### [16.4] 함수 같은 매크로
+    
+    ```c
+    
+    Function-like macros
+    
+    #define			ADD(X,Y)		((X)+(Y))
+    
+    X and Y : macro arguments
+    
+    ```
+    
+    매크로에 arguments를 설정할 수 있게 작성하면 함수처럼 사용할 수 있다.
+    
+    함수처럼 매크로를 사용할 때 주의할 점이 다수 존재한다.
+    
+    ```c
+    #define ADD1(X,Y)		X+Y
+    #define ADD2(X,Y)		((X)+(Y))
+    #define SQUARE(X)		X*X			// ((X)*(X))
+    ```
+    
+    예를 들어 ADD1(X,Y)의 X,Y를 그대로 X+Y에 옮기는 것이다.
+    
+    그대로 옮기는 것이기 때문에 의도치 않게 문제가 생길 수 있다.
+    
+    그래서 ((X)+(Y))로 괄호를 사용해야 한다.
+    
+    ```c
+    printf("%d\n", 2 * ADD1(1, 3));	//2 * X + Y = 2 * 1 + 3 = 5 // WRONG!!!
+    ```
+    
+    이와 같이 프로그램을 작성할 때 ADD1과 2를 곱해 8이라는 결과를 출력하고 싶었지만,
+    
+    의도와 다르게 괄호가 없으므로 2와 X가 곱해져서 5가 출력 된다.
+    
+    매크로는 편리하지만 함수를 대신해 사용하는 것을 권장하지는 않는다.
+    
+- ### [16.5] 가변 인수 매크로
+    
+    ```c
+    #define PRINT(X, ...) printf("Message " #X " : " __VA_ARGS__)
+    ```
+    
+    이렇게 말줄임(...)을 사용해서 argument를 여러개 받을 수 있다.
+    
+    __VA_ARGS__은 미리 정의된 매크로로 전처리기에 포함된 C언어의 일부이다.
+    
+    말줄임에서 받은 인수를 __VA_ARGS__로 옮겨준다.
+    
+    ```c
+    int main()
+    {
+    	double x = 48;
+    	double y;
+    
+    	y = sqrt(x);
+    	PRINT(1, "x = %g\n", x);
+    	printf("Message " "1" " : " "x = %g\n", x);
+    
+    	PRINT(2, "x = %.2f, y = %.4f\n", x, y);
+    	printf("Message " "2" " : " "x = %.2f, y = %.4f\n", x, y);
+    
+    	return 0;
+    }
+    ```
+    
+    PRINT는 1 이외의 여러가지 인수를 받아들일 수 있고 출력하면 printf에서 작성한 것과 동일하게 나온다.
+    
+    ```c
+    Message 1 : x = 48
+    Message 1 : x = 48
+    Message 2 : x = 48.00, y = 0.0000
+    Message 2 : x = 48.00, y = 0.0000
+    ```
+    
+- ### [16.6] #include와 헤더 파일
+    
+    평소에 많이 사용하는 전처리기는 #include이다. 
+    
+    ```c
+    #include <stdio.h>
+    ```
+    
+    우리가 많이 알고 있는 stdio.h는 표준 라이브러리를 의미하고, 공식적인 헤더파일은 <>를 사용한다.
+    
+    ```c
+    #include "my_functions.h"
+    ```
+    
+    새로 진행하거나, 만들어둔 헤더파일이 있다면 “”을 사용한다.
+    
+    ```c
+    #include "my_headers/my_macros.h"
+    ```
+    
+    다른 위치에 헤더파일이 있다면 상대적인 경로로 작성해줄 수 있다.
+    
+    절대 경로로 작성도 가능하다.
+    
+- ### [16.7] 조건에 따라 다르게 컴파일하기
+    
+    ```c
+    #define LIMIT 400
+    //#undef LIMIT	// It's ok to undefine previously NOT defined macro.
+    ```
+    
+    #define으로 정의한 매크로를 #undef로 무효화 시킬 수 있다.
+    
+    매크로를 정의해준 적이 없는데 #undef를 사용해도 문제는 생기지 않는다.
+    
+    ```c
+    #ifndef HEADER_A
+    ...
+    #endif
+    ```
+    
+    만약 헤더A파일과 헤더B파일이 있는데 헤더B에 헤더A파일이 #include가 되어있고
+    
+    main에 헤더 A와 B파일이 include 된다면 헤더 A파일은 두 번 include가 되는 셈이다
+    
+    어떠한 일로 중복 include가 된다면 이 것을 방지하기 위해 헤더가드 #ifndef를 넣는다
+    
+    ```c
+    #define TYPE 1
+    
+    #if TYPE == 1
+    #include "my_function_1.h"
+    #elif TYPE == 2
+    #include "my_function_2.h"
+    #else
+    static void my_function()
+    {
+    	printf("Wrong compile option!");
+    }
+    #endif
+    ```
+    
+    함수에서 분기문 if와 마찬가지로 전처리기에서도 분기문 사용이 가능하다
+    
+    #if를 통해서 조건에 따라 다른 헤더파일을 불러올 수 있다.
+    
+    ```c
+    #define REPORT
+    ```
+    
+    매크로의 이름만 정의 되어 있는 경우도 있다. 이것을 비어있는 매크로(empty macro)라 부른다
+    
+    ```c
+    #define REPORT
+    
+    int sum(int i, int j)
+    {
+    	int s = 0;
+    	for (int k = i; k <= j; ++k)
+    	{
+    		s += k;
+    
+    #ifdef REPORT
+    		printf("%d %d\n", s, k);
+    #endif
+    	}
+    
+    	return s;
+    }
+    ```
+    
+    비어 있는 매크로는 이렇게 사용할 수 있고, main함수에서 세부항목과 함께 결과까지 출력할 수 있다.
+    
+    ```c
+    printf("\n %d \n", sum(1, 10));
+    ```
+    
+    출력하면
+    
+    ```c
+    1 1
+    3 2
+    6 3
+    10 4
+    15 5
+    21 6
+    28 7
+    36 8
+    45 9
+    55 10
+    
+     55
+    ```
+    
+    비어있는 매크로인 REPORT를 주석 처리하면 결과 값인 55만 출력한다.
+    
+    다양한 플랫폼에 맞춰 프로그램을 작성하는 방법도 있다.
+    
+    ```c
+    void say_hello()
+    {
+    #ifdef _WIN64
+    	printf("Hello, WIN64");
+    #elif _WIN32
+    	printf("Hello, WIN32");
+    #elif __linux__
+    	printf("Hello, linux");
+    #endif
+    }
+    ```
+    
+    이런 식으로 운영체제에 맞춰 출력이 가능하다.
+    
+- ### [16.8] 미리 정의된 매크로들, #line, #error
+    
+    ```c
+    printf("__FILE__ : %s\n", __FILE__);
+    printf("__DATE__ : %s\n", __DATE__);
+    printf("__TIME__ : %s\n", __TIME__);
+    printf("__LINE__ : %s\n", __LINE__);
+    printf("__func__ : %s\n", __func__);
+    ```
+    
+    __FILE__은 현재 매크로가 사용된 파일의 이름을 문자열로 바꿔준다.
+    
+    다른 것들도 마찬가지로
+    
+    DATE는 빌드된 시점의 날짜
+    
+    TIME은 빌드된 시점의 시간
+    
+    LINE은 현재 라인의 줄을 정수로
+    
+    func는 함수의 이름을 문자열로 바꿔준다.
+    
+    ```c
+    __FILE__ : C:\VS\CH16\CH16_08\Ch16_08.c
+    __DATE__ : Feb  5 2022
+    __TIME__ : 19:12:00
+    __LINE__ : 13
+    __func__ : main
+    This function is different_function
+    This is line 26
+    __FILE__ : C:\VS\CH16\CH16_08\DifferentFile.h
+    __func__ : different_func_in_different_file
+    ```
+    
+    출력하면 빌드를 실행한 시점의 날짜와 시간이 나온다.
+    
+    ```c
+    #if __LINE__ != 22
+    #error Not line 22
+    #endif
+    ```
+    
+    #error를 사용하면 조건이 맞지 않을 때 컴파일 막을 수 있다.
+    
+    라인이 22가 아니라면 Not line 22라는 오류 메세지를 발생하고 컴파일을 못하게 막는다.
+    
+    ```c
+    #if defined(_WIN64) != 1
+    #error Not WIN64 plaform
+    #endif
+    ```
+    
+    이렇게 특정 플랫폼에서만 컴파일하는 조건을 설정할 수 있다.
+    
+- ### [16.9] #pragma 지시자
+    
+    #pragma once는 헤더가드로 제일 많이 사용한다.
+    
+    #pragma가 하는일은 컴파일러가 컴파일할 때 어떤 일을 해달라고 지시를 하는데 사용한다.
+    
+    [#pragma 지시문](https://docs.microsoft.com/ko-kr/cpp/preprocessor/pragma-directives-and-the-pragma-keyword?view=msvc-170)에 관한 링크
+    
+    #pragma는 거의 모든 컴파일러에서 지원한다
+    
+    ```c
+    #prgma pack(1)
+    ```
+    
+    #pragma에서 pack옵션은 메모리를 원하는 만큼 패킹(packing)하는 옵션이다
+    
+    ```c
+    struct s {
+    	int i;
+    	char ch;
+    	double d;
+    };
+    ```
+    
+    이와 같은 구조체에서 16byte로 패딩되어야 하지만, #pragma pack(1)을 사용하면 1byte로 패딩하라고 설정한다.
+    
+    하지만 현실적으로 1byte로 패딩할 순 없기 때문에 구조체의 사이즈를 출력해보면
+    
+    ```c
+    Size of A is : 13
+    ```
+    
+    메모리 패딩을 사용하지 않은 13byte가 된다.
+    
+    ```c
+    _Pragma("pack(1)") // destringizing : remove first and last ", \" -> "
+    ```
+    
+    _Pragma는 비주얼 스튜디오에서는 적용되지 않지만, 
+    
+    온라인 컴파일러를 통해 _Pragma를 사용해보면 #Pragma와 동일한 기능이다.
+    
+    #Pragma와 다르게 유용한 점은
+    
+    ```c
+    #define PACK1 _Pragma("pack(1)")
+    PACK1
+    ```
+    
+    매크로로 사용할 수 있다.
+    
+    그 밖에, warning을 끄거나, warning을 error로 바꿔 줄 수 있다.
+    
+    ```c
+    #pragma warning ( disable : 4477) // warning disable
+    #pragma warning ( error : 4477)  // warning to error
+    ```
+    
+- ### [16.10] _Generic 표현식
+    
+    _Generic 또한 비주얼 스튜디오에서는 적용되지 않기 때문에 온라인 컴파일러를 통해 알아본다.
+    
+    특정 자료형에서만 작동하는 코드가 아니라 여러가지 자료형에 대해서 작동할 수 있는 코드가
+    
+    _Generic이다.
+    
+    ```c
+    #define MYTYPE(X) _Generic((X), \
+    	int: "int", \
+    	float : "float", \
+    	double : "double", \
+    	default: "other" \
+    )
+    ```
+    
+    이런 함수형 매크로를 통해 사용한다.
+    
+    마치 switch case문처럼 작동한다.
+    
+    ```c
+    int main()
+    {
+    	int d = 5;
+    
+    	printf("%s\n", MYTYPE(d));
+    	printf("%s\n", MYTYPE(2.0 * d));
+    	printf("%s\n", MYTYPE(3L));
+    	printf("%s\n", MYTYPE(&d));
+    
+    	return 0;
+    }
+    ```
+    
+    이렇게 출력한다.
+    
+    ```c
+    int
+    double
+    other
+    other
+    ```
+    
+- ### [16.11]  inline 함수
+    
+    inline 함수는 작은 함수가 여러 차례 반복될 때 실행 속도를 빠르게 끌어올릴 수 있는 함수다
+    
+    ```c
+    inline int foo()
+    {
+    	return 5;
+    }
+    
+    // Driver code
+    int main()
+    {
+    	int ret;
+    
+    	// inline function call
+    	ret = foo();
+    
+    	printf("Output is: %d\n", ret);
+    	return 0;
+    }
+    ```
+    
+    gcc나 다른 컴파일러에서는 internal linkage 때문에 작동하지 않는다.
+    
+    static을 붙여주어 internal linkage로 만들어서 실행해야 한다.
+    
+- ### [16.12] 라이브러리
+    
+    라이브러리가 어떻게 만들어지고 내부적으로 사용할 때 어떤 일이 벌어지는지 알기 위해
+    
+    라이브러리를 직접 만들어본다.
+    
+    ```c
+    #define _CRT_SECURE_NO_WARNINGS
+    #include "MyLibrary.h"
+    
+    #include <stdio.h>
+    
+    void say_hello()
+    {
+    	printf("Hello\n");
+    }
+    
+    void say_world()
+    {
+    	printf("World\n");
+    }
+    ```
+    
+    stdio는 표준 입출력 라이브러리고, 여기에 기본적인 함수들을 가져와서 편하게 사용할 수 있게 해준다.
+    
+    기본적인 함수들을 사용하기 전에 #include를 사용해 헤더 파일을 가져와 내부적으로 구현되어 있는 것들과 연결해준다.
+    
+    ```c
+    #pragma once
+    
+    // some useful functions...
+    void say_hello();
+    void say_world();
+    ```
+    
+    MyLibrary.h 헤더파일
+    
+    ```c
+    #define _CRT_SECURE_NO_WARNINGS
+    #include "MyLibrary.h"
+    
+    #include <stdio.h>
+    
+    void say_hello()
+    {
+    	printf("Hello\n");
+    }
+    
+    void say_world()
+    {
+    	printf("World\n");
+    }
+    ```
+    
+    Ch16_12.c 파일
+    
+    이번 강의에서 라이브러리를 만들 때 특이한 점은 main함수가 없다
+    
+    main함수가 없으면 빌드를 할 때 실행파일을 만들 수 없다
+    
+    운영체제가 어플리케이션 실행파일을 만들 때 가장 먼저 main함수를 찾는다. 그래서 어떤 형태로든 실행할 수 있는 함수가 존재해야한다
+    
+    하지만 지금은 실행파일을 만드는 것이 아니기 때문에 속성에서 구성형식을 정적 라이브러리로 변경해준다
+    
+    라이브러리를 만들 때는 복잡하지만 자주 사용하는 함수를 구성하는 것이 좋다
+    
+    정적 라이브러리로 변경 해준 후 빌드하면 .lib로 만들어진 파일이 만들어 진다
+    
+    디버그용 라이브러리를 만들었는데 디버그에서 릴리즈용으로 바꿔서 릴리즈용 라이브러리도 만들어 주는 것이 좋다
+    
+    이제 다른 프로젝트에서 메인 파일을 만들고 헤더 파일을 include를 해준다
+    
+    ```c
+    #define _CRT_SECURE_NO_WARNINGS
+    #include <stdio.h>
+    #include "C:\VS\CH16\CH16_12\MyLibrary.h"
+    
+    int main()
+    {
+    	//say_hello()
+    	//say_world()
+    
+    	return 0;
+    }
+    ```
+    
+    보통은 메인 파일과 라이브러리를 같은 폴더에 배포하기 때문에 상대적인 경로만 작성하면 된다.
+    
+    하지만 헤더 파일만 가지고는 빌드를 했을 때 링킹 에러가 발생한다.
+    
+    이 때 해당 프로젝트의 속성 → 링커 → 추가 라이브러리 디렉터리에
+    
+    아까 만든 라이브러리 파일이 있는 폴더 경로를 입력해야 한다.
+    
+    추가적으로 링커 → 입력 → 추가 종속성에 만든 라이브러리.lib; 까지 입력해준다.
+    
+    이 후 빌드를 해보면 에러 없이 잘 출력된다.
+    
+- ### [16.13] 표준 수학 라이브러리
+    
+    C언어는 비교적 필수적인 요소들만 가지고 있지만, 수학 라이브러리를 가지고 있어서
+    
+    사인, 코사인과 같은 수학 계산이 가능하다.
+    
+    ```c
+    /*
+    		Pythagorean theorem
+    		https://en.wikipedia.org/wiki/Pythagorean_theorem
+    	*/
+    
+    	double c = 5.0, b = 4.0, a;// a?
+    	a = sqrt(c * c - b * b);
+    	printf("a = %f\n, a");
+    
+    	float cf = 5.0f, bf = 4.0f, af;
+    	af = sqrtf(cf * cf - bf * bf);
+    	printf("af = %f\n, af");
+    ```
+    
+    피타고라스 정리를 구현할 때, 자료형에 따라 제곱의 값을 다르게 표현한다.
+    
+    정수형은 sqrt를 사용하고 실수 float은 sqrtf를 사용한다.
+    
+- ### [16.14] 표준 유틸리티 라이브러리
+    
+    앞선 강의에서 stdlib 라이브러리를 통해 rand, srand, malloc, free 함수 등에 대해 알아 보았다.
+    
+    자신이 필요한 라이브러리를 찾을 때에는 cppreference사이트를 활용해 
+    
+    자신이 필요한 함수를 찾는 것이 도움 된다.
+    
+    추가적으로 stdlib의 함수에는 atexit함수가 있는데 프로그램이 종료될 때, 인수에 넣은 함수를 실행하는 함수이다.
+    
+    ```c
+    void goodbye(void)
+    {
+    	printf("Goodbye\n");
+    }
+    
+    void thankyou(void)
+    {
+    	printf("Thankyou\n");
+    }
+    
+    int main()
+    {
+    	printf("Purchased?\n");
+    	if (getchar() == 'y')
+    		atexit(thankyou);
+    
+    	while (getchar() != '\n') {};
+    
+    	printf("Goodbye message ?\n");
+    	if (getchar() == 'y')
+    		atexit(goodbye);
+    
+    	return 0;
+    }
+    ```
+    
+    출력하면
+    
+    ```c
+    Purchased?
+    y
+    Goodbye message ?
+    y
+    Goodbye
+    Thankyou
+    ```
+    
+    종료되면서 Goodbye와 Thankyou를 출력한다
+    
+
+- ### [16.16] memcpy()와 memmove()
+    
+    메모리의 내용을 복사하거나 옮기거나 하는 함수다.  string.h를 #include하여 사용할 수 있다.
+    
+    기본적으로 배열도 사용이 가능하다.
+    
+    ```c
+    for (int i = 0; i < LEN; ++i)
+    		arr2[i] = arr1[i];
+    ```
+    
+    for문으로 복사를 하는 것처럼 사용할 수 있지만
+    
+    ```c
+    memcpy(arr2, arr1, sizeof(int) * LEN);
+    ```
+    
+    memcpy를 사용하는 것을 더 권장한다.
+    
+    memcpy 내부의 인수들은 arr1을 arr2로 sizeof(int) * LEN 만큼 복사한다 는 뜻이다.
+    
+    다음으로 memmove는 기능은 memcpy와 동일하지만 내부적으로 차이가 있다.
+    
+    ```c
+    memcpy(arr1, &arr1[2], sizeof(int) * 4);
+    ```
+    
+    memcpy를 통해 위의 인수대로 { 1, 3, 5 7, 9, 11}이 { 5, 7, 9, 11, 9, 11 }로 바뀌지만,
+    
+    5와 7이 겹치기 때문에 undefined behavior 오류가 발생한다.
+    
+    ```c
+    memmove(arr1, &arr1[2], sizeof(int) * 4);
+    ```
+    
+    반면에 memmove는 겹치는 부분이 있더라도 버퍼에 잠깐 저장 후 값을 옮기기 때문에 오류가 발생하지 않는다.
+    
+- ### [16.17] 가변 인수
+    
+    함수의 인수 개수가 변할 수 있는 것을 가변 인수라 부른다.
+    
+    강의 초반부터 자주 사용했던 printf가 가변 인수를 받는 함수에 속한다
+    
+    가변 인수는 stdarg.h를 #include하면 사용할 수 있다.
+    
+    ```c
+    int printf(char const* const _Format, ...);
+    ```
+    
+    가변 인수는 말줄임인 Ellipsis(. . .)을 사용한다.
+    
+    ```c
+    double average(int num, ...)
+    {
+    	va_list ap;
+    	double sum = 0.0;
+    	int i;
+    
+    	va_start(ap, num);
+    	for (i = 0; i < num; i++)
+    		sum += va_arg(ap, double);
+    	va_end(ap);
+    
+    	return sum / (double)num;
+    }
+    ```
+    
+    평균을 구하는 함수를 작성할 때, 인수 뒤에 말줄임(...)을 사용해서 
+    
+    길이가 변해도 상관없이 받아들일 수 있게 작성한다.
+    
+    말줄임은 인수 중간이나 앞에 올 수 없고 뒤에만 올 수 있다.
