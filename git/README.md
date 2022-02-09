@@ -2,6 +2,7 @@
 > 2022/02/08 - 제대로 파는 Git & GitHub by 얄코 수강  
 
 ## 새로 알게 된 점
+
 - ### Git에게 맡기지 않을 것들
 
     - 포함할 필요가 없을 때
@@ -21,10 +22,59 @@
 
 - ### Revert와 reset의 차이
 
-    revert와 reset의 차이는  
-    명령어를 수행하고 난 뒤 되돌아 갈 수 있느냐 없느냐의 차이다  
-    revert를 사용하면 revert했던 내역을 커밋으로 추가한다.  
-    reset을 사용하면 과거로 돌아간 다음 이후 커밋은 히스토리에서 지워진다.
+    - revert: 원하는 시점으로 돌아가고 revert했던 내역을 커밋으로 추가한다.  
+    - reset: 과거로 돌아간 다음 돌아간 시점 이후 커밋은 히스토리에서 지워진다.  
+
+- ### Branch: 분기된 가지 (다른 차원)  
+
+    - 프로젝트를 하나 이상의 모습으로 관리해야 할 때  
+    예) 실배포용, 테스트서버용, 새로운 시도용  
+    - 여러 작업들이 각각 독립되어 진행될 때  
+    예) 신기능 1, 신기능 2, 코드개선, 긴급수정...
+    각각의 차원에서 작업한 뒤 확정된 것을 메인 차원에 통합
+
+- ### Rebase와 Merge의 차이
+    - Rebase: 브랜치의 가지들을 메인으로 옮겨 붙인다. 깔끔하게 한줄로 이어 붙인다.
+        - rebase로 합치기
+            1. 예시) new-teams 브랜치를 main 브랜치로 rebase
+            2. new-teams 브랜치로 이동
+                - merge때와는 반대!
+            3. git rebase main 명령어로 병합
+            4. 소스트리에서 상태 확인
+                - main 브랜치는 뒤쳐져 있는 상황
+            5. main 브랜치로 이동 후 아래 명령어로 new-teams의 시점으로 fast-forward
+                - git merge new-teams
+            6. new-teams 브랜치 삭제  
+    - Merge: 브랜치의 가지들을 특정 시점으로 합류 시킨다. 브랜치의 흔적을 남긴다
+        - merge로 합치기
+            1. 예시) add-coach 브랜치를 main 브랜치로 merge
+            2. main 브랜치로 이동
+            3. git merge add-coach 명령어로 병합
+            4. :wq로 자동입력된 커밋 메시지 저장하여 마무리
+            5. 소스트리에서 확인
+
+- ### 브랜치 병합시 충돌 해결하기
+    - 브랜치 간 충돌
+        - 파일의 같은 위치에 다른 내용이 입력된 상황
+    1. Merge로 충돌 해결하기
+        - 브랜치에서 병합을 시도하면 충돌 발생
+        - 오류메시지와 git status 확인
+        - VSC에서 해당 부분 확인
+        - 해결이 어려울 땐 git merge --abort로 중단
+        - 충돌 부분 수정한 뒤 git add 와 git commit으로 병합 완료
+    2. Rebase로 충돌 해결하기
+        - 해결 불가능
+            1. 브랜치에서 main으로 rebase 시도하면 충돌 발생
+            2. 오류 메시지와 git status 확인
+            3. VSC에서 확인
+            4. 해결이 어려울 경우 git rebase --abort로 중단
+        - 해결 가능
+            1. 충돌 부분 수정한 뒤 git add .
+            2. git rebase --continue로 계속
+            3. 이슈가 더 있을 경우 해결될 때까지 반복
+            4. main이 뒤쳐져 있으므로 main에서 브랜치 merge로 마무리
+            5. 브랜치 삭제
+
 
  - ### Issue 해결  
     - vscode에서의 터미널에서는 push가 가능하지만, Sourcetree에서는 push를 하면  
