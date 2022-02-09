@@ -344,3 +344,72 @@ border: 2px solid black;
 </style>
 ```
 
+# 3.8  
+
+padding은 span에 적용 된다.  
+margin은 inline 속성이므로(높이와 너비가 없다) 좌, 우에만 적용된다.  
+class는 여러개의 속성들이 공용으로 사용할 수 있는 스타일 형식이고,  
+여러 개의 속성에 같은 스타일을 적용하고 싶을 때 사용한다.  
+class는 .속성 으로 사용한다.  
+class는 여러 개를 가질 수 있다.  
+```html
+<style>
+  #tomato = id="tomato"
+  .tomato = class="tomato hello honey"
+</style>
+```
+
+# 3.9
+
+inline을 통해 box들을 옆으로 나열할 수 있지만  
+inline은 반응형 디자인을 지원하지 않기 때문에  
+모니터마다 보이는 형태가 다르다. 따라서 여백이나 간격을 원하는대로 맞출 수 없다.
+
+# 3.10
+
+inline의 단점을 보완하려고 만든 것이 flexbox?  
+flexbox는 box를 원하는 곳에 둘 수 있고, 유연하게 사용 가능하다.  
+2차원 레이아웃에서 아주 잘 작동한다.  
+flexbox를 사용하는 것은 쉽지만, 사용할 때 지켜야할 규칙들이 정말 중요하다.  
+1. 자식 엘리먼트에는 어떤 것도 적지 않아야하고, 부모 엘리먼트에만 적는다.  
+  자식 엘리먼트를 움직이게 하려면 부모 엘리먼트를 flex로 만들고
+  부모 엘리먼트에 형식을 적는다.
+```html
+<style>           
+   body {
+      margin: 20px;         
+      display: flex;           
+        }            
+    div {
+      display: inline-block;
+      width: 50px;
+      height: 50px;
+      background-color: teal;
+       }
+</style>
+```
+2. flexbox는 주축과 교차축 모두 적용 된다.  
+  주축은 기본적으로 수평축이다. justify-content로 좌우 정렬을 설정하고,  
+  창을 좌우로 조절했을 때 알아서 크기조절하기 때문에 수평축만 반응할 것 같지만  
+  주축이 수직으로 적용될 수 있도록 바꿀 수 있기 때문에 수평축만 반응한다고 하지 않고  
+  주축이라고 부른다. align-items로 설정하면 교차축으로 반응하도록 설정할 수 있다.  
+
+# 3.11
+
+flex-direction을 통해 주축을 변경할 수 있다.  
+flex-direction을 column으로 설정하면 주축은 수직이되고  
+교차축은 수평이 된다.  
+그렇게 되면 수평이 주축이었던 justify-content가 주축이 수직으로 바뀐다. 
+자식이었던 엘리먼트에 flex를 설정하면  
+자식 엘리먼트는 부모가 되고 그 안의 content들이 자식이 되어 작동한다.  
+  
+flex에 대한 개념을 쉽게 배우는 링크 https://flexboxfroggy.com/#ko  
+
+# 3.12
+
+position fixed를 이용하면 스크롤해도 항상 제자리에 머무른다.
+처음 만들어진 자리에 고정 되어있다. 하지만 top, left, right, bottom 중 하나만 수정해도 서로 다른 레이어에 위치하게되어 원래 위치가 무시된다.
+positon fixed를 이용하면 가장 위에 위치하게 된다. (맨 앞)
+
+
+
