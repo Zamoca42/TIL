@@ -411,5 +411,109 @@ position fixed를 이용하면 스크롤해도 항상 제자리에 머무른다.
 처음 만들어진 자리에 고정 되어있다. 하지만 top, left, right, bottom 중 하나만 수정해도 서로 다른 레이어에 위치하게되어 원래 위치가 무시된다.
 positon fixed를 이용하면 가장 위에 위치하게 된다. (맨 앞)
 
+# 3.13
 
+1. positon: static (default)
+2. position: fixed
+  - element가 처음 생성된 자리에 고정.
+3. position: relative;
+  - element가 '처음 생성된 위치'를 기준점으로, top bottom left right으로 위치를 조금씩 수정할 수 있다.
+4. position: absolute;
+  - 가장 가까운 relative 부모를 기준으로 이동 position:relative;를 해주면 부모가 된다.  
+    없으면 body를 기준으로 움직인다.
+
+# 3.14
+
+pseudo selector  
+좀더 세부적으로 엘리먼트를 선택해 주는 것!  
+(기존 방법 : 태그, id w/#, class w/.)  
+
+선택의 복잡한 과정을 pseudo selector로 가능함  
+
+```html
+div:first-child {  
+background-color: tomato;  
+}  
+
+/* pseudo selector */
+div:last-child {
+background-color: teal;
+}
+```
+id나 class를 따로 만드는것보다 이렇게 지정하는게 훨씬 좋은 방법이다.  
+css에서만 선택을 하면 되니까! html코드를 고칠 필요가 없기 때문이다  
+
+n번째 태그 수정하기 nth-child(n)
+```html
+span:nth-child(2) {
+background-color: teal;
+}
+span:nth-child(even) { //or odd ( 홀수 )
+background-color: teal;
+}
+```
+even은 짝수! 짝수번째를 모두 바꿀 수 있다.  
+```html
+span:nth-child(5n + 1) {  
+background-color: silver;  
+}  
+```
+n을 사용하면 매우 편하다  
+
+# 3.15
+
+div의 바로 밑 자식에서 span을 찾아서 그것만 효과를 주는 방법  
+```html
+div span {
+text-decoration : underline;
+}
+```  
+이렇게하면 div밑에 있는 모든 span이 효과를 가진다  
+직접적인 부모가 아니어도 밑에있는 것들을 모두 css가 찾는다  
+```html
+div > span {
+text-decoration : underline;
+}
+```
+이렇게하면 바로 밑을 찾게 되므로 바로 밑의 자식만 건들일 수 있게 된다.  
+형제에게 효과를 주는방법  
+```html
+p + span {
+color: black;
+
+}
+```
++를 사용하면 형제에게 영향을 끼칠 수 있다.  
+
+※ > 를 사용하면 direct child를 찾고, + 를 사용하면 바로 코드상 밑에 있는 sibling을 찾게된다.
+
+# 3.16
+
+- "~"는 span이 p의 형제인데, 바로 뒤에 오지 않을 때 쓸 수 있다.
+- Attribute selectors 특성 선택자
+- 그냥 input과 required input이 있다면, input:required{}를 통해서, required input에만 속성을 적용시킬 수 있다.  
+- input{} 을 통해, [input 이름]에 해당하는 input 속성을 따로 줄 수 있다.  
+- 여기서, input[placeholder="First name"]은 First name에만 속성을 주지만, input[placeholder~="name"]은 name이 들어가는 모든 input에 속성을 부여할 수 있다.  
+- "~="은 name을 포함하고 있다는 의미가 되는 것이다.  
+- a[href$=".org"] → "$="는 ".org"로 끝나는 모든 anchor를 선택할 수 있다.  
+- attribute selectors를 이용하면, class를 지정할 필요 없이 CSS만으로 각각의 속성을 부여해줄 수 있다.  
+
+# 3.17
+
+Active, hover, focus, focus-within, visited  
+
+- active: 해당 요소를 마우스로 클릭했을 때 효과를 적용  
+
+- hover: 마우스가 해당 요소 위를 지나갈 때 효과를 적용
+
+- focus: 키보드로 선택되었을 때 효과를 적용
+
+- focus-within: 부모 요소에게 적용. 자신의 자식 요소 중 하나가 focused되었을 때 효과를 적용
+
+- visited: 방문한 사이트일 경우에 효과를 적용
+
+조건을 나열해 여러 상황을 설정할 수 있음.  
+예 high-tag:hover low-tag:focus{}  
+인 경우, 상위 요소위에 마우스 커서가 있고, 하위 요소가 focused되었을 때 효과를 적용하게 된다.  
+and 의 개념으로 받아드리면 될 것 같다.  
 
