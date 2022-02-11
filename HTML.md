@@ -36,23 +36,24 @@ unordered list 순서가 없는 리스트
 ```html
 <ol></ol>
 ```
+
 ordered list 순서가 있는 리스트
 a = anchor를 뜻함 (link를 떠올리면 됨) (추가적인 정보가 필요함)  
-attributes = 태그에 추가하는 정보 
+attributes = 태그에 추가하는 정보
 
 ```html
-<tag attributes="value"></tag>  
+<tag attributes="value"></tag>
 ```
 
 href = http reference라고 함 (anchor 태그에만 추가 가능)  
-target = 기본값은 _self이고, _blank 입력 시 새 탭에서 링크가 열림  
+target = 기본값은 \_self이고, \_blank 입력 시 새 탭에서 링크가 열림  
 img = 다른 태그와 다르게 /로 닫는 태그가 없다 (자체 닫기 태그이기 때문)  
-이미지는 텍스트가 아니기 때문에 자체 닫기 태그를 씀 
+이미지는 텍스트가 아니기 때문에 자체 닫기 태그를 씀
 
 ```html
-<img></img> X 
+<img></img> X
 <img /> O slef-closing tag
- 
+
 src = img 안에 사진을 집어넣음 (img에서 작동)
 <img src="" /> 이미지 넣기
 ```
@@ -64,8 +65,8 @@ src = img 안에 사진을 집어넣음 (img에서 작동)
 모든 HTML 문서는
 
 ```html
- <!DOCTYPE html> 로 시작
- ```
+<!DOCTYPE html> 로 시작
+```
 
 HTML 문서는 HEAD와 BODY로 이루어짐
 HEAD - 웹사이트의 환경 설정, 외부적으로 보여지지 않음
@@ -98,7 +99,7 @@ language = 사이트에 사용되는 언어 표기 (검색엔진에게 알려줌
 다른 수많은 meta tag들이 있음  
 HEAD 태그는 보이지 않는 사이트 설정들을 바꿔준다!! (중요)  
 og태그(open graph)는 프런트엔드를 이 과정보다 심화적으로 공부하시면 아실테지만,  
-콘텐츠의 요약내용이 SNS에 게시되는데 최적화된   데이터로 가지고 갈 수 있도록 설정하는 것 정도로 아시면 이해가 편할 것 같습니다.  
+콘텐츠의 요약내용이 SNS에 게시되는데 최적화된 데이터로 가지고 갈 수 있도록 설정하는 것 정도로 아시면 이해가 편할 것 같습니다.
 
 # 2.7
 
@@ -152,7 +153,7 @@ Hide / Show Sidebar: ⌘ + B or Ctrl + B
 
 required이라는 원하지 않는 값을 거부하는  
 attribute를 통해서 간편하게 validate 할 수 있다  
-모든 html태그와 속성을 기억할 필요없다 사용방법과 규칙만 알면 된다.  
+모든 html태그와 속성을 기억할 필요없다 사용방법과 규칙만 알면 된다.
 
 # 2.9
 
@@ -162,7 +163,7 @@ for 과 id는 attribute처럼 작성한다.
 id는 고유식별자로 태그당 하나의 id만 가질 수 있는게 규칙이다.  
 하지만 id를 여러 곳에 입력했다고 해서 에러는 뜨지 않는다.  
 다만 이상하게 작동한다.  
-CSS와 HTML을 연결할 수 있는 것은 id가 있기 때문이다.  
+CSS와 HTML을 연결할 수 있는 것은 id가 있기 때문이다.
 
 ```html
 <label for="Profile">Profile Photo</label>
@@ -177,7 +178,7 @@ header, main, footer 는 div를 대체할 수 있다.
 하지만 div는 구분만 될 뿐 무엇을 의미하는지는 알 수 없다.  
 header는 머리(위), main은 몸(중간), footer 다리(아래)에 온다는 것을 이해할 수 있다.  
 이것을 semantic 태그라고 부른다  
-HTML 문서에 content sectioning에 해당하는 태그들이 Semantic 태그들이다.  
+HTML 문서에 content sectioning에 해당하는 태그들이 Semantic 태그들이다.
 
 ```html
 <div>
@@ -188,15 +189,15 @@ HTML 문서에 content sectioning에 해당하는 태그들이 Semantic 태그�
 
 # 3.0
 
-CSS와 HTML을 같은 파일에 두는 것을 이해  
+CSS와 HTML을 같은 파일에 두는 것을 이해
 
 style태그를 작성하면 HTML파일에 CSS코드를 작성  
 CSS는 뭔가를 가리킨다 (pointer)  
 link 태그를 통해서 css파일과 연결하고 rel을 통해 관계를 적어주면  
-보기 좋고 더 많은 HTML태그 작성 가능  
-  
+보기 좋고 더 많은 HTML태그 작성 가능
+
 ```html
-<link href="styles.css" rel="stylesheet" />  
+<link href="styles.css" rel="stylesheet" />
 ```
 
 # 3.1
@@ -230,7 +231,7 @@ CSS(Cascading Style Sheet)인 이유는 브라우저가 CSS코드를 읽을 때
 스타일 태그를 이용해서 속성을 써주는 것을 inline CSS라 하고  
 CSS 파일을 include하는 걸 external CSS라고 한다  
 같은 태그에 있는 스타일을 적용시키면 CSS가 위에서 아래로 적용 시켜나가다가  
-맨 아래에서 만난 스타일을 최종적으로 적용시킨다.  
+맨 아래에서 만난 스타일을 최종적으로 적용시킨다.
 
 ```html
 <style>
@@ -252,7 +253,7 @@ CSS 파일을 include하는 걸 external CSS라고 한다
 
 box옆에 또 다른 box는 오지 않는다. 옆에 다른 요소가 못 오는 것을 block이라 부르고  
 link, img, span, code, a같이 다른 요소가 올 수 있는 것을 inline으로 부른다.  
-inline의 종류는 많지않고 대부분 block에 해당한다.  
+inline의 종류는 많지않고 대부분 block에 해당한다.
 
 # 3.4
 
@@ -262,14 +263,14 @@ block는 높이와 너비가 있다.
 block의 특징 margin, padding, border  
 브라우저는 기본적으로 style 속성을 준다.  
 margin - 경계의 바깥에 있는 공간 (여백)  
-border - 경계  
+border - 경계
 
 ```html
 body { margin-left: 0px; margin-right: 5px; margin-top: 0px; margin-bottom:
 10px; background-color: thistle; }
 ```
 
-이렇게 margin은 위, 아래, 오른쪽, 왼쪽 나눠서 설정 해줄 수 있다  
+이렇게 margin은 위, 아래, 오른쪽, 왼쪽 나눠서 설정 해줄 수 있다
 
 # 3.5
 
@@ -295,47 +296,55 @@ body { margin-left: 0px; margin-right: 5px; margin-top: 0px; margin-bottom:
 
 시계방향으로 위 오른쪽 아래 왼쪽 순이다.  
 상하에서는 margin을 사용할 경우 Collapsing margins 현상이 발생한다  
-div와 body가 경계가 만날 때 body와 div의 경계가 하나로 취급된다.  
+div와 body가 경계가 만날 때 body와 div의 경계가 하나로 취급된다.
 
-# 3.6   
+# 3.6
 
 padding에 관해서 배워보자  
 padding은 margin과 반대 개념  
-padding도 공간인데 box의 경계로부터 '안쪽'에 있는 공간  
+padding도 공간인데 box의 경계로부터 '안쪽'에 있는 공간
+
 ```html
-<div id = "first"></div>
+<div id="first"></div>
 ```
+
 div를 사용해서 경계를 나눌 때 경계를 명확하게 알아보기 위해 id를 사용한다.  
-CSS에 적용시키려면 style 태그안에 #id를 사용하면 id별로 스타일을 적용할 수 있다. 
+CSS에 적용시키려면 style 태그안에 #id를 사용하면 id별로 스타일을 적용할 수 있다.
+
 ```html
 <style>
-            body {
-                margin: 20px;     
-                padding:20px;           
-                background-color: thistle;
-            }
-            html {
-                background-color: tomato;
-            }
-            div {
-                height: 150px;
-                width: 150px;
-            }
-            #first {
-               background-color: whitesmoke;
-                height: 150px;
-                width: 150px;
-              }    
-</style>      
+  body {
+    margin: 20px;
+    padding: 20px;
+    background-color: thistle;
+  }
+  html {
+    background-color: tomato;
+  }
+  div {
+    height: 150px;
+    width: 150px;
+  }
+  #first {
+    background-color: whitesmoke;
+    height: 150px;
+    width: 150px;
+  }
+</style>
 ```
+
 element에는 하나의 id만 적용할 수 있다.
 
 # 3.7
+
 border스타일은 여러가지가 있지만, 대부분 한 가지만 사용한다.
+
 ```html
 border: 2px solid black;
 ```
-스타일 태그에서 '*' 태그를 사용하면 모든 태그에 스타일이 적용 된다.
+
+스타일 태그에서 '\*' 태그를 사용하면 모든 태그에 스타일이 적용 된다.
+
 ```html
 <style>
   * {
@@ -344,18 +353,18 @@ border: 2px solid black;
 </style>
 ```
 
-# 3.8  
+# 3.8
 
 padding은 span에 적용 된다.  
 margin은 inline 속성이므로(높이와 너비가 없다) 좌, 우에만 적용된다.  
 class는 여러개의 속성들이 공용으로 사용할 수 있는 스타일 형식이고,  
 여러 개의 속성에 같은 스타일을 적용하고 싶을 때 사용한다.  
 class는 .속성 으로 사용한다.  
-class는 여러 개를 가질 수 있다.  
+class는 여러 개를 가질 수 있다.
+
 ```html
 <style>
-  #tomato = id="tomato"
-  .tomato = class="tomato hello honey"
+  #tomato = id="tomato" .tomato = class="tomato hello honey";
 </style>
 ```
 
@@ -370,40 +379,43 @@ inline은 반응형 디자인을 지원하지 않기 때문에
 inline의 단점을 보완하려고 만든 것이 flexbox?  
 flexbox는 box를 원하는 곳에 둘 수 있고, 유연하게 사용 가능하다.  
 2차원 레이아웃에서 아주 잘 작동한다.  
-flexbox를 사용하는 것은 쉽지만, 사용할 때 지켜야할 규칙들이 정말 중요하다.  
+flexbox를 사용하는 것은 쉽지만, 사용할 때 지켜야할 규칙들이 정말 중요하다.
+
 1. 자식 엘리먼트에는 어떤 것도 적지 않아야하고, 부모 엘리먼트에만 적는다.  
-  자식 엘리먼트를 움직이게 하려면 부모 엘리먼트를 flex로 만들고
-  부모 엘리먼트에 형식을 적는다.
+   자식 엘리먼트를 움직이게 하려면 부모 엘리먼트를 flex로 만들고
+   부모 엘리먼트에 형식을 적는다.
+
 ```html
-<style>           
-   body {
-      margin: 20px;         
-      display: flex;           
-        }            
-    div {
-      display: inline-block;
-      width: 50px;
-      height: 50px;
-      background-color: teal;
-       }
+<style>
+  body {
+    margin: 20px;
+    display: flex;
+  }
+  div {
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    background-color: teal;
+  }
 </style>
 ```
+
 2. flexbox는 주축과 교차축 모두 적용 된다.  
-  주축은 기본적으로 수평축이다. justify-content로 좌우 정렬을 설정하고,  
-  창을 좌우로 조절했을 때 알아서 크기조절하기 때문에 수평축만 반응할 것 같지만  
-  주축이 수직으로 적용될 수 있도록 바꿀 수 있기 때문에 수평축만 반응한다고 하지 않고  
-  주축이라고 부른다. align-items로 설정하면 교차축으로 반응하도록 설정할 수 있다.  
+   주축은 기본적으로 수평축이다. justify-content로 좌우 정렬을 설정하고,  
+   창을 좌우로 조절했을 때 알아서 크기조절하기 때문에 수평축만 반응할 것 같지만  
+   주축이 수직으로 적용될 수 있도록 바꿀 수 있기 때문에 수평축만 반응한다고 하지 않고  
+   주축이라고 부른다. align-items로 설정하면 교차축으로 반응하도록 설정할 수 있다.
 
 # 3.11
 
 flex-direction을 통해 주축을 변경할 수 있다.  
 flex-direction을 column으로 설정하면 주축은 수직이되고  
 교차축은 수평이 된다.  
-그렇게 되면 수평이 주축이었던 justify-content가 주축이 수직으로 바뀐다. 
+그렇게 되면 수평이 주축이었던 justify-content가 주축이 수직으로 바뀐다.
 자식이었던 엘리먼트에 flex를 설정하면  
-자식 엘리먼트는 부모가 되고 그 안의 content들이 자식이 되어 작동한다.  
-  
-flex에 대한 개념을 쉽게 배우는 링크 https://flexboxfroggy.com/#ko  
+자식 엘리먼트는 부모가 되고 그 안의 content들이 자식이 되어 작동한다.
+
+flex에 대한 개념을 쉽게 배우는 링크 https://flexboxfroggy.com/#ko
 
 # 3.12
 
@@ -415,75 +427,72 @@ positon fixed를 이용하면 가장 위에 위치하게 된다. (맨 앞)
 
 1. positon: static (default)
 2. position: fixed
-  - element가 처음 생성된 자리에 고정.
+
+- element가 처음 생성된 자리에 고정.
+
 3. position: relative;
-  - element가 '처음 생성된 위치'를 기준점으로, top bottom left right으로 위치를 조금씩 수정할 수 있다.
+
+- element가 '처음 생성된 위치'를 기준점으로, top bottom left right으로 위치를 조금씩 수정할 수 있다.
+
 4. position: absolute;
-  - 가장 가까운 relative 부모를 기준으로 이동 position:relative;를 해주면 부모가 된다.  
-    없으면 body를 기준으로 움직인다.
+
+- 가장 가까운 relative 부모를 기준으로 이동 position:relative;를 해주면 부모가 된다.  
+  없으면 body를 기준으로 움직인다.
 
 # 3.14
 
 pseudo selector  
 좀더 세부적으로 엘리먼트를 선택해 주는 것!  
-(기존 방법 : 태그, id w/#, class w/.)  
+(기존 방법 : 태그, id w/#, class w/.)
 
-선택의 복잡한 과정을 pseudo selector로 가능함  
+선택의 복잡한 과정을 pseudo selector로 가능함
 
 ```html
-div:first-child {  
-background-color: tomato;  
-}  
-
-/* pseudo selector */
-div:last-child {
-background-color: teal;
-}
+div:first-child { background-color: tomato; } /* pseudo selector */
+div:last-child { background-color: teal; }
 ```
+
 id나 class를 따로 만드는것보다 이렇게 지정하는게 훨씬 좋은 방법이다.  
-css에서만 선택을 하면 되니까! html코드를 고칠 필요가 없기 때문이다  
+css에서만 선택을 하면 되니까! html코드를 고칠 필요가 없기 때문이다
 
 n번째 태그 수정하기 nth-child(n)
+
 ```html
-span:nth-child(2) {
-background-color: teal;
-}
-span:nth-child(even) { //or odd ( 홀수 )
-background-color: teal;
-}
+span:nth-child(2) { background-color: teal; } span:nth-child(even) { //or odd (
+홀수 ) background-color: teal; }
 ```
-even은 짝수! 짝수번째를 모두 바꿀 수 있다.  
+
+even은 짝수! 짝수번째를 모두 바꿀 수 있다.
+
 ```html
-span:nth-child(5n + 1) {  
-background-color: silver;  
-}  
+span:nth-child(5n + 1) { background-color: silver; }
 ```
-n을 사용하면 매우 편하다  
+
+n을 사용하면 매우 편하다
 
 # 3.15
 
-div의 바로 밑 자식에서 span을 찾아서 그것만 효과를 주는 방법  
-```html
-div span {
-text-decoration : underline;
-}
-```  
-이렇게하면 div밑에 있는 모든 span이 효과를 가진다  
-직접적인 부모가 아니어도 밑에있는 것들을 모두 css가 찾는다  
-```html
-div > span {
-text-decoration : underline;
-}
-```
-이렇게하면 바로 밑을 찾게 되므로 바로 밑의 자식만 건들일 수 있게 된다.  
-형제에게 효과를 주는방법  
-```html
-p + span {
-color: black;
+div의 바로 밑 자식에서 span을 찾아서 그것만 효과를 주는 방법
 
-}
+```html
+div span { text-decoration : underline; }
 ```
-+를 사용하면 형제에게 영향을 끼칠 수 있다.  
+
+이렇게하면 div밑에 있는 모든 span이 효과를 가진다  
+직접적인 부모가 아니어도 밑에있는 것들을 모두 css가 찾는다
+
+```html
+div > span { text-decoration : underline; }
+```
+
+이렇게하면 바로 밑을 찾게 되므로 바로 밑의 자식만 건들일 수 있게 된다.  
+형제에게 효과를 주는방법
+
+```html
+p + span { color: black; }
+```
+
++를 사용하면 형제에게 영향을 끼칠 수 있다.
 
 ※ > 를 사용하면 direct child를 찾고, + 를 사용하면 바로 코드상 밑에 있는 sibling을 찾게된다.
 
@@ -491,18 +500,18 @@ color: black;
 
 - "~"는 span이 p의 형제인데, 바로 뒤에 오지 않을 때 쓸 수 있다.
 - Attribute selectors 특성 선택자
-- 그냥 input과 required input이 있다면, input:required{}를 통해서, required input에만 속성을 적용시킬 수 있다.  
-- input{} 을 통해, [input 이름]에 해당하는 input 속성을 따로 줄 수 있다.  
-- 여기서, input[placeholder="First name"]은 First name에만 속성을 주지만, input[placeholder~="name"]은 name이 들어가는 모든 input에 속성을 부여할 수 있다.  
-- "~="은 name을 포함하고 있다는 의미가 되는 것이다.  
-- a[href$=".org"] → "$="는 ".org"로 끝나는 모든 anchor를 선택할 수 있다.  
-- attribute selectors를 이용하면, class를 지정할 필요 없이 CSS만으로 각각의 속성을 부여해줄 수 있다.  
+- 그냥 input과 required input이 있다면, input:required{}를 통해서, required input에만 속성을 적용시킬 수 있다.
+- input{} 을 통해, [input 이름]에 해당하는 input 속성을 따로 줄 수 있다.
+- 여기서, input[placeholder="First name"]은 First name에만 속성을 주지만, input[placeholder~="name"]은 name이 들어가는 모든 input에 속성을 부여할 수 있다.
+- "~="은 name을 포함하고 있다는 의미가 되는 것이다.
+- a[href$=".org"] → "$="는 ".org"로 끝나는 모든 anchor를 선택할 수 있다.
+- attribute selectors를 이용하면, class를 지정할 필요 없이 CSS만으로 각각의 속성을 부여해줄 수 있다.
 
 # 3.17
 
-Active, hover, focus, focus-within, visited  
+Active, hover, focus, focus-within, visited
 
-- active: 해당 요소를 마우스로 클릭했을 때 효과를 적용  
+- active: 해당 요소를 마우스로 클릭했을 때 효과를 적용
 
 - hover: 마우스가 해당 요소 위를 지나갈 때 효과를 적용
 
@@ -515,5 +524,56 @@ Active, hover, focus, focus-within, visited
 조건을 나열해 여러 상황을 설정할 수 있음.  
 예 high-tag:hover low-tag:focus{}  
 인 경우, 상위 요소위에 마우스 커서가 있고, 하위 요소가 focused되었을 때 효과를 적용하게 된다.  
-and 의 개념으로 받아드리면 될 것 같다.  
+and 의 개념으로 받아드리면 될 것 같다.
 
+# 4.0
+
+transition
+어떤 상태에서 다른 상태로의 변화를 보여주는 애니메이션이다.
+
+1. transtion은 state가 없는 요소에 붙어야한다. 처음 생긴곳에 있어야한다.  
+   state에 transition을 준다면 변화를 준것(예를들면 hover라면 마우스를 갖다 댄것)을 그만할경우(마우스를 뗄경우) 원래상태로 바로 돌아간다.
+2. transtion에 변화를 준것들은 state에 들어있는것들이 기준이 되어 바뀌는것이다  
+   바뀌는 것들에 한정하여 transition이 일어날 수 있다
+
+# 4.1
+
+https://matthewlein.com/tools/ceaser
+
+transition 은 상태에 따라 바뀌는 요소가 있을 때 사용함
+
+- ex) hover, active, focus ...
+  ease-in function : 브라우저에게 변화하는 방법을 알려주는 역할
+- linear - 변화 그래프가 직선
+- ease-in - 시작과 끝이 빠름
+- ease-out - 시작과 끝이 느림
+- ease-in-out - 시작이 빠르고 끝이 느림
+  all : 변화 요소를 한번에 다룬다.
+- 따로 다루고 싶으면 각각 써줌
+
+# 4.2
+
+한 요소를 말 그대로 변형시킬수 있기 때문에 개쩐다  
+css로 3D까지 할수 있기 때문에 cool한것임  
+transform 안에 엄청나게 많은 기능들이 있다  
+transformation은 box element를 변형시키지 않는다.  
+즉, 옆에 sibling들에게 영향을 끼치지 않는다.  
+margin, padding이 적용되지 않는다. 일종의 3D transformation이기 때문이다.  
+margin이나 padding을 주기위해서 tarnslateX, trnasLateY 를 사용하는것이 아니다!  
+다른 요소의 box를 변형시키지 않고 원하는 요소를 이동시키기 위해서 사용하는 것이다.  
+trransformation 은 페이지의 픽셀의 다른 부분에서 일어난다.  
+transformatino은 box차원에서 일어나지 않는다.  
+tronsformation 을 결합 가능하다!  
+CSS의 3D는 GPU로 돌아간다 즉 3D작업을 할 수 있다  
+transformation 은 이것 역시 엄청나게 많은 document가 있다 확인해서 combine할 수 있다  
+transition 과 transformation 을 합친다면 아름다운 애니매이션을 만들 수 있다
+
+# 4.5
+
+- Media query는 오직 CSS만을 이용해서 스크린의 사이즈를 알 수 있는 방법이다.  
+  (웹사이트를 보고 있는 사용자의 스크린 사이즈)
+- @media screen and (max-width: 00px) {} 을 이용하여 몇 픽셀부터는 달라보이도록 만들 수 있다.
+  이를 통해 스크린의 사이즈를 알 수 있다.
+- min 사이즈와 max사이즈를 조절하여 단계별로 만들면, 스크린 사이즈의 범위를 알 수 있다.
+- 브라우저에서 inspect의 device toolbar를 이용하여 핸드폰 기종 별 사이즈로 브라우저를 볼 수 있다.
+- media screen에 (orientation: landscape)를 이용하면, 세로모드인지 가로모드인지도 구별 할 수 있다.
