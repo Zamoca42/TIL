@@ -115,27 +115,174 @@
 
 - ### Fetch와 Pull의 차이
 
-   - fetch: 원격 저장소의 최신 커밋을 로컬로 가져오기만 함
-     - 적용 전 checkout으로 확인
-   - pull: 원격 저장소의 최신 커밋을 로컬로 가져와 merge 또는 rebase
+  - fetch: 원격 저장소의 최신 커밋을 로컬로 가져오기만 함
+    - 적용 전 checkout으로 확인
+  - pull: 원격 저장소의 최신 커밋을 로컬로 가져와 merge 또는 rebase
 
 - ### 유용한 설정들
 
-   - 줄바꿈 호환 문제 해결
-     - git config --global core.autocrlf (윈도우: true / 맥: input)
-   - pull 기본 전략 merge 또는 rebase로 설정
-     - git config pull.rebase false
-     - git config pull.rebase true
-   - 기본 브랜치명
-     - git config --global init.defaultBranch main
-   - push시 로컬과 동일한 브랜치명으로
-     - git config --global push.default current
+  - 줄바꿈 호환 문제 해결
+    - git config --global core.autocrlf (윈도우: true / 맥: input)
+  - pull 기본 전략 merge 또는 rebase로 설정
+    - git config pull.rebase false
+    - git config pull.rebase true
+  - 기본 브랜치명
+    - git config --global init.defaultBranch main
+  - push시 로컬과 동일한 브랜치명으로
+    - git config --global push.default current
 
 - 단축키 설정
-   - [Git Alias](https://git-scm.com/book/ko/v2/Git%EC%9D%98-%EA%B8%B0%EC%B4%88-Git-Alias)
-   - git config --global alias.(단축키) "명령어"
-     - 예시: git config --global alias.cam "commit -am"
+  - [Git Alias](https://git-scm.com/book/ko/v2/Git%EC%9D%98-%EA%B8%B0%EC%B4%88-Git-Alias)
+  - git config --global alias.(단축키) "명령어"
+    - 예시: git config --global alias.cam "commit -am"
+- ### 커밋할 때 권장 사항
 
+  1.  하나의 커밋에는 한 단위의 작업을 넣도록 합니다.
+
+  - 한 작업을 여러 버전에 걸쳐 커밋하지 않습니다.
+  - 여러 작업을 한 버전에 커밋하지 않습니다.
+
+  2.  커밋 메시지는 어떤 작업이 이뤄졌는지 알아볼 수 있도록 작성합니다.
+
+- ### 커밋 메세지 컨벤션
+
+  - 널리 사용되는 방식
+
+    ```
+    type: subject
+
+    body (optional)
+    ...
+    ...
+    ...
+
+    footer (optional)
+    ```
+
+  - 예시
+
+    ```
+    feat: 압축파일 미리보기 기능 추가
+
+    사용자의 편의를 위해 압축을 풀기 전에
+    다음과 같이 압축파일 미리보기를 할 수 있도록 함
+    - 마우스 오른쪽 클릭
+    - 윈도우 탐색기 또는 맥 파인더의 미리보기 창
+
+    Closes #125
+    ```
+
+  - Type
+
+    | 타입     | 설명                          |
+    | -------- | ----------------------------- |
+    | feat     | 새로운 기능 추가              |
+    | fix      | 버그 수정                     |
+    | docs     | 문서 수정                     |
+    | style    | 공백, 세미콜론 등 스타일 수정 |
+    | refactor | 코드 리팩토링                 |
+    | perf     | 성능 개선                     |
+    | test     | 테스트 추가                   |
+    | chore    | 빌드 과정 또는 보조 기능 수정 |
+
+  - Footer
+    - Breaking Point 가 있을 때
+    - 특정 이슈에 대한 해결 작업일 때
+
+- ### [:pushpin:Gitmoji](https://gitmoji.dev/)
+
+- ### 내용 확인하며 hunk별로 스테이징하기 (내가 원하는 내용만 스테이징)
+
+  - 아래 명령어로 hunk별 스테이징 진행  
+    `git add -p` - 옵션 설명을 보려면 `?`입력 후 엔터 - y 또는 n로 각 헝크 선택 - 일부만 스테이징하고 진행해보기 - git status와 소스트리로 확인
+  - 변경사항을 확인하고 커밋하기  
+    `git commit -v`
+    - `j`, `k`로 스크롤하며 내용 확인
+    - `git diff --staged`와 비교
+    - 커밋 후 남은 헝크를 다른 버전으로 커밋해보기
+
+- ### 커밋하기 애매한 변화 치워두기(임시 저장)
+
+  1.  변경 사항 만들기
+
+      - Tigers의 members에 Stash 추가
+      - tomcats.yaml 추가 후 add
+
+        ```
+        team: Tomcats
+
+        coach: Apache
+        ```
+
+  2.  아래 명령어로 치워두기  
+      `git stash`
+      - git stash save와 같음
+  3.  원하는 시점, 브랜치에서 다시 적용  
+      `git stash pop`
+  4.  원하는 것만 stash 해보기
+      - Leopards의 members에 `Stash2` 추가
+      - Jaguars의 members에 `Stash3` 추가
+      - 아래 명령어로 `Stash2`만 선택하여 스태시  
+        `git stash -p`
+  5.  메시지와 함께 스태시  
+      `git stash -m 'Add Stash3'`
+      - 커밋처럼 메세지로 구분 가능
+  6.  스태시 목록 보기  
+      `git stash list`
+      - 리스트상의 번호로 apply, drop, pop 가능
+      - ex) git stash apply stash@{1}
+
+- ### Stash 사용법 정리
+
+  | 명령어                             | 설명                                          | 비고                           |
+  | ---------------------------------- | --------------------------------------------- | ------------------------------ |
+  | git stash                          | 현 작업들 치워두기                            | 끝에 save 생략                 |
+  | git stash apply                    | 치워둔 마지막 항목(번호 없을 시) 적용         | 끝에 번호로 항목 지정 가능     |
+  | git stash drop                     | 치워둔 마지막 항목(번호 없을 시) 삭제         | 끝에 번호로 항목 지정 가능     |
+  | git stash pop                      | 치워둔 마지막 항목(번호 없을 시) 적용 및 삭제 | apply + drop                   |
+  | :bulb: git stash branch (브랜치명) | 새 브랜치를 생성하여 pop                      | 충돌사항이 있는 상황 등에 유용 |
+  | git stash clear                    | 치워둔 모든 항목들 비우기                     |
+
+- ### 커밋 수정하기 (마지막 커밋 수정)
+
+  1.  커밋 메시지 변경
+
+  - Panthers의 members에 Hoki 추가하고 스테이지
+  - 커밋 메시지: 횻홍
+  - 아래 명령어로 에디터 열어 커밋 메시지 변경
+    ```
+    git commit --amend
+    ```
+  - 커밋 메시지: `Add a member to Panthers`
+
+  2.  커밋에 변화 추가
+
+  - Pumas의 members에 `Poki` 추가하고 스테이지
+  - `git commit --amend`로 마지막 커밋에 포함
+  - 커밋 메시지 아무렇게나 변경
+
+  3.  커밋 메시지 한 줄로 변경
+      ```
+      git commit --amend -m 'Add members to Panthers and Pumas'
+      ```
+
+- ### 과거의 커밋들을 수정, 삭제, 병합, 분할
+
+  - git rebase -i
+
+    - 과거의 커밋 내역을 다양한 방법으로 수정 가능
+    - 수정하고 싶은 커밋의 이전 시점 커밋의 해시를 사용
+    - 명령어
+
+      | 명령어    | 설명               |
+      | --------- | ------------------ |
+      | p, pick   | 커밋 그대로 두기   |
+      | r, reword | 커밋 메시지 변경   |
+      | e, edit   | 수정을 위해 정지   |
+      | d, drop   | 커밋 삭제          |
+      | s, squash | 이전 커밋에 합치기 |
+
+  - rebase를 사용하는 이유는 수정 과정에서 브랜치로 분리되었다가 수정 완료 후 다시 합쳐짐
 
 - ### Issue 해결
 
