@@ -122,19 +122,21 @@
 - ### 유용한 설정들
 
   - 줄바꿈 호환 문제 해결
-    - git config --global core.autocrlf (윈도우: true / 맥: input)
+    - `git config --global core.autocrlf` (윈도우: true / 맥: input)
   - pull 기본 전략 merge 또는 rebase로 설정
-    - git config pull.rebase false
-    - git config pull.rebase true
+    - `git config pull.rebase false`
+    - `git config pull.rebase true`
   - 기본 브랜치명
-    - git config --global init.defaultBranch main
+    - `git config --global init.defaultBranch main`
   - push시 로컬과 동일한 브랜치명으로
-    - git config --global push.default current
+    - `git config --global push.default current`
 
 - 단축키 설정
+
   - [Git Alias](https://git-scm.com/book/ko/v2/Git%EC%9D%98-%EA%B8%B0%EC%B4%88-Git-Alias)
   - git config --global alias.(단축키) "명령어"
-    - 예시: git config --global alias.cam "commit -am"
+    - 예시: `git config --global alias.cam "commit -am"`
+
 - ### 커밋할 때 권장 사항
 
   1.  하나의 커밋에는 한 단위의 작업을 넣도록 합니다.
@@ -188,8 +190,6 @@
   - Footer
     - Breaking Point 가 있을 때
     - 특정 이슈에 대한 해결 작업일 때
-
-- ### [:pushpin:Gitmoji](https://gitmoji.dev/)
 
 - ### 내용 확인하며 hunk별로 스테이징하기 (내가 원하는 내용만 스테이징)
 
@@ -245,26 +245,22 @@
 
 - ### 커밋 수정하기 (마지막 커밋 수정)
 
-  1.  커밋 메시지 변경
+  - 커밋 메시지 변경
 
-  - Panthers의 members에 Hoki 추가하고 스테이지
-  - 커밋 메시지: 횻홍
-  - 아래 명령어로 에디터 열어 커밋 메시지 변경
     ```
     git commit --amend
     ```
-  - 커밋 메시지: `Add a member to Panthers`
 
-  2.  커밋에 변화 추가
+  - 커밋에 변화 추가
 
-  - Pumas의 members에 `Poki` 추가하고 스테이지
-  - `git commit --amend`로 마지막 커밋에 포함
-  - 커밋 메시지 아무렇게나 변경
+    - 파일을 수정하고 스테이지
+    - `git commit --amend`로 마지막 커밋에 포함
+    - 커밋 메시지 아무렇게나 변경
 
-  3.  커밋 메시지 한 줄로 변경
-      ```
-      git commit --amend -m 'Add members to Panthers and Pumas'
-      ```
+  - 커밋 메시지 한 줄로 변경
+    ```
+    git commit --amend -m 'Add members to Panthers and Pumas'
+    ```
 
 - ### 과거의 커밋들을 수정, 삭제, 병합, 분할
 
@@ -284,6 +280,144 @@
 
   - rebase를 사용하는 이유는 수정 과정에서 브랜치로 분리되었다가 수정 완료 후 다시 합쳐짐
 
+- ### 관리되지 않는 파일들 삭제하기
+
+  - git에서 추적하지 않는 파일들 삭제
+
+    ```
+    git clean
+    ```
+
+    | 옵션 | 설명                              |
+    | ---- | --------------------------------- |
+    | -n   | 삭제될 파일들 보여주기            |
+    | -i   | 인터렉티브 모드 시작              |
+    | -d   | 폴더 포함                         |
+    | -f   | 강제로 바로 지워버리기            |
+    | -x   | .gitignore에 등록된 파일들도 삭제 |
+
+  - 위의 옵션들을 조합하여 사용
+
+- ### 변경 사항 되돌리기
+
+  - 특정 파일을 지정된 상태로 복구
+
+  - 파일을 여러 개를 수정하고 아래 명령어들 사용해보기
+
+    ```
+    git restore (파일명)
+    ```
+
+    - 워킹 디렉토리의 특정 파일 복구
+    - 파일명 자리에 `.`: 모든 파일 복구
+
+  - 변경상태를 스테이지에서 워킹디렉토리로 돌려놓기
+
+    ```
+    git restore --staged (파일명)
+    ```
+
+  - 파일을 특정 커밋의 상태로 되돌리기
+    ```
+    git restore --source=(헤드 또는 커밋 해시) 파일명
+    ```
+
+- ### reset했어도 희망은 있다!
+
+  - reset으로 사라진 커밋을 복구할 수 있는 명령어
+    ```
+    git reflog
+    ```
+  - `reflog`는 프로젝트가 위치한 커밋이 바뀔 때마다 기록되는 내역을 보여주고  
+    이를 사용하여 `reset`하기 이전 시점으로 프로젝트를 복구할 수 있습니다.
+
+- ### 커밋에 :label:태그 달기
+
+  - 특정 시점을 키워드로 저장하고 싶을 때
+  - 커밋에 버전 정보를 붙이고자 할 때
+  - 태그 달아보기
+
+    | 태그 종류   | 설명                                           |
+    | ----------- | ---------------------------------------------- |
+    | lightweight | 특정 커밋을 가리키는 용도                      |
+    | annotated   | 작성자 정보와 날짜, 메시지, GPG 서명 포함 가능 |
+
+  - 마지막 커밋에 태그 달기 (lightweight)
+     ```
+     git tag v2.0.0
+     ```
+  - 현존하는 태그 확인
+     ```
+     git tag
+     ```
+  - 원하는 태그의 내용 확인
+     ```
+     git show v2.0.0
+     ```
+  - 태그 삭제
+     ```
+     git tag -d v2.0.0
+     ```
+  - 마지막 커밋에 태그 달기 (annotated)
+     ```
+     git tag -a v2.0.0
+     ```
+     입력 후 메시지 작성 또는
+     ```
+     git tag v2.0. -m '메시지'
+     ```
+     - `-m` 태그가 `-a`태그 암시
+     - `git show v2.0.0`으로 확인
+
+  - 원하는 커밋에 태그 달기 
+     ```
+     git tag (태그명) (커밋 해시) -m (메시지)
+     ```
+  - 원하는 패턴으로 필터링
+     ```
+     git tag -l 'v1.*'
+     ```
+  - 원하는 버전으로 이동
+     ```
+     git checkout v1.2.1
+     ```
+      - `switch`로 이전 브랜치로 복귀
+
+ - ### 원격에 태그 동기화
+   - 특정 태그 원격에 올리기
+     ```
+     git push (원격명) (태그명)
+     ```
+       - GitHub에서 확인
+   - 특정 태그 원격에서 삭제
+     ```
+     git push --delete (원격명) (태그명)
+     ```
+   - 로컬의 모든 태그 원격에 올리기
+     ```
+     git push --tags
+     ```
+
+ - ### 다른 브랜치의 원하는 커밋 가져오기
+   - `cherry-pick` 명령어 사용
+     ```
+     git cherry-pick (가져올 커밋의 해시)
+     ```
+
+ - ### 다른 브랜치에서 파생된 브랜치 옮겨 붙이기
+   - `rebase --onto` 옵션 사용
+     ```
+     git rebase --onto (목표 브랜치) (출발 브랜치) (이동할 브랜치)
+     ```
+
+ - ### 다른 커밋들을 하나로 묶어 가져오기
+   - `merge --squash` 옵션 사용
+     ```
+     git merge --squash (대상 브랜치)
+     ```
+       - 변경사항들 스테이지 되어 있음
+       - `git commit`후 메시지 입력
+
 - ### Issue 해결
 
   - vscode에서의 터미널에서는 push가 가능하지만, Sourcetree에서는 push를 하면  
@@ -296,12 +430,22 @@
 
 ## 도움되었던 링크
 
+- [Gitflow 협업을 위한 브랜칭 전략](https://nvie.com/posts/a-successful-git-branching-model/)
+
+- [:bulb: Semantic Versioning 정보](https://semver.org/lang/ko/)
+
+- [:pushpin: Gitmoji](https://gitmoji.dev/)
+
 - [가장 쉬운 Git강좌-(상)](https://youtu.be/FXDjmsiv8fI)
 
 - [가장 쉬운 Git강좌-(하)](https://youtu.be/GaKjTjwcKQo)
+
   - 합쳐서 30분가량 짧은 강의이지만 터미널과 소스트리에서 커밋하고 깃헙 저장소를 원격으로 연결하는 것까지 빠르게 설명해준다.  
     속도는 엄청나게 빠르지만 일시정지하고 하나하나씩 따라하니 금방 원격저장소 연결할 수 있었다.  
     이 강의만큼 직관적으로 설명해주는건 없는 것 같다
+
 - [원격저장소 변경된 인증 방식](https://www.yalco.kr/_02_github_token/)
+
   - 2021년 8월 13일부터 원격을 통해 깃헙 저장소에 push, pull 하기 위해서는 토큰 인증이나 ssh를 입력하여야한다. push할때 오류가 떠서 당황했지만, 이 글을 찾고나서 해결했다.
+
 - [누구나 쉽게 이해하는 git 입문](https://backlog.com/git-tutorial/kr/intro/intro1_1.html)
