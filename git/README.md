@@ -1,4 +1,4 @@
-# Git
+<img src="https://user-images.githubusercontent.com/96982072/154057823-ed222567-b166-4c41-98aa-9d073047be7a.jpg"/>
 
 > 2022/02/08 - 제대로 파는 Git & GitHub by 얄코 수강
 
@@ -425,6 +425,35 @@
     도구 -> 옵션 -> git 카테고리 -> 밑에 깃버전을 시스템으로 변경하고나서  
     push가 정상적으로 작동했다.  
     [도움 받은 블로그](https://itchbo.tistory.com/79)
+
+- ### 오류가 발생한 시점 찾아내기
+   
+   - 이진 탐색 알고리즘으로 문제의 발생 시점을 찾아냅니다.
+       ```
+       git bisect
+       ``` 
+     1. 이진 탐색 시작
+         ```
+         git bisect start
+         ```
+     2. 오류 발생 지점임을 표시
+         ```
+         git bisect bad
+         ```
+     3. 의심 지점으로 이동
+         ```
+         git checkout (해당 커밋 해시)
+         ```
+     4. 오류 발생 않을 시 양호함 표시
+         ```
+         git bisect good
+         ```
+     5. 원인 찾을 때 까지 반복
+        - `git bisect good/bad`
+     6. 이진 탐색 종료
+         ```
+         git bisect reset
+         ```
 
 </br>
 
