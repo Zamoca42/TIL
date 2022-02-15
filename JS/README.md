@@ -1,4 +1,5 @@
-# Javascript
+![javascript](https://user-images.githubusercontent.com/96982072/153997073-fa41822c-60eb-4f3e-b2b4-f257f073f2f4.png)
+
 
 >자바스크립트를 선택 한 이유는 프론트 부분에서 JS를 배우고 백엔드 부분인  
 >Node를 배우는데 상대적으로 수월할거라고 생각했다.
@@ -20,27 +21,29 @@
 ### 수의 표현
 
 자바스크립트에서는 큰따옴표나 작은따옴표가 붙지 않은 숫자는 숫자로 인식한다.  
+```
 alert(1+1);  
 결과 2  
 alert(1.2 + 1.3);  
 결과 2.5   
+```
 
 ### 수의 연산
 
+```
 Math.pow(3,2);       // 9,   3의 2승  
 Math.round(10.6);    // 11,  10.6을 반올림  
 Math.ceil(10.2);     // 11,  10.2를 올림  
 Math.floor(10.6);    // 10,  10.6을 내림  
 Math.sqrt(9);        // 3,   3의 제곱근  
 Math.random();       // 0부터 1.0 사이의 랜덤한 숫자  
+```
 
 ### 문자
 
 문자는 "(큰 따옴표) 혹은 '(작은 따옴표) 중의 하나로 감싸야 한다. 큰 따옴표로 시작하면 큰 따옴표로 끝나야하고, 작은 따옴표로 시작하면 작은 따옴표로 끝나야 한다. String이라고 한다.
 ```
 alert("coding everybody");
-```
-```
 alert('coding everybody');
 ```
 숫자를 따옴표로 감싸면 문자가 된다. 아래는 문자다. typeof는 값의 데이터 형을 알려주는 기능이다.
@@ -64,11 +67,11 @@ alert("coding everybody".length)
 
 ### 변수의 사용법
 
-JavaScript에서 변수는 var로 시작한다. var은 변수를 선언하겠다는 것을 의미한다.  
+JavaScript에서 변수는 `var`로 시작한다. var은 변수를 선언하겠다는 것을 의미한다.  
 var을 생략 할수도 있지만 이것은 유효범위라는 것에 영향을 미친다.  
 그렇기 때문에 var의 의미를 명확하게 이해하기 전까지는 var를 사용하는 것이 권장된다.  
 유효범위에 대해서는 뒤에서 살펴볼 것이다.  
-변수의 이름은 $, _, 혹은 특수 문자를 제외한 모든 문자로 시작할 수 있다.  
+변수의 이름은 `$`, `_`, 혹은 특수 문자를 제외한 모든 문자로 시작할 수 있다.  
 
 다음 예제는 변수에 값을 대입한 예제다.
 ```
@@ -95,7 +98,7 @@ alert("one"=="one")     //true
 
 ### ===
 
-일치 연산자로 === 좌항과 우항이 '정확'하게 같을 때 true 다르면 false가 된다.  
+일치 연산자로 `===` 좌항과 우항이 '정확'하게 같을 때 true 다르면 false가 된다.  
 여기서 정확하다는 말의 의미에 집중하자. 아래 예를보자.  
 ```
 alert(1=='1');              //true
@@ -526,7 +529,7 @@ key :   sorialgi value : 80
 ```
 for 문은 in 뒤에 따라오는 배열의 key 값을 in 앞의 변수 name에 담아서 반복문을 실행한다.  
 반복문이 실행될 때 변수 key의 값으로 egoing, k8805, sorialgi가 순차적으로 할당되기 때문에  
-`grades[key`]`를 통해서 객체의 값을 알아낼 수 있다.
+`grades[key]`를 통해서 객체의 값을 알아낼 수 있다.
 
 객체에는 객체를 담을수도 있고, 함수도 담을 수 있다. 
 ```
@@ -615,8 +618,371 @@ script 태그 안쪽에 위치하는 컨텐츠는 브라우저에 의해서 Java
 그런데 위의 코드는 컨텐츠 대신에 src 속성이 있다. 브라우저는 src 속성에 있는 파일을 다운로드해서 실행시킨다.  
 greeting.js에는 함수 welcome가 정의되어 있기 때문에 main.html 안에 이 함수가 정의 되어 있지 않음에도 실행할 수 있는 것이다.
 
+## 정규표현식
+
+정규표현식은 문자열을 처리하기 위한 방법 중의 하나로 특정한 조건의 문자를 '검색'하거나 '치환'하는 과정을  
+매우 간편하게 처리할 수 있도록 하는 수단이다.
+
+### 정규표현식 패턴들
+
+- 정규표현식은 기본적으로 대소문자를 구분한다.
+- 캐럿(`^`)을 소스 앞에 오고 앞에 오는 문자열을 찾는다.
+- 달러(`$`)는 소스 뒤에 오고 뒤에 오는 문자열을 찾는다.
+- 백슬래시(`\`)는 정규표현식 문법이 아니라 문자로 취급할 수 있도록 바꿔준다.
+- 점(`.`)은 모든 문자를 가리키는 표현식이다.
+- 대괄호(`[]`)사이에 문자열을 사용하면 그 문자 하나를 소스에서 찾아준다. 
+- 대쉬(`-`)를 문자 사이에 사용하게 되면 해당 범위의 문자를 찾아준다
+- 중괄호(`{}`)안에 숫자가 오면 숫자만큼의 문자를 찾는다
+
+### 컴파일
+
+컴파일은 검출하고자 하는 패턴을 만드는 일이다. 우선 정규표현식 객체를 만들어야 한다.  
+객체를 만드는 방법은 두가지가 있다. a라는 텍스트를 찾아내는 정규표현식을 만들어보자.  
+
+- 정규표현식 리터럴
+     ```
+     var pattern = /a/;
+     ```
+- 정규표현식 객체 생성자
+     ```
+     var pattern = new RegExp('a');
+     ```
+두가지 모두 같은 결과를 만들지만 각자가 장단점이 있다. 
+
+### 정규표현식 메소드 실행
+
+정규표현식을 컴파일해서 객체를 만들었다면 이제 문자열에서 원하는 문자를 찾아내야 한다.  
+
+- RegExp.exec()
+     ```
+     console.log(pattern.exec('abcdef')); // ["a"]
+     ```
+     실행결과는 문자열 a를 값으로 하는 **배열**을 리턴한다.  
+
+     ```
+     console.log(pattern.exec('bcdefg')); // null
+     ```
+     인자 'bcdef'에는 a가 없기 때문에 null을 리턴한다.  
+
+- RegExp.test()  
+     test는 인자 안에 패턴에 해당되는 문자열이 있으면 true, 없으면 false를 리턴한다.  
+     ```
+     console.log(pattern.test('abcdef')); // true
+     cnosole.log(pattern.test('bcdefg')); // false
+     ```
+
+### 문자열 메소드 실행
+
+문자열 객체의 몇몇 메소드는 정규표현식을 사용할 수 있다.   
+
+- String.match()  
+     RegExp.exec()와 비슷하다.
+    
+     ```
+     console.log('abcdef'.match(pattern)); // ["a"]
+     console.log('bcdefg'.match(pattern)); // null
+     ```
+
+- String.replace()  
+     문자열에서 패턴을 검색해서 이를 변경한 후에 변경된 값을 리턴한다.
+
+     ```
+     console.log('abcdef'.replace(pattern, 'A'));  // Abcdef
+     ```
+
+### 옵션
+
+정규표현식 패턴을 만들 때 옵션을 설정할 수 있다. 옵션에 따라서 검출되는 데이터가 달라진다.  
+
+- i  
+     i를 붙이면 대소문자를 구분하지 않는다.
+
+     ```
+     var xi = /a/;
+     console.log("Abcde".match(xi)); // null
+     var oi = /a/i;
+     console.log("Abcde".match(oi)); // ["A"];
+     ```
+- g  
+     g를 붙이면 검색된 모든 결과를 리턴한다.
+
+     ```
+     var xg = /a/;
+     console.log("abcdea".match(xg));
+     var og = /a/g;
+     console.log("abcdea".match(og));
+     ```
+
+
+
+### 캡쳐
+
+패턴 `(\w+)` 에서 괄호안의 `w`는 문자 `A~Z`, `a~z`, `0~9`의 모든 문자를 말하고   
+`+`는 수량자로 w의 문자 범위에 포함된 문자 한개 이상을 의미한다.  
+`\s`는 공백(space)을 의미한다.  
+전체적인 구조는  
+
+<img src="https://user-images.githubusercontent.com/96982072/154000139-fb074d74-9275-4490-b538-df4882c7bda3.png" />
+
+```
+var pattern = /(\w+)\s(\w+)/;
+var str = "coding everybody";
+var result = str.replace(pattern, "$2, $1");
+console.log(result);
+```
+
+괄호안의 패턴은 마치 변수처럼 재사용할 수 있다.  
+이 때 기호 $를 사용하는데 아래 코드는 coding과 everybody의 순서를 역전시킨다.  
+
+### 치환  
+
+아래 코드는 본문 중의 URL을 링크 html 태그로 교체한다.  
+
+```
+var urlPattern = /\b(?:https?):\/\/[a-z0-9-+&@#\/%?=~_|!:,.;]*/gim;
+var content = '생활코딩 : http://opentutorials.org/course/1 입니다. 네이버 : http://naver.com 입니다. ';
+var result = content.replace(urlPattern, function(url){
+    return '<a href="'+url+'">'+url+'</a>';
+});
+console.log(result);
+```
+
+결과는 아래와 같다.
+
+```
+생활코딩 : <a href="http://opentutorials.org/course/1">http://opentutorials.org/course/1</a> 입니다.
+네이버 : <a href="http://naver.com">http://naver.com</a> 입니다.
+
+```
+
+## 함수지향
+
+### 전역변수와 지역변수
+
+유효범위(Scope)는 변수의 수명을 의미한다. 아래의 예제를 보자. 결과는 global이다.
+
+```
+var vscope = 'global';
+function fscope(){
+    alert(vscope);
+}
+fscope();
+```
+
+함수 밖에서 변수를 선언하면 그 변수는 전역변수가 된다.  
+전역변수는 에플리케이션 전역에서 접근이 가능한 변수다.  
+다시 말해서 어떤 함수 안에서도 그 변수에 접근 할 수 있다.  
+그렇기 때문에 함수 fscope 내에서 vscope를 호출 했을 때  
+함수 밖에서 선언된 vscope의 값 global이 반환된 것이다.  
+아래 예제를 보자. 결과는 '함수안 local'과 '함수밖 global'이 출력된다.
+
+```
+var vscope = 'global';
+function fscope(){
+    var vscope = 'local';
+    alert('함수안 '+vscope);
+}
+fscope();
+alert('함수밖 '+vscope);
+```
+
+즉 함수 안에서 변수 vscope을 조회(4행) 했을 때  
+함수 내에서 선언한 지역변수 vscope(3행)의 값인 local이 사용되었다.  
+하지만 함수 밖에서 vscope를 호출(7행) 했을 때는 전역변수 vscope(1행)의 값인 global이 사용된 것이다.  
+즉 지역변수의 유효범위는 함수 안이고, 전역변수의 유효범위는 에플리케이션 전역인데,  
+같은 이름의 지역변수와 전역변수가 동시에 정의되어 있다면 지역변수가 우선한다는 것을 알 수 있다.  
+아래 예제를 보자. 결과는 모두 local이다.
+
+```
+var vscope = 'global';
+function fscope(){
+    vscope = 'local';
+    alert('함수안'+vscope);
+}
+fscope();
+alert('함수밖'+vscope);
+```
+함수밖에서도 vscope의 값이 local인 이유는 무엇일까?  
+그것은 함수 fscope의 지역변수를 선언할 때 var를 사용하지 않았기 때문이다.  
+var를 사용하지 않은 지역변수는 전역변수가 된다. 따라서 3행은 전역변수의 값을 local로 변경하게 된 것이다.  
+var을 쓰는 것과 쓰지 않는 것의 차이를 이해해야 한다.
+
+</br>
+
+전역변수는 사용하지 않는 것이 좋다. 여러가지 이유로 그 값이 변경될 수 있기 때문이다.  
+함수 안에서 전역변수를 사용하고 있는데, 누군가에 의해서 전역변수의 값이 달라졌다면 어떻게 될까?  
+함수의 동작도 달라지게 된다. 이것은 버그의 원인이 된다.  
+또한 함수를 다른 에플리케이션에 이식하는데도 어려움을 초래한다.  
+함수의 핵심은 로직의 재활용이라는 점을 상기하자. 변수를 선언할 때는 꼭 var을 붙이는 것을 습관화해야 한다.  
+<U> 전역변수를 사용해야 하는 경우라면 그것을 사용하는 이유를 명확히 알고 있을 때 사용하도록 하자. </U>
+
+### 전역변수를 사용하는 법
+
+불가피하게 전역변수를 사용해야 하는 경우는 하나의 객체를 전역변수로 만들고 객체의 속성으로 변수를 관리하는 방법을 사용한다.
+```
+var MYAPP = {}
+MYAPP.calculator = {
+    'left' : null,
+    'right' : null
+}
+MYAPP.coordinate = {
+    'left' : null,
+    'right' : null
+}
+ 
+MYAPP.calculator.left = 10;
+MYAPP.calculator.right = 20;
+function sum(){
+    return MYAPP.calculator.left + MYAPP.calculator.right;
+}
+document.write(sum());
+```
+전역변수를 사용하고 싶지 않다면 아래와 같이 익명함수를 호출함으로서 이러한 목적을 달성할 수 있다.
+```
+(function(){
+    var MYAPP = {}
+    MYAPP.calculator = {
+        'left' : null,
+        'right' : null
+    }
+    MYAPP.coordinate = {
+        'left' : null,
+        'right' : null
+    }
+    MYAPP.calculator.left = 10;
+    MYAPP.calculator.right = 20;
+    function sum(){
+        return MYAPP.calculator.left + MYAPP.calculator.right;
+    }
+    document.write(sum());
+}())
+```
+위와 같은 방법은 자바스크립트에서 로직을 모듈화하는 일반적인 방법이다. 
+
+### 유효범위의 대상
+
+자바스크립트는 함수에 대한 유효범위만을 제공한다. 많은 언어들이 블록(대체로 {,})에 대한 유효범위를 제공하는 것과 다른 점이다. 아래 예제의 결과는 coding everybody이다.
+
+```
+for(var i = 0; i < 1; i++){
+    var name = 'coding everybody';
+}
+alert(name);
+```
+
+자바에서는 아래의 코드는 허용되지 않는다. name은 지역변수로 for 문 안에서 선언 되었는데 이를 for문 밖에서 호출하고 있기 때문이다.
+
+```
+for(int i = 0; i < 10; i++){
+    String name = "egoing";
+}
+System.out.println(name);
+```
+자바스크립트의 지역변수는 함수에서만 유효하다.
+
+### 정적(Static) 유효범위
+
+자바스크립트는 함수가 **선언된 시점**에서의 유효범위를 갖는다.  
+이러한 유효범위의 방식을 정적 유효범위(static scoping), 혹은 렉시컬(lexical scoping)이라고 한다.   
+```
+var i = 5;
+ 
+function a(){
+    var i = 10;
+    b();
+}
+ 
+function b(){
+    document.write(i);
+}
+ 
+a();
+```
+함수 b()가 사용된 시점이 아니라 선언된 시점에 전역변수 i가 들어간다.
+실행 결과는 5이다.
+
+### 값으로서의 함수
+
+JavaScript에서는 함수도 객체다. 다시 말해서 일종의 값이다. 거의 모든 언어가 함수를 가지고 있다.   JavaScript의 함수가 다른 언어의 함수와 다른 점은 함수가 값이 될 수 있다는 점이다.  
+다음 예제를 통해서 그 의미를 알아보자.
+```
+function a(){} // var a = function(){}
+```
+위의 예제에서 함수 a는 변수 a에 담겨진 값이다. 또한 함수는 객체의 값으로 포함될 수 있다.  
+이렇게 객체의 속성 값으로 담겨진 함수를 메소드(method)라고 부른다.  
+```
+a = {
+    b:function(){
+    }
+};
+```
+함수는 값이기 때문에 다른 함수의 인자로 전달 될수도 있다.  
+아래 예제를 보자.   
+```
+function cal(func, num){
+    return func(num)
+}
+function increase(num){
+    return num+1
+}
+function decrease(num){
+    return num-1
+}
+alert(cal(increase, 1));
+alert(cal(decrease, 1));
+```
+10행을 실행하면 함수 increase와 값 1이 함수 cal의 인자로 전달된다.  
+함수 cal은 첫번째 인자로 전달된 increase를 실행하는데 이 때 두번째 인자의 값이 1을 인자로 전달한다.  
+함수 increase은 계산된 결과를 리턴하고 cal은 다시 그 값을 리턴한다.
+
+### 콜백
+
+- 처리의 위임  
+     값으로 사용될 수 있는 특성을 이용하면 함수의 인자를 함수로 전달할 수 있다.  
+     값으로 전달된 함수는 호출될 수 있기 때문에 이를 이용하면 함수의 동작을 완전히 바꿀 수 있다.  
+     인자로 전달된 함수 sortNumber의 구현에 따라서 sort의 동작방법이 완전히 바뀌게 된다.  
+     ```
+     var numbers = [20, 10, 9,8,7,6,5,4,3,2,1];
+     function sortNumber(a,b){
+         // 위의 예제와 비교해서 a와 b의 순서를 바꾸면 정렬순서가 반대가 된다.
+         return b-a;
+     }
+     alert(numbers.sort(sortNumber)); // array, [20,10,9,8,7,6,5,4,3,2,1]
+     ```
+
+- 비동기처리  
+     콜백은 비동기처리에서도 유용하게 사용된다.   
+     시간이 오래걸리는 작업이 있을 때 이 작업이 완료된 후에 처리해야 할 일을   
+     콜백으로 지정하면 해당 작업이 끝났을 때 미리 등록한 작업을 실행하도록 할 수 있다.  
+     다음 코드는 일반적인 환경에서는 작동하지 않고 서버 환경에서만 동작한다.  
+     
+     datasource.json.js
+     ```
+     {"title":"JavaScript","author":"egoing"}
+     ```
+     demo1.html
+     ```
+     <!DOCTYPE html>
+     <html>
+     <head>
+     <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+     </head>
+     <body>
+     <script type="text/javascript">
+         $.get('./datasource.json.js', function(result){
+             console.log(result);
+         }, 'json');
+     </script>
+     </body>
+     </html>
+      ```
+
 </br>
 
 ## 참고
 
-https://opentutorials.org/course/743
+[생활코딩 정규표현식 수업](https://opentutorials.org/course/909/5142)
+
+[정규표현식을 시각화](https://regexper.com/)
+
+[UI와 API 그리고 문서보는 법](https://opentutorials.org/course/743/6533)
