@@ -1155,8 +1155,169 @@ innerHtml, outerHTML과 다르게 이 API들은 값을 읽을 때는 HTML 코드
 
 # Document 객체
 
-# TEXT 객체
+Document 객체는 DOM의 스펙이고 이것이 웹브라우저에서는 HTMLDocument 객체로 사용된다.  
+HTMLDocument 객체는 문서 전체를 대표하는 객체라고 할 수 있다.  
+아래 코드는 이를 보여준다.  
 
+```js
+<script>
+//document 객체는 window 객체의 소속이다.
+console.log(window.document);
+//document 객체의 자식으로는 Doctype과 html이 있다. 
+console.log(window.document.childNodes[0]);
+console.log(window.document.childNodes[1]);
+</script>
+```
+
+## 주요 API
+
+### 노드 생성 API
+
+document  객체의 주요 임무는 새로운 노드를 생성해주는 역할이다.  
+이에 대한 내용은 노드 변경 API에서 학습했기 때문에 여기서는 언급하지 않는다.  
+
+ - createElement()
+ - createTextNode()
+### 문서 정보 API
+
+ - title
+ - URL
+ - referrer
+ - lastModified
+ 
+ # TEXT 객체
+
+텍스트 객체는 텍스트 노드에 대한 DOM 객체로 CharcterData를 상속 받는다.  
+아래는 텍스트 노드를 찾는 예제다.  
+주목할 것은 DOM에서는 공백이나 줄바꿈도 텍스트 노드라는 점이다.  
+
+```js
+<p id="target1"><span>Hello world</span></p>
+<p id="target2">
+    <span>Hello world</span>
+</p>
+<script>
+var t1 = document.getElementById('target1').firstChild;
+var t2 = document.getElementById('target2').firstChild;
+ 
+console.log(t1.firstChild.nodeValue);
+try{
+    console.log(t2.firstChild.nodeValue);   
+} catch(e){
+    console.log(e);
+}
+console.log(t2.nextSibling.firstChild.nodeValue);
+ 
+</script>
+```
+실행결과
+```
+Hello world
+TypeError {stack: (...), message: "Cannot read property 'nodeValue' of null"}
+Hello world
+```
+
+## 주요기능
+
+### 값
+
+텍스트 노드의 값을 가져오는 API  
+
+- data
+- nodeValue
+### 조작  
+
+- appendData()
+- deleteData()
+- insertData()
+- replaceData()
+- subStringData()
+### 생성
+
+- docuemnt.createTextNode()
+ 
+## 값 API
+
+텍스트 노드는 DOM에서 실질적인 데이터가 저장되는 객체이다.  
+따라서 텍스트 노드에는 값과 관련된 여러 기능들이 있는데 이번 시간에는 값을 가져오는 두개의 API를 알아본다.  
+
+- nodeValue
+- data
+
+```js
+<ul>
+    <li id="target">html</li> 
+    <li>css</li>
+    <li>JavaScript</li>
+</ul>
+<script>
+    var t = document.getElementById('target').firstChild;
+    console.log(t.nodeValue);
+    console.log(t.data);
+</script>
+```
+
+## 조작 API
+
+텍스트 노드가 상속 받은 CharacterData 객체는 문자를 제어할 수 있는 다양한 API를 제공한다.  
+아래는 조작과 관련된 API들의 목록이다.  
+
+- appendData()
+- deleteData()
+- insertData()
+- replaceData()
+- substringData()
+
+```js
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+    #target{
+        font-size:77px;
+        font-family: georgia;
+        border-bottom:1px solid black;
+        padding-bottom:10px;
+    }
+    p{
+        margin:5px;
+    }
+    </style>
+</head>
+<body>
+<p id="target">Cording everybody!</p>
+<p> data : <input type="text" id="datasource" value="JavaScript" /></p>
+<p>   start :<input type="text" id="start" value="5" /></p>
+<p> end : <input type="text" id="end" value="5" /></p>
+<p><input type="button" value="appendData(data)" onclick="callAppendData()" />
+<input type="button" value="deleteData(start,end)" onclick="callDeleteData()" />
+<input type="button" value="insertData(start,data)" onclick="callInsertData()" />
+<input type="button" value="replaceData(start,end,data)" onclick="callReplaceData()" />
+<input type="button" value="substringData(start,end)" onclick="callSubstringData()" /></p>
+<script>
+    var target = document.getElementById('target').firstChild;
+    var data = document.getElementById('datasource');
+    var start = document.getElementById('start');
+    var end = document.getElementById('end');
+    function callAppendData(){
+        target.appendData(data.value);
+    }
+    function callDeleteData(){
+        target.deleteData(start.value, end.value);
+    }
+    function callInsertData(){
+        target.insertData(start.value, data.value); 
+    }
+    function callReplaceData(){
+        target.replaceData(start.value, end.value, data.value);
+    }
+    function callSubstringData(){
+        alert(target.substringData(start.value, end.value));
+    }
+</script>
+</body>
+</html>
+```
 # 문서의 기하학적 특성
 
 # 이벤트
