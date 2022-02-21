@@ -762,6 +762,407 @@ property 방식은 좀 더 간편하고 속도도 빠르지만
 | for         | htmlFor     |
 | maxlength   | maxLength   |
 
+심지어 속성과 프로퍼티는 값이 다를수도 있다.  
+아래 코드를 실행한 결과는 속성과 프로퍼티의 값이 꼭 같은 것은 아니라는 것을 보여준다.
+
+```
+<a id="target" href="./demo1.html">ot</a>
+<script>
+//현재 웹페이지가 http://localhost/webjs/Element/attribute_api/demo3.html 일 때
+var target = document.getElementById('target');
+// http://localhost/webjs/Element/attribute_api/demo1.html
+console.log('target.href', target.href);
+// ./demo1.html
+console.log('target.getAttribute("href")', target.getAttribute("href"));
+</script>
+```
+
+## Node 객체
+
+Node 객체는 DOM에서 시조와 같은 역할을 한다.  
+다시 말해서 모든 DOM 객체는 Node 객체를 상속 받는다.
+
+### 주요기능
+
+Node 객체의 주요한 임무는 아래와 같다.
+
+- 관계
+
+  엘리먼트는 서로 부모, 자식, 혹은 형제자매 관계로 연결되어 있다.  
+   각각의 Node가 다른 Node와 연결된 정보를 보여주는 API를 통해서 문서를 프로그래밍적으로 탐색할 수 있다.
+
+  - Node.childNodes
+  - Node.firstChild
+  - Node.lastChild
+  - Node.nextSibling
+  - Node.previousSibling
+  - Node.contains()
+  - Node.hasChildNodes()
+
+- 노드의 종류
+
+  Node 객체는 모든 구성요소를 대표하는 객체이기 때문에  
+   각각의 구성요소가 어떤 카테고리에 속하는 것인지를 알려주는 식별자를 제공한다.
+
+  - Node.nodeType
+  - Node.nodeName
+
+- 값
+
+  Node 객체의 값을 제공하는 API
+
+  - Node.nodeValue
+  - Node.textContent
+
+- 자식관리
+
+  Node 객체의 자식을 추가하는 방법에 대한 API
+
+  - Node.appendChild()
+  - Node.removeChild()
+
+### Node 관계 API
+
+Node 객체는 Node 간의 관계 정보를 담고 있는 일련의 API를 가지고 있다.  
+다음은 관계와 관련된 프로퍼티들이다.
+
+- Node.childNodes  
+  자식노드들을 유사배열에 담아서 리턴한다.
+- Node.firstChild  
+  첫번째 자식노드
+- Node.lastChild  
+  마지막 자식노드
+- Node.nextSibling  
+  다음 형제 노드
+- Node.previousSibling  
+  이전 형제 노드
+
+아래는 위의 API를 이용해서 문서를 탐색하는 모습을 보여준다.
+
+```js
+<body id="start">
+  <ul>
+    <li>
+      <a href="./532">html</a>
+    </li>
+    <li>
+      <a href="./533">css</a>
+    </li>
+    <li>
+      <a href="./534">JavaScript</a>
+      <ul>
+        <li>
+          <a href="./535">JavaScript Core</a>
+        </li>
+        <li>
+          <a href="./536">DOM</a>
+        </li>
+        <li>
+          <a href="./537">BOM</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+  <script>
+    var s = document.getElementById('start'); console.log(1, s.firstChild); //
+    #text var ul = s.firstChild.nextSibling console.log(2, ul); // ul
+    console.log(3, ul.nextSibling); // #text console.log(4,
+    ul.nextSibling.nextSibling); // script console.log(5, ul.childNodes);
+    //text, li, text, li, text, li, text console.log(6, ul.childNodes[1]); //
+    li(html) console.log(7, ul.parentNode); // body
+  </script>
+</body>
+```
+
+### Node 종류 API
+
+노드 작업을 하게 되면 현재 선택된 노드가 어떤 타입인지를 판단해야 하는 경우가 있다.  
+이런 경우에 사용할 수 있는 API가 nodeType, nodeName이다.
+
+- Node.nodeType  
+  node의 타입을 의미한다.
+- Node.nodeName  
+  node의 이름 (태그명을 의미한다.)
+
+#### Node Type
+
+노드의 종류에 따라서 정해진 상수가 존재한다.  
+ 아래는 모든 노드의 종류와 종류에 따른 값을 출력하는 예제다.
+
+```js
+for (var name in Node) {
+  console.log(name, Node[name]);
+}
+```
+
+결과
+
+```
+ELEMENT_NODE 1
+ATTRIBUTE_NODE 2
+TEXT_NODE 3
+CDATA_SECTION_NODE 4
+ENTITY_REFERENCE_NODE 5
+ENTITY_NODE 6
+PROCESSING_INSTRUCTION_NODE 7
+COMMENT_NODE 8
+DOCUMENT_NODE 9
+DOCUMENT_TYPE_NODE 10
+DOCUMENT_FRAGMENT_NODE 11
+NOTATION_NODE 12
+DOCUMENT_POSITION_DISCONNECTED 1
+DOCUMENT_POSITION_PRECEDING 2
+DOCUMENT_POSITION_FOLLOWING 4
+DOCUMENT_POSITION_CONTAINS 8
+DOCUMENT_POSITION_CONTAINED_BY 16
+DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC 32
+```
+
+아래 예제는 노드 종류 API를 이용해서 노드를 처리하는 예제다.  
+함수가 자기 자신을 호출하는 것을 재귀함수라고 하는데 본 예제는 재귀 함수의 예를 보여준다.
+
+```js
+<!DOCTYPE html>
+<html>
+<body id="start">
+<ul>
+    <li><a href="./532">html</a></li>
+    <li><a href="./533">css</a></li>
+    <li><a href="./534">JavaScript</a>
+        <ul>
+            <li><a href="./535">JavaScript Core</a></li>
+            <li><a href="./536">DOM</a></li>
+            <li><a href="./537">BOM</a></li>
+        </ul>
+    </li>
+</ul>
+<script>
+function traverse(target, callback){
+    if(target.nodeType === 1){
+        //if(target.nodeName === 'A')
+        callback(target);
+        var c = target.childNodes;
+        for(var i=0; i<c.length; i++){
+            traverse(c[i], callback);
+        }
+    }
+}
+traverse(document.getElementById('start'), function(elem){
+    console.log(elem);
+});
+</script>
+</body>
+</html>
+```
+
+### Node 변경 API
+
+노드를 추가, 제거, 변경하는 방법을 알아보자.
+
+#### 노드 추가
+
+노드의 추가와 관련된 API들은 아래와 같다.
+
+- appendChild(child)  
+  노드의 마지막 자식으로 주어진 엘리먼트 추가
+- insertBefore(newElement, referenceElement)  
+  appendChild와 동작방법은 같으나 두번째 인자로 엘리먼트를 전달 했을 때 이것 앞에 엘리먼트가 추가된다.
+
+노드를 추가하기 위해서는 추가할 엘리먼트를 생성해야 하는데 이것은 document 객체의 기능이다.  
+아래 API는 노드를 생성하는 API이다.
+
+- document.createElement(tagname)  
+   엘리먼트 노드를 추가한다.
+- document.createTextNode(data)  
+   텍스트 노드를 추가한다.
+
+```js
+<ul id="target">
+    <li>HTML</li>
+    <li>CSS</li>
+</ul>
+<input type="button" onclick="callAppendChild();" value="appendChild()" />
+<input type="button" onclick="callInsertBefore();" value="insertBefore()" />
+<script>
+    function callAppendChild(){
+        var target = document.getElementById('target');
+        var li = document.createElement('li');
+        var text = document.createTextNode('JavaScript');
+        li.appendChild(text);
+        target.appendChild(li);
+    }
+
+    function callInsertBefore(){
+        var target = document.getElementById('target');
+        var li = document.createElement('li');
+        var text = document.createTextNode('jQuery');
+        li.appendChild(text);
+        target.insertBefore(li, target.firstChild);
+    }
+</script>
+```
+
+#### 노드 제거
+
+노드 제거를 위해서는 아래 API를 사용한다.  
+이 때 메소드는 삭제 대상의 부모 노드 객체의 것을 실행해야 한다는 점에 유의하자.
+
+- removeChild(child)
+  ```js
+  <ul>
+      <li>HTML</li>
+      <li>CSS</li>
+      <li id="target">JavaScript</li>
+  </ul>
+  <input type="button" onclick="callRemoveChild();" value="removeChild()" />
+  <script>
+      function callRemoveChild(){
+          var target = document.getElementById('target');
+          target.parentNode.removeChild(target);
+      }
+  </script>
+  ```
+
+#### 노드 바꾸기
+
+노드 바꾸기에는 아래 API가 사용된다.
+
+- replaceChild(newChild, oldChild)
+  ```js
+  <ul>
+      <li>HTML</li>
+      <li>CSS</li>
+      <li id="target">JavaScript</li>
+  </ul>
+  <input type="button" onclick="callReplaceChild();" value="replaceChild()" />
+  <script>
+      function callReplaceChild(){
+          var a = document.createElement('a');
+          a.setAttribute('href', 'http://opentutorials.org/module/904/6701');
+          a.appendChild(document.createTextNode('Web browser JavaScript'));
+
+          var target = document.getElementById('target');
+          target.replaceChild(a,target.firstChild);
+      }
+  </script>
+  ```
+
+### 문자열로 노드 제어
+
+노드 변경 API에서는 여러 메소드를 이용해서 노드를 제어하는 방법에 대해서 알아봤다. 그런데 이 방식은 복잡하고 장황하다. 좀 더 편리하게 노드를 조작하는 방법을 알아보자.
+
+#### innerHTML
+
+innerHTML는 문자열로 자식 노드를 만들 수 있는 기능을 제공한다. 또한 자식 노드의 값을 읽어올 수도 있다.
+
+```js
+<ul id="target">
+    <li>HTML</li>
+    <li>CSS</li>
+</ul>
+<input type="button" onclick="get();" value="get" />
+<input type="button" onclick="set();" value="set" />
+<script>
+    function get(){
+        var target = document.getElementById('target');
+        alert(target.innerHTML);
+    }
+    function set(){
+        var target = document.getElementById('target');
+        target.innerHTML = "<li>JavaScript Core</li><li>BOM</li><li>DOM</li>";
+    }
+</script>
+```
+
+#### outerHTML
+
+outerHTML은 선택한 엘리먼트를 포함해서 처리된다.
+
+```js
+<ul id="target">
+    <li>HTML</li>
+    <li>CSS</li>
+</ul>
+<input type="button" onclick="get();" value="get" />
+<input type="button" onclick="set();" value="set" />
+<script>
+    function get(){
+        var target = document.getElementById('target');
+        alert(target.outerHTML);
+    }
+    function set(){
+        var target = document.getElementById('target');
+        target.outerHTML = "<ol><li>JavaScript Core</li><li>BOM</li><li>DOM</li></ol>";
+    }
+</script>
+```
+
+#### innerText, outerText
+
+innerHtml, outerHTML과 다르게 이 API들은 값을 읽을 때는 HTML 코드를 제외한 문자열을 리턴하고,  
+값을 변경할 때는 HTML의 코드를 그대로 추가한다.
+
+```js
+<ul id="target">
+    <li>HTML</li>
+    <li>CSS</li>
+</ul>
+<input type="button" onclick="get();" value="get" />
+<input type="button" onclick="set();" value="set" />
+<script>
+    function get(){
+        var target = document.getElementById('target');
+        alert(target.innerText);
+    }
+    function set(){
+        var target = document.getElementById('target');
+        target.innerText = "<li>JavaScript Core</li><li>BOM</li><li>DOM</li>";
+    }
+</script>
+```
+
+#### insertAdjacentHTML()
+
+좀 더 정교하게 문자열을 이용해서 노드를 변경하고 싶을 때 사용한다.
+
+```js
+<ul id="target">
+    <li>CSS</li>
+</ul>
+<input type="button" onclick="beforebegin();" value="beforebegin" />
+<input type="button" onclick="afterbegin();" value="afterbegin" />
+<input type="button" onclick="beforeend();" value="beforeend" />
+<input type="button" onclick="afterend();" value="afterend" />
+<script>
+    function beforebegin(){
+        var target = document.getElementById('target');
+        target.insertAdjacentHTML('beforebegin','<h1>Client Side</h1>');
+    }
+    function afterbegin(){
+        var target = document.getElementById('target');
+        target.insertAdjacentHTML('afterbegin','<li>HTML</li>');
+    }
+    function beforeend(){
+        var target = document.getElementById('target');
+        target.insertAdjacentHTML('beforeend','<li>JavaScript</li>');
+    }
+    function afterend(){
+        var target = document.getElementById('target');
+        target.insertAdjacentHTML('afterend','<h1>Server Side</h1>');
+    }
+</script>
+```
+
+## Document 객체
+
+## TEXT 객체
+
+## 문서의 기하학적 특성
+
+## 이벤트
+
+## 네트워크 통신
+
 ## 참고
 
 [Object Model](http://learn.javascript.ru/browser-environment)
