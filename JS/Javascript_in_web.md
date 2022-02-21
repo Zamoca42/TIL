@@ -1,18 +1,18 @@
-# 웹브라우저에서의 자바스크립트
+<img src="https://user-images.githubusercontent.com/96982072/154977336-bc7ba4aa-e3e9-488c-b68d-0ca9fb80c4dd.png" width=600 />
 
-> JQuery부분은 나중에 배우기 위해 후순위로 미루어뒀다.
+> JQuery부분은 제외했다.
 
 > [오픈튜토리얼 - 생활코딩](https://opentutorials.org/module/904/6682)
 > 강의를 듣고 어디까지 들었는지 확인하기 위해 강의 내용을 스크랩하였습니다.
 
-## Object Model - 객체화란 무엇인가?
+# Object Model - 객체화란 무엇인가?
 
 웹브라우저의 구성요소들은 하나하나가 객체화되어 있다.  
 자바스크립트로 이 객체를 제어해서 웹브라우저, 웹페이지를 제어할 수 있게 된다.  
 이 객체들은 서로 계층적인 관계로 구조화되어 있다.  
 BOM과 DOM은 이 구조를 구성하고 있는 가장 큰 틀의 분류라고 할 수 있다.
 
-## BOM
+# BOM
 
 BOM(Browser Object Model)이란 웹브라우저의 창이나 프래임을 추상화해서  
 프로그래밍적으로 제어할 수 있도록 제공하는 수단이다.  
@@ -21,11 +21,11 @@ BOM은 전역객체인 Window의 프로퍼티와 메소드들을 통해서 제�
 배우는 것이라고 해도 과언이 아닐 것이다.  
 본 토픽의 하위 수업에서는 Window 객체의 사용법을 알아볼 것이다.
 
-### 전역객체 Window
+## 전역객체 Window
 
 Window 객체는 모든 객체가 소속된 객체이고, 전역객체이면서, 창이나 프레임을 의미한다.
 
-### 전역객체
+## 전역객체
 
 Window 객체는 식별자 window를 통해서 얻을 수 있다.  
 또한 생략 가능하다. Window 객체의 메소드인 alert을 호출하는 방법은 아래와 같다.
@@ -83,7 +83,7 @@ ECMAScript의 Global 객체는 호스트 환경에 따라서 이름이 다르고
 웹브라우저 자바스크립트에서 Window 객체는 ECMAScript의 전역객체이면서  
 동시에 웹브라우저의 창이나 프레임을 제어하는 역할을 한다.
 
-### 사용자와 커뮤니케이션 하기
+## 사용자와 커뮤니케이션 하기
 
 HTML은 form을 통해서 사용자와 커뮤니케이션할 수 있는 기능을 제공한다. 자바스크립트에는 사용자와 정보를 주고 받을 수 있는 간편한 수단을 제공한다.
 
@@ -142,7 +142,7 @@ HTML은 form을 통해서 사용자와 커뮤니케이션할 수 있는 기능�
   </html>
   ```
 
-### Location 객체
+## Location 객체
 
 Location 객체는 문서의 주소와 관련된 객체로 Window 객체의 프로퍼티다.  
 이 객체를 이용해서 윈도우의 문서 URL을 변경할 수 있고,  
@@ -184,7 +184,7 @@ Location 객체는 문서의 주소와 관련된 객체로 Window 객체의 프�
   location.reload();
   ```
 
-### 창 제어
+## 창 제어
 
 window.open 메소드는 새 창을 생성한다.  
 현대의 브라우저는 대부분 탭을 지원하기 때문에 window.open은 새 창을 만든다.  
@@ -239,14 +239,14 @@ function open5(){
 </html>
 ```
 
-## DOM
+# DOM
 
 Document Object Model로 웹페이지를 자바스크립트로 제어하기 위한 객체 모델을 의미한다.  
 window 객체의 document 프로퍼티를 통해서 사용할 수 있다.  
 Window 객체가 창을 의미한다면 Document 객체는 윈도우에 로드된 문서를 의미한다고 할 수 있다.  
 DOM의 하위 수업에서는 문서를 제어하는 방법에 대한 내용을 다룬다.
 
-### 제어 대상을 찾기
+## 제어 대상을 찾기
 
 문서를 자바스크립트로 제어하려면 제어의 대상에 해당되는 객체를 찾는 것이 제일 먼저 할 일이다.  
 문서 내에서 객체를 찾는 방법은 document 객체의 메소드를 이용한다.
@@ -387,7 +387,7 @@ queryselector와 getElementsByTagName의 차이
 getElementsByTagName는 태그네임들만 가져온다.
 queryselector는 클래스, ID, 태그네임 등 어떤 선택자든 가능하다.
 
-### HTMLElement
+## HTMLElement
 
 getElement\* 메소드를 통해서 원하는 객체를 조회했다면 이 객체들을 대상으로  
 구체적인 작업을 처리해야 한다. 이를 위해서는 획득한 객체가 무엇인지 알아야 한다.  
@@ -525,7 +525,7 @@ interface HTMLElement : Element {
    다행인 것은 jQuery와 같은 라이브러리를 이용한다면 이러한 관계를 몰라도 된다.  
    혹시 이해가 안된다고 너무 상심하지 말자.
 
-### HTMLCollection
+## HTMLCollection
 
 HTMLCollection은 리턴 결과가 복수인 경우에 사용하게 되는 객체다.  
 유사배열로 배열과 비슷한 사용방법을 가지고 있지만 배열은 아니다.
@@ -559,7 +559,7 @@ console.groupEnd();
 </html>
 ```
 
-## Element 객체
+# Element 객체
 
 Element 객체는 엘리먼트를 추상화한 객체다.  
 HTMLElement 객체와의 관계를 이해하기 위해서는 DOM의 취지에 대한 이해가 선행되야 한다.  
@@ -569,13 +569,13 @@ Element는 마크업 언어의 일반적인 규격에 대한 속성을 정의하
 각각의 구체적인 언어(HTML,XML,SVG)를 위한 기능은  
 HTMLElement, SVGElement, XULElement와 같은 객체를 통해서 추가해서 사용하고 있다.
 
-### 다른 객체들과의 관계
+## 다른 객체들과의 관계
 
 DOM의 계층구조에서 Element 객체의 위치는 아래와 같다.
 
 <img src="https://user-images.githubusercontent.com/96982072/154846635-3079da7a-1dfa-4a9d-a147-66eaaec1b574.png"/>
 
-### 주요 기능
+## 주요 기능
 
 - 식별자
 
@@ -604,7 +604,7 @@ DOM의 계층구조에서 Element 객체의 위치는 아래와 같다.
   - Element.hasAttribute(name);
   - Element.removeAttribute(name);
 
-### 식별자 API
+## 식별자 API
 
 엘리먼트를 제어하기 위해서는 그 엘리먼트를 조회하기 위한 식별자가 필요하다.  
 본 수업에서는 식별자 API들에 대해서 알아보자.
@@ -693,7 +693,7 @@ HTML에서 엘리먼트의 이름과 id 그리고 class는 식별자로 사용�
 
   :pushpin: 다크모드를 만드는데 class를 제어하면 편하지않을까?
 
-### 조회 API
+## 조회 API
 
 조회 API는 엘리먼트를 조회하는 기능이다.  
 조회 방법에 대해서는 이미 여러차례 살펴봤기 때문에 이번 시간에 알아볼 내용은  
@@ -705,7 +705,7 @@ document의 조회 메소드는 문서 전체를 대상으로 엘리먼트를 �
 Element 객체 역시도 getElementsBy* 엘리먼트를 가지고 있는데  
 Element 객체의 조회 메소드는 해당 엘리먼트의 하위 엘리먼트를 대상으로 조회를 수행한다.
 
-### 속성 API
+## 속성 API
 
 속성은 HTML에서 태그명만으로는 부족한 부가적인 정보라고 할 수 있다. 이 속성을 어떻게 제어하는가 알아보자.
 
@@ -777,12 +777,12 @@ console.log('target.getAttribute("href")', target.getAttribute("href"));
 </script>
 ```
 
-## Node 객체
+# Node 객체
 
 Node 객체는 DOM에서 시조와 같은 역할을 한다.  
 다시 말해서 모든 DOM 객체는 Node 객체를 상속 받는다.
 
-### 주요기능
+## 주요기능
 
 Node 객체의 주요한 임무는 아래와 같다.
 
@@ -821,7 +821,7 @@ Node 객체의 주요한 임무는 아래와 같다.
   - Node.appendChild()
   - Node.removeChild()
 
-### Node 관계 API
+## Node 관계 API
 
 Node 객체는 Node 간의 관계 정보를 담고 있는 일련의 API를 가지고 있다.  
 다음은 관계와 관련된 프로퍼티들이다.
@@ -874,7 +874,7 @@ Node 객체는 Node 간의 관계 정보를 담고 있는 일련의 API를 가�
 </body>
 ```
 
-### Node 종류 API
+## Node 종류 API
 
 노드 작업을 하게 되면 현재 선택된 노드가 어떤 타입인지를 판단해야 하는 경우가 있다.  
 이런 경우에 사용할 수 있는 API가 nodeType, nodeName이다.
@@ -884,7 +884,7 @@ Node 객체는 Node 간의 관계 정보를 담고 있는 일련의 API를 가�
 - Node.nodeName  
   node의 이름 (태그명을 의미한다.)
 
-#### Node Type
+### Node Type
 
 노드의 종류에 따라서 정해진 상수가 존재한다.  
  아래는 모든 노드의 종류와 종류에 따른 값을 출력하는 예제다.
@@ -955,11 +955,11 @@ traverse(document.getElementById('start'), function(elem){
 </html>
 ```
 
-### Node 변경 API
+## Node 변경 API
 
 노드를 추가, 제거, 변경하는 방법을 알아보자.
 
-#### 노드 추가
+### 노드 추가
 
 노드의 추가와 관련된 API들은 아래와 같다.
 
@@ -1002,7 +1002,7 @@ traverse(document.getElementById('start'), function(elem){
 </script>
 ```
 
-#### 노드 제거
+### 노드 제거
 
 노드 제거를 위해서는 아래 API를 사용한다.  
 이 때 메소드는 삭제 대상의 부모 노드 객체의 것을 실행해야 한다는 점에 유의하자.
@@ -1023,7 +1023,7 @@ traverse(document.getElementById('start'), function(elem){
   </script>
   ```
 
-#### 노드 바꾸기
+### 노드 바꾸기
 
 노드 바꾸기에는 아래 API가 사용된다.
 
@@ -1047,11 +1047,11 @@ traverse(document.getElementById('start'), function(elem){
   </script>
   ```
 
-### 문자열로 노드 제어
+## 문자열로 노드 제어
 
 노드 변경 API에서는 여러 메소드를 이용해서 노드를 제어하는 방법에 대해서 알아봤다. 그런데 이 방식은 복잡하고 장황하다. 좀 더 편리하게 노드를 조작하는 방법을 알아보자.
 
-#### innerHTML
+### innerHTML
 
 innerHTML는 문자열로 자식 노드를 만들 수 있는 기능을 제공한다. 또한 자식 노드의 값을 읽어올 수도 있다.
 
@@ -1074,7 +1074,7 @@ innerHTML는 문자열로 자식 노드를 만들 수 있는 기능을 제공한
 </script>
 ```
 
-#### outerHTML
+### outerHTML
 
 outerHTML은 선택한 엘리먼트를 포함해서 처리된다.
 
@@ -1097,7 +1097,7 @@ outerHTML은 선택한 엘리먼트를 포함해서 처리된다.
 </script>
 ```
 
-#### innerText, outerText
+### innerText, outerText
 
 innerHtml, outerHTML과 다르게 이 API들은 값을 읽을 때는 HTML 코드를 제외한 문자열을 리턴하고,  
 값을 변경할 때는 HTML의 코드를 그대로 추가한다.
@@ -1121,7 +1121,7 @@ innerHtml, outerHTML과 다르게 이 API들은 값을 읽을 때는 HTML 코드
 </script>
 ```
 
-#### insertAdjacentHTML()
+### insertAdjacentHTML()
 
 좀 더 정교하게 문자열을 이용해서 노드를 변경하고 싶을 때 사용한다.
 
@@ -1153,16 +1153,16 @@ innerHtml, outerHTML과 다르게 이 API들은 값을 읽을 때는 HTML 코드
 </script>
 ```
 
-## Document 객체
+# Document 객체
 
-## TEXT 객체
+# TEXT 객체
 
-## 문서의 기하학적 특성
+# 문서의 기하학적 특성
 
-## 이벤트
+# 이벤트
 
-## 네트워크 통신
+# 네트워크 통신
 
-## 참고
+# 참고
 
 [Object Model](http://learn.javascript.ru/browser-environment)
