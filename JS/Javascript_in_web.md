@@ -1028,6 +1028,7 @@ traverse(document.getElementById('start'), function(elem){
 노드 바꾸기에는 아래 API가 사용된다.
 
 - replaceChild(newChild, oldChild)
+
   ```js
   <ul>
       <li>HTML</li>
@@ -1157,15 +1158,14 @@ innerHtml, outerHTML과 다르게 이 API들은 값을 읽을 때는 HTML 코드
 
 Document 객체는 DOM의 스펙이고 이것이 웹브라우저에서는 HTMLDocument 객체로 사용된다.  
 HTMLDocument 객체는 문서 전체를 대표하는 객체라고 할 수 있다.  
-아래 코드는 이를 보여준다.  
+아래 코드는 이를 보여준다.
 
 ```js
 <script>
-//document 객체는 window 객체의 소속이다.
-console.log(window.document);
-//document 객체의 자식으로는 Doctype과 html이 있다. 
-console.log(window.document.childNodes[0]);
-console.log(window.document.childNodes[1]);
+  //document 객체는 window 객체의 소속이다. console.log(window.document);
+  //document 객체의 자식으로는 Doctype과 html이 있다.
+  console.log(window.document.childNodes[0]);
+  console.log(window.document.childNodes[1]);
 </script>
 ```
 
@@ -1173,23 +1173,24 @@ console.log(window.document.childNodes[1]);
 
 ### 노드 생성 API
 
-document  객체의 주요 임무는 새로운 노드를 생성해주는 역할이다.  
-이에 대한 내용은 노드 변경 API에서 학습했기 때문에 여기서는 언급하지 않는다.  
+document 객체의 주요 임무는 새로운 노드를 생성해주는 역할이다.  
+이에 대한 내용은 노드 변경 API에서 학습했기 때문에 여기서는 언급하지 않는다.
 
- - createElement()
- - createTextNode()
+- createElement()
+- createTextNode()
+
 ### 문서 정보 API
 
- - title
- - URL
- - referrer
- - lastModified
- 
- # TEXT 객체
+- title
+- URL
+- referrer
+- lastModified
+
+# TEXT 객체
 
 텍스트 객체는 텍스트 노드에 대한 DOM 객체로 CharcterData를 상속 받는다.  
 아래는 텍스트 노드를 찾는 예제다.  
-주목할 것은 DOM에서는 공백이나 줄바꿈도 텍스트 노드라는 점이다.  
+주목할 것은 DOM에서는 공백이나 줄바꿈도 텍스트 노드라는 점이다.
 
 ```js
 <p id="target1"><span>Hello world</span></p>
@@ -1199,18 +1200,20 @@ document  객체의 주요 임무는 새로운 노드를 생성해주는 역할�
 <script>
 var t1 = document.getElementById('target1').firstChild;
 var t2 = document.getElementById('target2').firstChild;
- 
+
 console.log(t1.firstChild.nodeValue);
 try{
-    console.log(t2.firstChild.nodeValue);   
+    console.log(t2.firstChild.nodeValue);
 } catch(e){
     console.log(e);
 }
 console.log(t2.nextSibling.firstChild.nodeValue);
- 
+
 </script>
 ```
+
 실행결과
+
 ```
 Hello world
 TypeError {stack: (...), message: "Cannot read property 'nodeValue' of null"}
@@ -1221,32 +1224,34 @@ Hello world
 
 ### 값
 
-텍스트 노드의 값을 가져오는 API  
+텍스트 노드의 값을 가져오는 API
 
 - data
 - nodeValue
-### 조작  
+
+### 조작
 
 - appendData()
 - deleteData()
 - insertData()
 - replaceData()
 - subStringData()
+
 ### 생성
 
 - docuemnt.createTextNode()
- 
+
 ## 값 API
 
 텍스트 노드는 DOM에서 실질적인 데이터가 저장되는 객체이다.  
-따라서 텍스트 노드에는 값과 관련된 여러 기능들이 있는데 이번 시간에는 값을 가져오는 두개의 API를 알아본다.  
+따라서 텍스트 노드에는 값과 관련된 여러 기능들이 있는데 이번 시간에는 값을 가져오는 두개의 API를 알아본다.
 
 - nodeValue
 - data
 
 ```js
 <ul>
-    <li id="target">html</li> 
+    <li id="target">html</li>
     <li>css</li>
     <li>JavaScript</li>
 </ul>
@@ -1260,7 +1265,7 @@ Hello world
 ## 조작 API
 
 텍스트 노드가 상속 받은 CharacterData 객체는 문자를 제어할 수 있는 다양한 API를 제공한다.  
-아래는 조작과 관련된 API들의 목록이다.  
+아래는 조작과 관련된 API들의 목록이다.
 
 - appendData()
 - deleteData()
@@ -1306,7 +1311,7 @@ Hello world
         target.deleteData(start.value, end.value);
     }
     function callInsertData(){
-        target.insertData(start.value, data.value); 
+        target.insertData(start.value, data.value);
     }
     function callReplaceData(){
         target.replaceData(start.value, end.value, data.value);
@@ -1318,11 +1323,544 @@ Hello world
 </body>
 </html>
 ```
-# 문서의 기하학적 특성
 
 # 이벤트
 
-# 네트워크 통신
+이벤트(event)는 어떤 사건을 의미한다. 브라우저에서의 사건이란 사용자가 클릭을 했을 '때',  
+스크롤을 했을 '때', 필드의 내용을 바꾸었을 '때'와 같은 것을 의미한다.
+
+```js
+<!DOCTYPE html>
+<html>
+<body>
+    <input type="button" onclick="alert(window.location)" value="alert(window.href)" />
+    <input type="button" onclick="window.open('bom.html')" value="window.open('bom.html')" />
+</body>
+</html>
+```
+
+onclick 속성의 자바스크립트 코드(alert(window.location))는  
+사용자가 이 버튼을 클릭 했을 '때' 실행된다.  
+즉 js 개발자는 어떤 일이 발생했을 때 실행 되어야 하는 코드를 등록하고,  
+브라우저는 그 일이 발생했을 때 등록된 코드를 실행하게 된다.  
+이러한 방식을 이벤트 프로그래밍이라고 한다.
+
+### event target
+
+target은 이벤트가 일어날 객체를 의미한다. 아래 코드에서 타겟은 버튼 태그에 대한 객체가 된다.
+
+```
+<input type="button" onclick="alert(window.location)" value="alert(window.href)" />
+```
+
+### event type
+
+이벤트의 종류를 의미한다. 위의 예제에서는 click이 이벤트 타입이다.  
+그 외에도 scroll은 사용자가 스크롤을 움직였다는 이벤트이고,  
+mousemove는 마우스가 움직였을 때 발생하는 이벤트이다.
+
+이벤트의 종류는 이미 약속되어 있다.  
+아래 링크는 브라우저에서 지원하는 이벤트의 종류를 보여준다.
+
+https://developer.mozilla.org/en-US/docs/Web/Reference/Events
+
+### event handler
+
+이벤트가 발생했을 때 동작하는 코드를 의미한다.  
+위의 예제에서는 alert(window.location)이 여기에 해당한다.
+
+## inline
+
+인라인(inline) 방식으로 이벤트를 등록하는 방법을 알아보자.  
+인라인 방식은 이벤트를 이벤트 대상의 태그 속성으로 지정하는 것이다.  
+다음은 버튼을 클릭했을 때 Hello world를 경고창으로 출력한다.
+
+```js
+<input type="button" onclick="alert('Hello world');" value="button" />
+```
+
+이벤트가 발생한 대상을 필요로하는 경우 this를 통해서 참조할 수 있다.
+
+```js
+<!--자기 자신을 참조하는 불편한 방법-->
+<input type="button" id="target" onclick="alert('Hello world, '+document.getElementById('target').value);" value="button" />
+<!--this를 통해서 간편하게 참조할 수 있다-->
+<input type="button" onclick="alert('Hello world, '+this.value);" value="button" />
+```
+
+인라인 방식은 태그에 이벤트가 포함되기 때문에 이벤트의 소재를 파악하는 것이 편리하다.  
+하지만 정보인 HTML과 제어인 JavaScript가 **혼재된 형태**이기 때문에  
+바람직한 방법이라고 할수는 없다.
+
+## 프로퍼티 리스너
+
+프로퍼티 리스너 방식은 이벤트 대상에 해당하는 객체의 프로퍼티로 이벤트를 등록하는 방식이다. 인라인 방식에 비해서 HTML과 JavaScript를 분리할 수 있다는 점에서 선호되는 방식이지만  
+뒤에서 배울 addEventListener 방식을 추천한다.
+
+```js
+<input type="button" id="target" value="button" />
+<script>
+    var t = document.getElementById('target');
+    t.onclick = function(){
+        alert('Hello world');
+    }
+</script>
+```
+
+### 이벤트 객체
+
+이벤트가 실행된 맥락의 정보가 필요할 때는 이벤트 객체를 사용한다.  
+이벤트 객체는 이벤트가 실행될 때 이벤트 핸들러의 인자로 전달된다.
+
+```js
+<body>
+    <input type="button" id="target" value="button" />
+<script>
+    var t = document.getElementById('target');
+    t.onclick = function(event){
+        alert('Hello world, '+event.target.value)
+    }
+</script>
+```
+
+## addEventListner()
+
+addEventListener은 이벤트를 등록하는 가장 권장되는 방식이다.  
+이 방식을 이용하면 여러개의 이벤트 핸들러를 등록할 수 있다.
+
+```js
+<input type="button" id="target" value="button" />
+<script>
+    var t = document.getElementById('target');
+    t.addEventListener('click', function(event){
+        alert('Hello world, '+event.target.value);
+    });
+</script>
+```
+
+이 방식의 중요한 장점은 하나의 이벤트 대상에 복수의 동일 이벤트 타입 리스너를  
+등록할 수 있다는 점이다.
+
+```js
+<input type="button" id="target" value="button" />
+<script>
+    var t = document.getElementById('target');
+    t.addEventListener('click', function(event){
+        alert(1);
+    });
+    t.addEventListener('click', function(event){
+        alert(2);
+    });
+</script>
+```
+
+이벤트 객체를 이용하면 복수의 엘리먼트에 하나의 리스너를 등록해서 재사용할 수 있다.
+
+```js
+<input type="button" id="target1" value="button1" />
+<input type="button" id="target2" value="button2" />
+<script>
+    var t1 = document.getElementById('target1');
+    var t2 = document.getElementById('target2');
+    function btn_listener(event){
+        switch(event.target.id){
+            case 'target1':
+                alert(1);
+                break;
+            case 'target2':
+                alert(2);
+                break;
+        }
+    }
+    t1.addEventListener('click', btn_listener);
+    t2.addEventListener('click', btn_listener);
+</script>
+```
+
+## 이벤트 전파
+
+HTML 태그는 중첩되어 있다.  
+따라서 특정한 태그에서 발생하는 이벤트는 중첩되어 있는 태그들 모두가 대상이 될 수 있다.  
+이런 경우 중첩된 태그들에 이벤트가 등록 되어 있다면 어떻게 처리 될까?
+
+```js
+<html>
+    <head>
+        <style>
+            html{border:5px solid red;padding:30px;}
+            body{border:5px solid green;padding:30px;}
+            fieldset{border:5px solid blue;padding:30px;}
+            input{border:5px solid black;padding:30px;}
+        </style>
+    </head>
+    <body>
+        <fieldset>
+            <legend>event propagation</legend>
+            <input type="button" id="target" value="target">
+        </fieldset>
+        <script>
+        function handler(event){
+            var phases = ['capturing', 'target', 'bubbling']
+            console.log(event.target.nodeName, this.nodeName, phases[event.eventPhase-1]);
+        }
+        document.getElementById('target').addEventListener('click', handler, true);
+        document.querySelector('fieldset').addEventListener('click', handler, true);
+        document.querySelector('body').addEventListener('click', handler, true);
+        document.querySelector('html').addEventListener('click', handler, true);
+        </script>
+    </body>
+</html>
+```
+
+실행결과
+
+```
+INPUT HTML capturing
+INPUT BODY capturing
+INPUT FIELDSET capturing
+INPUT INPUT target
+```
+
+이벤트가 부모에서부터 발생해서 자식으로 전파되고 있다.  
+이러한 방식을 capturing이라고 한다.
+
+코드를 아래와 같이 변경해보자.
+
+```js
+document.getElementById("target").addEventListener("click", handler, false);
+document.querySelector("fieldset").addEventListener("click", handler, false);
+document.querySelector("body").addEventListener("click", handler, false);
+document.querySelector("html").addEventListener("click", handler, false);
+```
+
+차이점은 addEventListener의 3번째 인자가 false로 변경 되었다.  
+실행결과
+
+```
+INPUT INPUT target
+INPUT FIELDSET bubbling
+INPUT BODY bubbling
+INPUT HTML bubbling
+```
+
+이번에는 순서가 반대로 되었다.  
+자식부터 부모로 이벤트가 전파되는 것을 버블링(bubbling)이라고 한다.
+
+이벤트 전파를 중간에 가로막을 수도 있다.
+
+아래처럼 코드를 변경해보자.
+
+```js
+function handler(event) {
+  var phases = ["capturing", "target", "bubbling"];
+  console.log(
+    event.target.nodeName,
+    this.nodeName,
+    phases[event.eventPhase - 1]
+  );
+}
+function stophandler(event) {
+  var phases = ["capturing", "target", "bubbling"];
+  console.log(
+    event.target.nodeName,
+    this.nodeName,
+    phases[event.eventPhase - 1]
+  );
+  event.stopPropagation();
+}
+document.getElementById("target").addEventListener("click", handler, false);
+document.querySelector("fieldset").addEventListener("click", handler, false);
+document.querySelector("body").addEventListener("click", stophandler, false);
+document.querySelector("html").addEventListener("click", handler, false);
+```
+
+실행결과
+
+```
+INPUT INPUT target
+INPUT FIELDSET bubbling
+INPUT BODY bubbling
+```
+
+## 기본동작의 취소
+
+웹브라우저의 구성요소들은 각각 기본적인 동작 방법을 가지고 있다.
+
+텍스트 필드에 포커스를 준 상태에서 키보드를 입력하면 텍스트가 입력된다.  
+폼에서 submit 버튼을 누르면 데이터가 전송된다.  
+a 태그를 클릭하면 href 속성의 URL로 이동한다.  
+이러한 기본적인 동작들을 기본 이벤트라고 하는데 사용자가 만든 이벤트를 이용해서  
+이러한 기본 동작을 취소할 수 있다.
+
+### inline
+
+이벤트의 리턴값이 false이면 기본 동작이 취소된다.
+
+```js
+<p>
+    <label>prevent event on</label><input id="prevent" type="checkbox" name="eventprevent" value="on" />
+</p>
+<p>
+    <a href="http://opentutorials.org" onclick="if(document.getElementById('prevent').checked) return false;">opentutorials</a>
+</p>
+<p>
+    <form action="http://opentutorials.org" onsubmit="if(document.getElementById('prevent').checked) return false;">
+            <input type="submit" />
+    </form>
+</p>
+```
+
+### property 방식
+
+리턴 값이 false이면 기본동작이 취소된다.
+
+```js
+<p>
+    <label>prevent event on</label><input id="prevent" type="checkbox" name="eventprevent" value="on" />
+</p>
+<p>
+    <a href="http://opentutorials.org">opentutorials</a>
+</p>
+<p>
+    <form action="http://opentutorials.org">
+            <input type="submit" />
+    </form>
+</p>
+<script>
+    document.querySelector('a').onclick = function(event){
+        if(document.getElementById('prevent').checked)
+            return false;
+    };
+
+    document.querySelector('form').onclick = function(event){
+        if(document.getElementById('prevent').checked)
+            return false;
+    };
+
+</script>
+```
+
+### addEventListener 방식
+
+이 방식에서는 이벤트 객체의 preventDefault 메소드를 실행하면 기본 동작이 취소된다.
+
+```js
+<p>
+            <label>prevent event on</label><input id="prevent" type="checkbox" name="eventprevent" value="on" />
+        </p>
+        <p>
+            <a href="http://opentutorials.org">opentutorials</a>
+        </p>
+        <p>
+            <form action="http://opentutorials.org">
+                    <input type="submit" />
+            </form>
+        </p>
+        <script>
+            document.querySelector('a').addEventListener('click', function(event){
+                if(document.getElementById('prevent').checked)
+                    event.preventDefault();
+            });
+
+            document.querySelector('form').addEventListener('submit', function(event){
+                if(document.getElementById('prevent').checked)
+                    event.preventDefault();
+            });
+
+        </script>
+```
+
+## 이벤트 타입
+
+아래는 onclick 이벤트 타입의 예제다. 이벤트 타입이라는 것은 이벤트의 종류라고 할 수 있다.
+
+```js
+<input type="button" onclick="alert(1);" />
+```
+
+웹브라우저는 많은 종류의 이벤트 타입을 제공한다.  
+하위 토픽에서는 주요한 이벤트 타입을 중심으로 어떤 이벤트 타입이 있는지 알아보겠다.
+
+### 폼
+
+폼과 관련된 이벤트 타입을 알아보자.
+
+#### submit
+
+submit은 폼의 정보를 서버로 전송하는 명령인 submit시에 일어난다.
+
+form 태그에 적용된다.
+
+아래 예제는 전송 전에 텍스트 필드에 값이 입력 되었는지를 확인한다.  
+만약 값이 입력되지 않았다면 전송을 중단한다.
+
+```js
+<form id="target" action="result.html">
+    <label for="name">name</label> <input id="name" type="name" />
+    <input type="submit" />
+</form>
+<script>
+var t = document.getElementById('target');
+t.addEventListener('submit', function(event){
+    if(document.getElementById('name').value.length === 0){
+        alert('Name 필드의 값이 누락 되었습니다');
+        event.preventDefault();
+    }
+});
+</script>
+```
+
+아래 구문은 전송을 취소하는 명령이다.  
+이에 대해서는 기본 동작의 취소에서 자세히 알아본다.
+
+```
+event.preventDefault();
+```
+
+#### change
+
+change는 폼 컨트롤의 값이 변경 되었을 때 발생하는 이벤트다.
+
+input(text,radio,checkbox), textarea, select 태그에 적용된다.
+
+```js
+<p id="result"></p>
+<input id="target" type="name" />
+<script>
+var t = document.getElementById('target');
+t.addEventListener('change', function(event){
+    document.getElementById('result').innerHTML=event.target.value;
+});
+</script>
+```
+
+#### blur, focus
+
+focus는 엘리먼트에 포커스가 생겼을 때, blur은 포커스가 사라졌을 때 발생하는 이벤트다.
+
+다음 태그를 제외한 모든 태그에서 발생한다.  
+`<base>`, `<bdo>`, `<br>`, `<head>`, `<html>`, `<iframe>`, `<meta>`, `<param>`, `<script>`, `<style>`, `<title>`
+
+```js
+<input id="target" type="name" />
+<script>
+var t = document.getElementById('target');
+t.addEventListener('blur', function(event){
+    alert('blur');
+});
+t.addEventListener('focus', function(event){
+    alert('focus');
+});
+</script>
+```
+
+### 문서 로딩
+
+웹페이지를 프로그래밍적으로 제어하기 위해서는 웹페이지의 모든 요소에 대한 처리가 끝나야 한다.  
+이것을 알려주는 이벤트가 load, DOMContentLoaded이다.
+
+아래 코드의 실행결과는 null이다.
+`<p id="target">Hello</p>`가 로딩되기 전에 자바스크립트가 실행되었기 때문이다.
+
+```js
+<html>
+  <head>
+    <script>var t = document.getElementById('target'); console.log(t);</script>
+  </head>
+  <body>
+    <p id="target">Hello</p>
+  </body>
+</html>
+```
+
+이를 해결하기 위한 방법은 아래와 같이 스크립트를 문서 끝에 위치시키는 것이다.
+
+```js
+<p id="target">Hello</p>
+<script>
+    var t = document.getElementById('target');
+    console.log(t);
+</script>
+```
+
+또 다른 방법은 load 이벤트를 이용하는 것이다.
+
+```js
+<head>
+    <script>
+        window.addEventListener('load', function(){
+            var t = document.getElementById('target');
+            console.log(t);
+        })
+    </script>
+</head>
+<body>
+    <p id="target">Hello</p>
+</body>
+```
+
+그런데 load 이벤트는 문서내의 모든 리소스(이미지, 스크립트)의 다운로드가 끝난 후에 실행된다. 이것을 에플리케이션의 구동이 너무 지연되는 부작용을 초래할 수 있다.
+
+DOMContentLoaded는 문서에서 스크립트 작업을 할 수 있을 때 실행되기 때문에  
+이미지 다운로드를 기다릴 필요가 없다.
+
+```js
+<html>
+    <head>
+        <script>
+            window.addEventListener('load', function(){
+                console.log('load');
+            })
+            window.addEventListener('DOMContentLoaded', function(){
+                console.log('DOMContentLoaded');
+            })
+        </script>
+    </head>
+    <body>
+        <p id="target">Hello</p>
+    </body>
+</html>
+```
+
+DOMContentLoaded 이벤트는 모든 브라우저에서 지원하고 있다.
+
+### 마우스
+
+#### 이벤트 타입
+
+웹브라우저는 마우스와 관련해서 다양한 이벤트 타입을 지원한다.
+
+- click  
+  클릭했을 때 발생하는 이벤트.
+- dblclick  
+  더블클릭을 했을 때 발생하는 이벤트
+- mousedown  
+  마우스를 누를 때 발생
+- mouseup  
+  마우스버튼을 땔 때 발생
+- mousemove  
+  마우스를 움직일 때
+- mouseover  
+  마우스가 엘리먼트에 진입할 때 발생
+- mouseout  
+  마우스가 엘리먼트에서 빠져나갈 때 발생
+- contextmenu  
+  컨텍스트 메뉴가 실행될 때 발생
+
+#### 키보드 조합
+
+마우스 이벤트가 호출될 때 특수키(alt, ctrl, shift)가 눌려진 상태를  
+감지해야 한다면 이벤트 객체의 프로퍼티를 사용한다.  
+이 때 사용하는 프로퍼티는 아래와 같다.
+
+- event.shiftKey
+- event.altKey
+- event.ctrlKey
+
+#### 마우스 포인터 위치
+
+마우스 이벤트와 관련한 작업에서는 마우스 포인터의 위치를 알아내는 것이  
+중요할 때가 있는데 이런 경우 이벤트 객체의 clientX와 clientY를 사용한다.
 
 # 참고
 
