@@ -7,9 +7,13 @@
 </br>
 
 ## :book: List 
+
 - [[TBC] C언어](TBC/README.md)
 - [git](git/README.md)
 - [HTTP](HTTP/README.md)
+- [MySQL-기본](MySQL/MySQL.md)
+- [Javascript-기본문법](JS/README.md)
+- [웹브라우저에서의 Javscript](JS/Javascript_in_web.md)
 
 </br>
 
