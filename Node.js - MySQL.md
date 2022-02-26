@@ -13,7 +13,7 @@ Node.js를 이용하면 자바스크립트 언어로 서버를 만들 수 있는
 
 # MySQL로 구현
 
-## 홈페이지 구현
+## 웹페이지 구현
 
 Nodejs를 처음 배웠을 때는 파일을 대상으로 데이터를 가져왔었는데,  
 이번에는 어플리케이션을 데이터베이스로 가져와보는 방법이다.
@@ -63,7 +63,7 @@ db.query("SELECT * FROM topic", function (error, topics) {
 
 크롬에서 localhost:3000로 접속해보면 success를 출력하면 정상이다.
 
-이제 더 나가서 success를 출력하는 대신 홈페이지를 불러오도록 작성을 해보자.  
+이제 더 나가서 success를 출력하는 대신 웹페이지를 불러오도록 작성을 해보자.  
 파일을 불러올 때와 데이터베이스를 불러올 때는 차이가 존재 한다.  
 WEB2-Node.js 수업작성한 template.js에 list객체를 보면
 
@@ -246,3 +246,51 @@ db.query(`SELECT * FROM topic`, function(error,topics){
 ```
 `var title`과 `var description`에 sql값을 대입할 때 `topic[0]`처럼 배열을 사용하는 이유는  
 데이터가 배열에 담겨서 들어오기 때문에 배열을 사용해야한다.  
+
+## 글생성 기능 구현
+
+```js
+db.query(`SELECT * FROM topic`, function(error,topics){
+  var title = 'Create';
+  var list = template.list(topics);
+  var html = template.HTML(title, list, `
+     <form action="/create_process" method="post">
+       <p><input type="text" name="title" placeholder="title"></p>
+       <p>
+         <textarea name="description" placeholder="description"></textarea>
+       </p>
+       <p>
+         <input type="submit">
+       </p>
+     </form>
+   `, 
+   `<a href="/create">create</a>`);
+   response.writeHead(200);
+   response.end(html);
+});
+```
+db.query를 이용해서 Create 버튼을 생성하고 클릭하면 현재 글 목록과 폼을 보여주는 코드다.  
+```js
+ var body = '';
+      request.on('data', function(data){
+          body = body + data;
+      });
+      request.on('end', function(){
+        var post = new URLSearchParams(body)
+        db.query(`
+        INSERT INTO topic (title, description, created, author_id)
+          Value(?, ?, NOW(), ?)`, 
+          [post.get('title'), post.get('description'), 1],
+          function(error, result){
+            if(error){
+              throw error;
+            }
+            response.writeHead(302, {Location: `/?id=${result.insertId}`});
+            response.end();
+          }
+        )
+      });    
+```
+그 이후 글 제목과 내용을 입력하고 `submit`을 누르면 MySQL topic에 row를 생성하고 
+웹페이지 글 목록을 추가된 항목과 함께 보여준다.  
+
