@@ -1,3 +1,12 @@
+div, input, textarea {
+    box-sizing: border-box;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+
 .container {
   width: 800px;
   height: 150px;
@@ -185,3 +194,80 @@ a:visited {
   top: 85%;
   margin: auto;
 }
+
+.form-background {
+    background-color: black;
+    padding: 30px;
+    position: relative;
+    top: 150px;
+
+}
+
+.form-white {
+    background-color: white;
+    padding: 30px;
+    width: 80%;
+    max-width: 600px;
+    margin: auto;
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px;
+    font-size: 20px;
+    border: 1px solid black;
+    border-radius: 5px;
+}
+
+.full_name {
+    width: 50%;
+    float: left;
+    padding: 10px;
+}
+
+.form-message {
+    height: 150px;
+}
+
+.padding-10px {
+    padding: 10px;
+}
+
+.yellow-button {
+    padding: 10px 50px;
+    display: block;
+    margin-left: auto;
+    border: none;
+    background-color: #FFCF69;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+}
+
+.cart-background {
+    width: 100%;
+    background-color: #B5CED8;
+    padding: 30px;
+}
+
+.cart-content {
+    padding: 30px;
+    width: 80%;
+    max-width: 600px;
+    margin: auto;
+}
+
+.cart-table {
+    width: 100%;
+    max-width: 700px;
+    margin: auto;
+    background-color: white;
+    border-radius: 10px;
+}
+
+.cart-table td {
+    padding: 15px;
+    border-bottom: 1px solid #c2d3de;
+    
+}
+
