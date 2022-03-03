@@ -262,4 +262,75 @@ div#header 이건 div태그인데 id명이 header라는 CSS 셀렉터 문법입�
 참고로 ie8.css 파일은 다른 브라우저에선 전혀 읽지 않습니다.  
 (link 태그 첨부 순서는 가장 마지막이 좋습니다. 중요한 덮어쓰기 파일일 수록 밑으로 보내시면 됩니다.)  
 
+# transition 속성
+```
+.box {
+  opacity : 0;
+  transition : all 1s;
+}
+``` 
+transition을 부여하면  
+여기에 적용된 CSS가 변할 때 서서히 변경해줍니다.  
+all은 모든 스타일이 변할 때 서서히 변경하라는 뜻이고 (all 대신 opacity 이렇게 하나만 줄 수도 있음)  
+1s 이건 1초에 걸쳐서 서서히 변경해달라는 뜻입니다.  
+
+## transition 세부 속성 살펴보기 
+```
+.box {
+  transition-delay: 1s; /* 시작 전 딜레이 */
+  transition-duration: 0.5s; /* transition 작동 속도 */
+  transition-property: opacity; /* 어떤 속성에 transition 입힐건지 */
+  transition-timing-function: ease-in; /* 동작 속도 그래프조정 */
+}
+```
+이런 식으로 세부설정도 가능합니다.  
+
+애니메이션 종류도 수십가지일텐데  
+그거 전부 하나하나 설명하려면 100강도 모자르기 때문에 귀찮으니  
+여러분은 그냥 애니메이션 만드는 법칙을 외워가시길 바랍니다.  
+이거 외우면 앞으로 혼자 알아서 만들 수 있음  
+
+one-way 애니메이션 혼자 알아서 만드는 법 :  
+
+one-way 애니메이션은 A에서 B로 정지없이 쭉 이동하는 애니메이션을 뜻합니다.   
+
+1. 시작스타일 정하기
+
+2. 최종스타일 정하기
+
+3. 언제 최종스타일로 변할지 트리거 주기 (대부분 마우스 올렸을 때임)
+
+4. transition 으로 서서히 동작하게 만들기 
+
+이런 스텝으로 CSS 코드 짜면 끝입니다.  
+
+# Bootstrap
+
+Boostrap은 프론트엔드 Component Library라고 하여  
+
+웹페이지에 필요한 버튼, 메뉴, 탭, 모달, 카드 등 필수 요소들을 모아놓은 일종의 CSS 파일입니다.  
+
+이걸 우리 HTML 파일에 설치하시면 보다  빠른 복붙식 HTML CSS개발이 가능합니다.  
+
+## Utility Class 사용가능
+
+```
+<div class="container">이쁜 여백가진 박스</div>
+<div class="mt-5">margin-top 쉽게 주기</div>
+<div class="pb-5">padding-bottom 쉽게 주기</div>
+<div class="fs-3">font-size 쉽게 주기</div>
+<div class="text-center">text-align 쉽게 주기</div>
+<div class="fw-bold">font-weight 쉽게 주기</div>
+ ```
+
+Bootstrap을 설치하면 저런 class 들을 이용가능합니다.  
+여러분이 직접 CSS 에다가 padding-bottom 기록할 필요 없이  
+그냥 pb-5 이렇게 주면 끝인 것입니다.  
+(pb1~5 까지 있습니다.)  
+
+몇개 외워놓으면 개발 시간이 매우 빨라지겠죠?  
+padding-left 는 ps-5 (start의 약자)  
+padding-right 는 pe-5 (end의 약자)  
+등 수백개가 있어서 더 찾고 싶으면 Bootstrap 홈페이지의 Utility class 메뉴를 살펴봅시다.  
+
  
