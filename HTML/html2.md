@@ -333,4 +333,162 @@ padding-left 는 ps-5 (start의 약자)
 padding-right 는 pe-5 (end의 약자)  
 등 수백개가 있어서 더 찾고 싶으면 Bootstrap 홈페이지의 Utility class 메뉴를 살펴봅시다.  
 
+ ## 박스 분배  
+
+ 박스를 균일하게 쪼개고 싶을 때 Bootstrap grid 레이아웃을 사용하면 쉽고 빠르게 구현이 가능합니다.  
+```
+<div class="row">
+  <div class="col"> 안녕 </div>
+  <div class="col"> 안녕 </div>
+  <div class="col"> 안녕 </div>
+</div>
+```
+동일한 영역으로 쪼개고 싶을 때 각각 박스에 col, 그리고 부모에는 row라는 클래스를 부여하면 됩니다.   
+하지만 정확히 하려면 col 이것만 달랑 쓰는게 아니라 col-4 이렇게 숫자도 뒤에 적어주셔야합니다.   
+```
+<div class="row">
+  <div class="col-4"> 안녕 </div>
+  <div class="col-4"> 안녕 </div>
+  <div class="col-4"> 안녕 </div>
+</div>
+```
+이래야 가로폭을 정확히 3등분할 수 있는데 왜 대체 4를 적어야하냐면  
+
+Bootstrap은 웹디자인의 대 원칙 12 column 디자인을 사용하고 있습니다.  
+
+웹사이트를 디자인할 때 12개의 세로 선으로 쪼개면 사이트를 안정감있고 균형있게 편리하게 디자인할 수 있다는 소리인데  
+그래서 포토샵 켜서 웹디자인할 때   
+
+이런 12개의 가이드 라인을 그리고 디자인하는 경우가 많습니다.  
+왜 12라는 숫자를 선택했냐면 균일하게 6등분, 4등분, 3등분, 2등분하기 매우 쉬워지니까요.   
+
+그래서 Bootstrap을 사용할 때 `<div class="row">` 이걸 사용하면  
+div 안쪽을 정확히 12등분하게 되며  
+그 안에 있는 박스들은 `<div class="col-4">` 이렇게 사용해서  
+몇개의 column을 차지할지 명시해줘야 정확한 가로폭 사이즈 재단이 가능합니다.  
+
+```
+<div class="row">
+  <div class="col-6"> 안녕 </div>
+  <div class="col-6"> 안녕 </div>
+</div>
+```
+
+그럼 이렇게 하면 화면을 반반 정확히 쪼갤 수 있겠군요.  
+
+# Pseudo-element
+
+내가 특정 HTML 요소의 안쪽 일부만 스타일을 주고 싶을 때  
+Pseudo-element 셀렉터를 이용해서 스타일을 줄 수 있습니다.  
+예를 들면 이런 것들이 가능합니다.  
+
+## Pseudo-element로 HTML 특정부분에 스타일링하기/글씨넣기
+
+```
+.text::first-letter {
+  color : red;
+}
+
+.text::first-line {
+  color : red;
+}
+
+.text::after {
+  content : '뻥이지롱';
+  color : red;
+}
+
+.text::before {
+  content : '뻥이지롱';
+  color : red;
+}
+```
+
+1. pseudo-element를 선택하려면 콜론 2개 :: 를 사용하면 됩니다. 
+
+2. ::first-letter라고 붙이면 안에 있는 글자 중 첫 글자만 스타일을 줄 수 있습니다.
+
+3. ::first-line이라고 붙이면 안에 있는 글자 중 첫 줄만 스타일을 줄 수 있습니다.
+
+4. ::after라고 붙이면 내부의 맨 마지막 부분에 특정 글자같은걸 추가해줄 수 있습니다.
+
+5. ::before라고 붙이면 내부의 맨 앞 부분에 특정 글자같은걸 추가해줄 수 있습니다.
+
+"first-letter 대신 그냥 첫 글자를 span태그로 감싸면 되지않나요?"  
+
+그래도 되겠지만 서버와 데이터베이스로 인해 글자가 항상 다이나믹하게 변하는 경우 항상 span태그를 넣기 불가능합니다.  
+그럴 때 사용하시면 되겠습니다.  
+
+## Pseudo-element로 clear : both 박스 편하게 만들기
+
+```
+.box::after {
+  content : '';
+  display : block;
+  clear : both;
+}
+```
+
+갑자기 어떤 요소 뒤에 clear : both 속성을 가진 div박스가 필요하다면  
+일부러 div를 하나 만들 필요 없이 이렇게 div를 흉내내서 사용하시면 되겠습니다.  
+content 안에 아무것도 안적은 후 display : block을 주면 div 비슷한게 하나 생성되니까요.  
+
+# Shadow DOM
+
+HTML 개발시 코드가 너무 복잡해지지 않기 위해 숨겨놓은 HTML 요소들이 있습니다.  
+이걸 Shadow DOM이라고 부릅니다.  
+하지만 아무나 볼 수는 없습니다.  
+
+'어둠을 보는 눈'이 필요한데 이걸 얻는 법을 설명해드리겠습니다.   
+일단 크롬 개발자도구 셋팅 변경이 필요합니다.  
+
+1. 개발자도구를 켠 상태에서 F1 (혹은 Settings 메뉴)를 누르면 나오는 곳에서
+
+2. Show user agent shadow DOM을 체크하시면 됩니다. 
+
+이제 여러분은 숨겨진 HTML요소까지 몰래 구경가능합니다.  
+
+## Shadow DOM 활용법
+
+shadow DOM을 잘 활용하면 내가 전에 커스터마이징 할 수 없었던 요소도 커스터마이징이 가능합니다.  
+예를 들어 `<input placeholder="안녕하세요">` 이러면  
+회색글씨가 input 안에 생성이 되는데  
+이 회색 글씨의 스타일을 바꾸고 싶다면 shadow DOM을 까보시면 됩니다.  
+
+찾을 때 pseudo라는 속성이 부여되어있다면 저번시간에 했던 pseudo-element 처럼 찾을 수 있습니다.   
+
+```
+input::-webkit-input-placeholder {
+  color : red; 
+}
+```
+
+이렇게 쓰면 기존에 보이지 않았던 shadow DOM 요소들도 스타일을 줄 수 있습니다.  
+ - 스크롤바
+ - 드래그시 하이라이트되는 파란색 색상
+ - 파일 업로드 버튼
+
+등 많은걸 커스터마이징 가능합니다.  
+솔직히 저렇게 직접 안뒤져봐도 그냥 구글 검색 잘하면 누구나 적용할 수 있긴 한데  
+위와 같은 원리 같은걸 이해하면 이제 혼자 알아서 코드짤 수 있습니다.  
+
+ 
+## -webkit- 수식어
+
+```
+input::-webkit-input-placeholder {
+  color : red; 
+}
+```
+
+크롬, 오페라, 사파리, Edge 브라우저에서만 동작하는 스타일을 만들고 싶을 때 사용합니다.  
+ - 파이어폭스는 -moz-
+ - 익스플로러는 -ms-
+이렇게 붙여주면 됩니다.  
+
+그럼 `input::-moz-input-placeholder`  이렇게 하면 파이어폭스용 스타일을 줄 수 있는 것이구나라고 생각할 수 있겠지만  
+훌륭한 생각이지만 shadow DOM 스타일 예측은 틀릴 때가 많습니다.  
+여러분이 파이어폭스 브라우저로 똑같이 shadow DOM을 까봐야 제대로된 스타일을 줄 수 있습니다.  
+아니면 구글을 찾아보도록 합시다.  
+
  

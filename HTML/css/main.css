@@ -325,6 +325,30 @@ a:visited {
   margin-top: 50%;
 }
 
+progress {
+  /*기본 배경은 없애주는게 좋습니다*/
+  -webkit-appearance: none;
+  -moz-appearance : none;
+  appearance: none;
+  background: rgb(251, 248, 248);
+/* IE10 호환성용 */
+  color: red;
+}
+progress::-webkit-progress-bar {
+  background-color: #eee;
+  border-radius: 2px;
+}
+progress::-webkit-progress-value {
+  background-color: red;
+  border-radius: 2px;
+}
+
+/*파이어폭스 호환성을 위해*/
+progress::-moz-progress-bar {
+  background-color: red;
+  border-radius: 2px;
+}
+
 @media screen and (max-width: 1200px) {
   .main-title {
     font-size: 20px;
