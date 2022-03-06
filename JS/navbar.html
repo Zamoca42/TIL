@@ -34,6 +34,7 @@
     <nav class="navbar navbar-light bg-light">
         <div class="container-fluid">
           <span class="navbar-brand">Navbar</span>
+          <span class="badge bg-dark ms-auto mx-3">Dark 🔄</span>
           <button class="navbar-toggler" type="button">
             <span class="navbar-toggler-icon"></span>
           </button>
@@ -51,6 +52,10 @@
       <div class="main-bg">
           <h4>Shirts on Sale</h4>
           <button class="btn btn-primary" id="login">로그인</button>
+      </div>
+
+      <div class="alert alert-danger">
+        <span id="second">5</span>초 이내 구매시 사은품 증정!
       </div>
 
       <script>
@@ -77,9 +82,44 @@
             } else if(document.querySelectorAll('.form-control')[1].value.length < 6) {
                 e.preventDefault();
                 alert('6자리 이상으로 입력하세요');
+            } else if(/[A-Z]/.test(document.querySelectorAll('.form-control')[1].value)) {
+                alert('대문자를 하나 이상 입력하세요')
+                e.preventDefault();
             }
           })
 
+          
+          var count = 0;
+
+          document.querySelectorAll('.badge')[0].addEventListener('click', function(){
+            count += 1;
+
+            if(count % 2 === 1) {
+               document.querySelectorAll('.badge')[0].innerHTML = 'Light 🔄';
+             } else {
+               document.querySelectorAll('.badge')[0].innerHTML = 'Dark 🔄';
+             }
+          });
+
+      </script>
+
+      <script>
+        var count = 5;
+
+        var timer = setInterval(function() {
+          count -= 1;
+          if (count > 0){
+            document.querySelector('#second').innerHTML = count;
+          } else if (count === 0) {
+            document.querySelectorAll('.alert')[0].style.visibility = 'hidden';
+            clearTimeout(timer);
+          }
+        }, 1000)
+
+        
+
+       
+        
       </script>
 
     <!-- Option 1: Bootstrap Bundle with Popper -->
