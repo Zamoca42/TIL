@@ -15,6 +15,7 @@
   </head>
   <body>
 
+    <!-- 모달창 -->
     <div class="black-bg">
         <div class="white-bg">
           <h4>로그인하세요</h4>
@@ -31,6 +32,7 @@
         </div>
       </div> 
 
+    <!-- navbar -->
     <nav class="navbar navbar-light bg-light">
         <div class="container-fluid">
           <span class="navbar-brand">Navbar</span>
@@ -41,6 +43,7 @@
         </div>
       </nav> 
 
+      <!-- 메뉴박스 -->
       <ul class="list-group">
         <li class="list-group-item">An item</li>
         <li class="list-group-item">A second item</li>
@@ -54,12 +57,34 @@
           <button class="btn btn-primary" id="login">로그인</button>
       </div>
 
+      <!-- 알림창 -->
       <div class="alert alert-danger">
         <span id="second">5</span>초 이내 구매시 사은품 증정!
       </div>
 
-      <script>
+    <!-- 캐러셀 -->
+     <div style="overflow: hidden">
+       <div class="slide-container">
+         <div class="slide-box">
+           <img src="./img/car1.png">
+         </div>
+         <div class="slide-box">
+           <img src="./img/car2.png">
+         </div>
+         <div class="slide-box">
+           <img src="./img/car3.png">
+         </div>
+       </div>
+     </div>
 
+     <button class="slide-1">1</button>
+     <button class="slide-2">2</button>
+     <button class="slide-3">3</button>
+     <button class="next">다음</button>
+     <button class="before">이전</button>
+
+      <script>
+          //navbar
           document.querySelectorAll('.navbar-toggler')[0].addEventListener('click', function(){
               document.querySelectorAll('.list-group')[0].classList.toggle('show');
           });
@@ -72,6 +97,7 @@
               $('.black-bg').removeClass('show-modal');
           });
           
+          //폼 박스
           document.querySelectorAll('#submit')[0].addEventListener('click', function(e){
             if(document.querySelectorAll('.form-control')[0].value === '') {
                 e.preventDefault();
@@ -88,7 +114,7 @@
             }
           })
 
-          
+          //다크모드
           var count = 0;
 
           document.querySelectorAll('.badge')[0].addEventListener('click', function(){
@@ -101,9 +127,39 @@
              }
           });
 
+          //캐러셀
+
+          document.querySelector('.slide-1').addEventListener('click', function(){
+          document.querySelector('.slide-container').style.transform = 'translateX(0vw)';
+          });
+
+          document.querySelector('.slide-2').addEventListener('click', function(){
+          document.querySelector('.slide-container').style.transform = 'translateX(-100vw)';
+          });
+
+
+          document.querySelector('.slide-3').addEventListener('click', function(){
+          document.querySelector('.slide-container').style.transform = 'translateX(-200vw)';
+          });
+
+          var 지금사진 = 1;
+
+          document.querySelector('.next').addEventListener('click', function(){
+              document.querySelector('.slide-container').style.transform = 'translateX(-' + 지금사진 + '00vw)';
+              지금사진 += 1;
+              console.log(지금사진);
+          });
+
+          document.querySelector('.before').addEventListener('click', function(){
+            document.querySelector('.slide-container').style.transform = 'translateX(-' + 지금사진 + '00vw)';
+              지금사진 -= 1;
+              console.log(지금사진);
+          });
+
       </script>
 
       <script>
+        //5초 후에 사라지는 알림창
         var count = 5;
 
         var timer = setInterval(function() {
@@ -115,10 +171,6 @@
             clearTimeout(timer);
           }
         }, 1000)
-
-        
-
-       
         
       </script>
 
