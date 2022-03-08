@@ -42,6 +42,19 @@
           </button>
         </div>
       </nav> 
+    
+      <script>
+        //navbar 스크롤 이벤트
+        window.addEventListener('scroll', function(){
+            if(window.scrollY > 100){
+              document.querySelector('.navbar-brand').style.fontSize = '20px';
+            } else {
+              document.querySelector('.navbar-brand').style.fontSize = '25px';
+            }
+        })
+        
+
+      </script>
 
       <!-- 메뉴박스 -->
       <ul class="list-group">
@@ -56,6 +69,8 @@
           <h4>Shirts on Sale</h4>
           <button class="btn btn-primary" id="login">로그인</button>
       </div>
+
+      <div style="height: 1000px"></div>
 
       <!-- 알림창 -->
       <div class="alert alert-danger">
@@ -82,6 +97,32 @@
      <button class="slide-3">3</button>
      <button class="next">다음</button>
      <button class="before">이전</button>
+
+     <div class="lorem" style="width: 200px; height: 100px; overflow-y: scroll">
+      Lorem ipsum dolor sit amet consectetur adipisicing elit. Itaque maiores sed asperiores sit magni, sunt adipisci natus? Qui dolore voluptatum expedita fuga vitae cupiditate, fugiat consequuntur numquam fugit, sint nam!
+      </div>
+
+      <script>
+        //약관 다읽었는지 체크하는방법
+         document.querySelector('.lorem').addEventListener('scroll', function(){
+           var 스크롤양 = document.querySelector('.lorem').scrollTop;
+           var 실제높이 = document.querySelector('.lorem').scrollHeight;
+           var 높이 = document.querySelector('.lorem').clientHeight;
+           if (스크롤양 + 높이 > 실제높이 - 10) {
+             alert('다읽음');
+           }
+         })
+
+         //페이지 전체의 높이 = html태그
+         document.querySelector('html').scrollHeight
+         document.documentElement.scrollHeight
+         //페이지 보이는 부분 높이
+         document.querySelector('html').clientHeight
+         //현재페이지 스크롤양
+         window.scrollY
+
+      </script>
+
 
       <script>
           //navbar
