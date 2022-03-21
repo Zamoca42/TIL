@@ -221,7 +221,7 @@ https://poiemaweb.com/nodejs-keeping-secrets
 onst db_config = require('./db_config.json');
 
 const MongoClient = require('mongodb').MongoClient;
-MongoClient.connect(`${db_config.database}`, function(error, client){
+MongoClient.connect(db_config.database, function(error, client){
     //listen(서버를 오픈할 포트번호, function(){서버 오픈시 실행할 코드})
     app.listen(8080, function() {
         console.log('listening on 8080')
