@@ -589,7 +589,7 @@ function 제목바꾸기() {
 ```
 
 이렇게 새로운 배열을 만들어서 title 배열을 집어넣게되면 각각의 자료형이 생성되는게 아니라 값을 공유합니다.  
-이걸 call by sharing이라는 reference data type이라고 합니다.  
+reference자료형인 object와 array에서 적용되는 call by sharing이다.
 그래서 완전히 새로운 복사본을 만들어 주려면
 
 ```js
@@ -712,3 +712,33 @@ function 다른컴포넌트() {
 하지만 가장 큰 단점은 `<Modal>`이라는 컴포넌트가 App(){} 안에 있는 state를 사용하고 싶을 때 그냥 바로 쓸 수 없다는 것입니다.
 
 props라는 문법을 이용해 state를 `<Modal>`까지 전해줘야 비로소 사용가능합니다.
+
+## props
+
+다른 컴포넌트에 있는 state를 가지고 오고싶을 땐 props를 사용한다.  
+예를들어 App(){}안에 있는 글제목 state를 Modal(){}안에서 쓰고싶다.  
+먼저 컴포넌트의 관계를 한번 보면 App이라는 컴포넌트 안에 Modal 컴포넌트를 사용했다면  
+App은 부모컴포넌트, Modal은 자식컴포넌트가 된다. HTML에서 레이아웃과 비슷한거 같다.  
+이 때 App에서 사용된 state는 Modal에서 사용할 수 없다. 그럴 땐 props로 자식에게 state를 전달해주면 된다.  
+
+```js
+{
+  modal === true
+  ? <Modal 작명={전송할state}></Modal>
+  : null
+}
+```
+이렇게 태그 안에 넣고싶은 state를 넣어주고
+```js
+function Modal(props){
+  return (
+    <div className="modal">
+        <h2>제목 {props.title}</h2>
+        <p>날짜</p>
+        <p>상세내용</p>
+    </div>
+  )
+}
+```
+컴포넌트 안의 파라미터에 props를 넣어준다. 부모에게 전달받은 state는 다 props로 들어간다.  
+
