@@ -719,26 +719,267 @@ props라는 문법을 이용해 state를 `<Modal>`까지 전해줘야 비로소 
 예를들어 App(){}안에 있는 글제목 state를 Modal(){}안에서 쓰고싶다.  
 먼저 컴포넌트의 관계를 한번 보면 App이라는 컴포넌트 안에 Modal 컴포넌트를 사용했다면  
 App은 부모컴포넌트, Modal은 자식컴포넌트가 된다. HTML에서 레이아웃과 비슷한거 같다.  
-이 때 App에서 사용된 state는 Modal에서 사용할 수 없다. 그럴 땐 props로 자식에게 state를 전달해주면 된다.  
+이 때 App에서 사용된 state는 Modal에서 사용할 수 없다. 그럴 땐 props로 자식에게 state를 전달해주면 된다.
 
 ```js
 {
-  modal === true
-  ? <Modal 작명={전송할state}></Modal>
-  : null
+  modal === true ? <Modal 작명={전송할state}></Modal> : null;
 }
 ```
+
 이렇게 태그 안에 넣고싶은 state를 넣어주고
+
 ```js
-function Modal(props){
+function Modal(props) {
   return (
     <div className="modal">
-        <h2>제목 {props.title}</h2>
-        <p>날짜</p>
-        <p>상세내용</p>
+      <h2>제목 {props.title}</h2>
+      <p>날짜</p>
+      <p>상세내용</p>
+    </div>
+  );
+}
+```
+
+컴포넌트 안의 파라미터에 props를 넣어준다. 부모에게 전달받은 state는 다 props로 들어간다.
+
+## React Router로 라우팅하기
+
+React Router를 사용하면 웹앱에서 index.html 한개로 라우팅만 해주면 여러 페이지를 보여줄 수 있다.  
+react-router-dom이라는 공식 라이브러리를 설치해서 이용하면 된다.  
+강의에서는 5.2.0버전을 사용했는데 최신버전인 6.2.2를 사용해서 강의와 같이 설정하면 에러가 뜬다.  
+사용방법이 많이 바뀐걸로 봐서 기본 원리만 익히고 최신버전으로 다시 공부해야할 것 같다.
+
+### 세팅
+
+터미널에서
+
+```js
+npm install react-router-dom@5.2.0
+
+yarn add react-router-dom@5.2.0
+```
+
+둘 중 하나를 입력해서 설치하면 된다. yarn이 있으면 yarn으로 설치하는게 좀 더 빠르다.  
+react 프로젝트에서 index.js에
+
+```js
+import { BrowserRouter } from "react-router-dom";
+
+ReactDOM.render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </React.StrictMode>,
+  document.getElementById("root")
+);
+```
+
+기존코드에서 import BrowserRouter를 해주고 `<BrowserRouter>`태그를 추가한다.  
+그럼 이제 App.js로 이동해 라우팅을 해주면 된다.
+
+### BrowserRouter vs HashRouter
+
+위의 index.js에서 세팅할 때 BrowserRouter말고 HashRouter라는 태그도 이용할 수 있다.  
+BrowserRouter를 HashRouter로 교체하면 되는데
+
+- HashRouter를 복붙하시면 사이트 방문시 URL 맨 뒤에 /#/이 붙은채로 시작한다
+
+- BrowserRouter를 복붙하시면 사이트 방문시 # 그런거 없이 깔끔해진다.
+
+이게 차이점이다.  
+HashRouter를 사용하는 이유는 보통 라우팅을 하게 되면 서버에 페이지를 요청하는데  
+서버에 요청하지 않고 리액트가 전부 라우팅하게 할 수 있다.  
+서버가 있을 때 BrowserRouter를 사용하면 서버에 요청하지않고 리액트 메인페이지로 보내는 API를 설정해야한다.
+
+### 기본 라우팅
+
+이번 목표는
+
+1. "/"로 접속하면 메인페이지를 보여준다.
+2. "/detail"로 접속하면 상세페이지로 연결한다.
+
+App.js
+
+```js
+import 많은 곳;
+import { Link, Route, Switch } from 'react-router-dom';
+
+function App(){
+  return (
+    <div>
+      HTML 잔뜩있는 곳
+
     </div>
   )
 }
 ```
-컴포넌트 안의 파라미터에 props를 넣어준다. 부모에게 전달받은 state는 다 props로 들어간다.  
 
+상단에 Link, Route, Switch를 import해온다. 오늘 사용할 것은 Route지만  
+다음에 Link, Switch를 사용할거라 미리가져왔다.
+
+```js
+import 많은 곳;
+import { Link, Route, Switch } from 'react-router-dom';
+
+function App(){
+  return (
+    <div>
+      HTML 잔뜩있는 곳
+      <Route path="/">
+        <div>메인페이지인데요</div>
+      </Route>
+      <Route path="/detail">
+        <div>상세페이지인데요</div>
+      </Route>
+    </div>
+  )
+}
+```
+
+이렇게 `<Route>`태그로 한페이지에서 경로를 나눠줄 수 있다. 웹페이지에서는 `/`로 접속하면 메인페이지를  
+`/detail`로 접속하면 상세페이지로 연결할 수 있다.  
+`<Route>`태그안에 div박스로 페이지를 만들 수도 있지만, 만들어놓은 component를 가져오는게 더 간단하다.
+
+```js
+<Route path="/어쩌구" component={Card} ></Route>
+
+<Route path="/어쩌구"> <Card/> </Route>
+```
+
+둘 다 같은 방식이고 밑에 컴포넌트를 불러오는게 더 간단해보인다.  
+위의 Route방식으로 페이지를 나누면 한페이지에 메인페이지와 상세페이지가 나온다.  
+/detail에 /도 포함되어있기 때문인데, 여기서
+
+```js
+<Route exact path="/">
+  <div>메인페이지에요</div>
+</Route>
+```
+
+exact라는 속성을 붙여주면 `/`경로와 정확히 일치할 때만 메인페이지를 보여준다.
+
+### Link 태그로 페이지 이동버튼 만들기
+
+이전에 reac-router-dom에서 import해온 컴포넌트 중에 Link가 있었다.
+
+```js
+function App() {
+  return (
+    <div>
+      <Navbar>
+        <Nav.Link>
+          {" "}
+          <Link to="/">Home</Link>{" "}
+        </Nav.Link>
+        <Nav.Link>
+          {" "}
+          <Link to="/detail">Detail</Link>{" "}
+        </Nav.Link>
+      </Navbar>
+      <나머지HTML />
+    </div>
+  );
+}
+```
+
+App.js의 navbar에서 버튼들을 Link태그로 감싸주고 to라는 속성을 이용해서 경로를 적어주면  
+페이지 이동버튼이 완성된다. 나머지 마음에 들지않는 스타일은 css나 부트스트랩으로 스타일링해주면 된다.  
+이제 Detail을 누르면 `/detail`경로로 Home을 누르면 `/`경로로 이동한다.
+
+### 상세페이지에서 뒤로가기 버튼을 만들어 보자
+
+```js
+import React from "react";
+import { useHistory } from "react-router-dom";
+
+function Detail() {
+  let history = useHistory();
+  return (
+    <div className="container">
+      <div className="row">
+        <div className="col-md-6">
+          <img
+            src="https://codingapple1.github.io/shop/shoes1.jpg"
+            width="100%"
+          />
+        </div>
+        <div className="col-md-6 mt-4">
+          <h4 className="pt-5">상품명</h4>
+          <p>상품설명</p>
+          <p>120000원</p>
+          <button className="btn btn-danger">주문하기</button>
+          <button className="btn btn-danger">뒤로가기</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default Detail;
+```
+
+detail.js라는 파일을 만들어서 상세페이지를 만들어주고 App.js에 import시켰다.  
+여기서 주문하기버튼 옆에 뒤로가기버튼을 만들어주고, useHistory라는 함수를 react-router-dom에서 import해왔다.  
+useHistory는 일종의 Hook으로 사용자가 열어본 페이지 이동내역 + 유용한 함수가 object로 저장되어 있다.
+
+```js
+<button
+  onClick={() => {
+    history.goBack();
+  }}
+  className="btn btn-danger"
+>
+  뒤로가기
+</button>
+```
+
+여기서 뒤로가기 버튼만 onClick속성으로 `history.goBack()`이라는 함수를 적용해주면 페이지가 뒤로간다.  
+이런 라이브러리 사용법은 찾아서 읽거나 검색해봐야 알 수 있다.
+
+뒤로가기 기능 말고 그냥 어떤 페이지로 이동하는 기능을 만들고 싶으면  
+라이브러리 사용법에 따라 push() 함수를 꺼내쓰시면 된다.  
+뒤로가기 버튼을 눌렀을 때 홈화면으로 이동하려면
+
+```js
+<button
+  onClick={() => {
+    history.push("/");
+  }}
+  className="btn btn-danger"
+>
+  뒤로가기
+</button>
+```
+
+이렇게 써주면 된다.
+
+### Switch 컴포넌트에 대해 알아보자
+
+맨 처음에 라우터에서 Link, Route, Switch를 import 해왔는데, 그 중 Switch라는 건  
+Route태그들을 전부 보여주지말고, 한번에 하나만 보여주는 기능이다.  
+사용법도 나누고싶은 Route태그들을 감싸면 된다.  
+
+```js
+function App(){
+  return (
+    <div>
+      <나머지HTML/>
+        <Switch>
+          <Route exact path="/">
+            어쩌구
+          </Route>
+          <Route path="/detail">
+            <Detail/>
+          </Route>
+          <Route path="/:id">
+            <div>새로 만든 route입니다</div>
+          </Route>
+        </Switch>
+    </div>
+  )
+}
+```
+이렇게 한페이지에 다보여주던 Route들을 다 감싸면 여러개의 Route가 매칭되어도 맨 위의 Route 하나만 보여준다.  
+이걸 응용하면 exact속성을 사용하지 않아도 해결 가능하다.  
