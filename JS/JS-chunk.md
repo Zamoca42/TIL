@@ -742,6 +742,11 @@ function Modal(props) {
 ```
 
 컴포넌트 안의 파라미터에 props를 넣어준다. 부모에게 전달받은 state는 다 props로 들어간다.
+이 후 app.js에서 `<Modal/>` 태그에 넣고싶은 state를 속성으로 넣어주면 전달된다.
+
+```js
+<Modal title={title} clickTitle={clickTitle} />
+```
 
 ## React Router로 라우팅하기
 
@@ -959,27 +964,159 @@ useHistory는 일종의 Hook으로 사용자가 열어본 페이지 이동내역
 
 맨 처음에 라우터에서 Link, Route, Switch를 import 해왔는데, 그 중 Switch라는 건  
 Route태그들을 전부 보여주지말고, 한번에 하나만 보여주는 기능이다.  
-사용법도 나누고싶은 Route태그들을 감싸면 된다.  
+사용법도 나누고싶은 Route태그들을 감싸면 된다.
 
 ```js
-function App(){
+function App() {
   return (
     <div>
-      <나머지HTML/>
-        <Switch>
-          <Route exact path="/">
-            어쩌구
-          </Route>
-          <Route path="/detail">
-            <Detail/>
-          </Route>
-          <Route path="/:id">
-            <div>새로 만든 route입니다</div>
-          </Route>
-        </Switch>
+      <나머지HTML />
+      <Switch>
+        <Route exact path="/">
+          어쩌구
+        </Route>
+        <Route path="/detail">
+          <Detail />
+        </Route>
+        <Route path="/:id">
+          <div>새로 만든 route입니다</div>
+        </Route>
+      </Switch>
     </div>
+  );
+}
+```
+
+이렇게 한페이지에 다보여주던 Route들을 다 감싸면 여러개의 Route가 매칭되어도 맨 위의 Route 하나만 보여준다.  
+이걸 응용하면 exact속성을 사용하지 않아도 해결 가능하다.
+
+## useEffect
+
+리액트에서 컴포넌트는 Lifecycle개념이 존재합니다.  
+컴포넌트는 생성, 삭제가 가능하고 관련 state가 변경되면 재렌더링이 일어납니다.  
+여기서 Hook을 사용하면 생성되거나 삭제될 때 조건을 걸 수 있습니다.  
+이 Hook의 정확한 명칭을 Lifecycle Hook이라고 합니다.
+
+useEffect는 Lifecycle Hook으로 function 컴포넌트 안에서 사용할 수 있습니다.
+
+```js
+import React, { useState, useEffect } from "react";
+
+function Detail() {
+  useEffect(() => {
+    //코드를 적습니다 여기
+  });
+
+  return <HTML많은곳 />;
+}
+```
+
+1. 미리 페이지 상단에서 useEffect를 import하고
+2. useEffect()를 사용하고 안에 콜백함수를 넣습니다.
+3. 콜백함수 안에는 컴포넌트가 나타나고나서 실행하고싶은 코드를 적어줍니다.
+
+좀 더 자세하게 useEffect() 내의 코드 실행 조건은
+
+- 컴포넌트가 첫 등장해서 로딩이 끝난후(Mount가 끝났을 때)
+- 컴포넌트가 재렌더링 되고난 후(Update가 되고난 후)
+
+### 컴포넌트가 사라질 때 useEffect실행
+
+```js
+import React, {useState, useEffect} from 'react';
+
+function Detail(){
+
+  useEffect(()=>{
+    return function 어쩌구(){ 실행할 코드 }
+  });
+
+  return (
+    <HTML많은곳/>
   )
 }
 ```
-이렇게 한페이지에 다보여주던 Route들을 다 감싸면 여러개의 Route가 매칭되어도 맨 위의 Route 하나만 보여준다.  
-이걸 응용하면 exact속성을 사용하지 않아도 해결 가능하다.  
+
+useEffect() 안에는 return이라는걸 넣을 수 있습니다.  
+그리고 여기 넣은 함수는 컴포넌트가 사라질 때 실행됩니다.
+
+- 당연히 다른 곳에서 만들어 놓은 함수명을 입력하셔도 됩니다.
+- arrow function 집어넣으셔도 가능합니다.
+
+추가로 useEffect기능을 여러개 사용하고싶다면 useEffect를 여러개 적어주어도 가능합니다.
+
+### 페이지 방문 후 2초 후에 사라지는 alert박스
+
+```js
+function Detail(){
+
+  let [ alert, alert변경 ] = useState(true);
+  useEffect(()=>{
+    let 타이머 = setTimeout(()=>{ alert변경(false) }, 2000);
+  });
+
+  return (
+    <HTML많은곳/>
+    {
+      alert === true
+      ? (<div className="my-alert2">
+          <p>재고가 얼마 남지 않았습니다</p>
+        </div>)
+      : null
+    }
+  )
+}
+```
+
+useEffect안에 setTimeout을 사용해서 2초 후에 alert를 false로 변경  
+이 때 만약 페이지에서 input태그 같은 것이 있어서 input에 문자를 입력하면 문자가 입력될 때 마다 재렌더링이 일어납니다.  
+그럴때 useEffect에 조건을 걸어서 업데이트 될 때는 useEffect를 실행안하게 할 수 있습니다.
+
+```js
+useEffect(() => {
+  let 타이머 = setTimeout(() => {
+    alert변경(false);
+  }, 2000);
+}, []);
+```
+
+useEffect() 함수 끝부분에 대괄호[] 를 집어넣을 수 있습니다.  
+여기에는 state를 넣을 수 있습니다.
+
+```js
+useEffect(() => {
+  let 타이머 = setTimeout(() => {
+    alert변경(false);
+  }, 2000);
+}, [alert]);
+```
+
+이런 식입니다. 이렇게 사용하면 alert라는 이름의 state가 변경이 될 때만 업데이트로 치고 실행해줍니다.
+
+마지막으로 setTimeout 타이머를 쓰셨으면 타이머해제도 해야합니다.
+
+방금 Detail 방문시 2초 후에 UI 사라지게 해주세요~ 라고 코드를 짰습니다.  
+근데 2초가 되기도 전에 Detail을 벗어나면 어떻게 될까요?
+
+지금은 별 문제없는 것 같지만 코드가 길어지거나 꼬이면  
+남아있는 타이머 때문에 이상한 현상이 일어날 수 있습니다.  
+그래서 컴포넌트가 사라질 때 타이머를 없애는 코드도 추가해주는게 좋습니다.
+
+```js
+useEffect(() => {
+  let 타이머 = setTimeout(() => {
+    alert변경(false);
+  }, 2000);
+
+  return () => {
+    clearTimeout(타이머);
+  };
+}, []);
+```
+
+useEffect안에는 return + 함수를 추가하면
+컴포넌트가 사라질 때 특정 코드를 실행할 수 있습니다
+
+거기에 clearTimeout을 추가한겁니다.  
+clearTimeout(타이머이름)  
+이렇게 쓰시면 타이머를 바로 해제할 수 있습니다.
