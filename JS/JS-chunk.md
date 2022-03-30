@@ -1120,3 +1120,97 @@ useEffect안에는 return + 함수를 추가하면
 거기에 clearTimeout을 추가한겁니다.  
 clearTimeout(타이머이름)  
 이렇게 쓰시면 타이머를 바로 해제할 수 있습니다.
+
+## Context 문법으로 props 없이 state 공유하기
+
+컴포넌트안의 컴포넌트까지 state를 전달하려면 props를 연속으로 사용해야 합니다.  
+컴포넌트가 5개 6개 중첩해 있으면 매우 복잡하겠죠.  
+props를 연속사용하기 싫다면 컴포넌트의 수를 줄이던지, 아니면 Redux나 context를 쓰면 됩니다.  
+Redux보다는 약간 더 간단하게 쓸 수 있는 Context API 사용법에 대해 알아봅시다.  
+
+```js
+let 재고context = React.createContext();
+
+function App(){
+  let [재고, 재고변경] = useState([10,11,12]);
+
+  return (
+    <HTML많은곳/>
+  )
+}
+```
+
+state값을 공유하고싶으면 createContext()라는 함수를 이용해 변수를 만듭니다.  
+
+```js
+let 재고context = React.createContext();
+
+function App(){
+  let [재고, 재고변경] = useState([10,11,12]);
+
+  return (
+    <HTML많은곳/>
+    <재고context.Provider value={재고}>
+      <어떤 레이아웃/>
+    </재고context.Provider>
+    
+  )
+}
+
+```
+state값 공유를 원하는 컴포넌트들을 `<context.Provider>`태그로 감쌉니다.
+여기에 value속성으로 공유하고싶은 state를 집어넣습니다.  
+
+그럼 이제 Provider안에 있는 모든 HTML&컴포넌트는 재고state를 이용가능합니다.  
+
+```js
+import React, {useState, useContext} from 'react';
+
+function Card(){
+  let 재고 = useContext(재고context);
+
+  return (
+    <HTML많은곳/>
+    <div>{재고[0]}</div>
+  )
+}
+
+```
+
+state를 사용하고싶으면 useContext()라는 훅을 이용해서 사용을 원하는 context를 불러와야합니다.  
+useContext 훅을 쓰려면 상단에 있는 react로 부터 import해와야 합니다.  
+재고context에 들어있는 state를 변수로 저장해 쓰겠습니다라는 문법입니다.
+
+contextAPI는 중첩된 컴포넌트가 많을 때 유용합니다.  
+
+추가로 컴포넌트가 다른 파일에 있다면?
+
+```js
+export let 재고context = React.createContext();
+
+function App(){
+  let [재고, 재고변경] = useState([10,11,12]);
+
+  return (
+    <HTML많은곳/>
+    <재고context.Provider value={재고}>
+      <Detail/>
+    </재고context.Provider>
+  )
+}
+
+```
+export를 해줘서 내보낼 수 있습니다.
+
+```js
+import {재고context} from './App.js';
+
+function Detail(){
+  let 재고 = useContext(재고context);  //근데 여기서 에러남 ㅅㄱ
+
+  return (
+    <HTML많은곳/>
+  )
+}
+```
+다른 파일에서 import {변수명,함수명}으로 가져와주면 됩니다.  
