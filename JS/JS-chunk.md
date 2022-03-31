@@ -1214,3 +1214,154 @@ function Detail(){
 }
 ```
 다른 파일에서 import {변수명,함수명}으로 가져와주면 됩니다.  
+
+## props 쓰기 싫으면 Redux
+
+Redux를 쓰는 이유는 contextAPI와 마찬가지로 props 전송 없이도 컴포넌트들이  
+state를 사용할 수 있게 만들어줍니다.  
+
+### 데이터를 보관하기 위한 Redux 설치/셋팅
+
+redux를 이용하려면 라이브러리 2개를 설치하셔야합니다. 
+
+```
+yarn add redux react-redux
+
+npm install redux react-redux
+```
+둘 중 하나 하시면 됩니다.  
+
+`redux`, `react-redux` 두개의 라이브러리입니다  
+
+redux는 데이터를 엄격하게 관리하는 기능, react-redux는 리덕스를 리액트에서 쓸 수 있게 도와주는 기능을 제공합니다.   
+
+그 다음 redux를 이용한 개발환경을 셋팅하시려면 index.js를 열어 다음과 같이 작성합니다.  
+
+첫 셋팅은 4개의 step이 있습니다.  
+
+```js
+(index.js)
+
+import 많은곳;
+import {Provider} from 'react-redux';
+
+ReactDOM.render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <Provider>
+        <App/>
+      </Provider>
+    </BrowserRouter>
+  </React.StrictMode>
+
+);
+```
+
+1. `<Provider>`라는걸 import 해오신 다음
+2. 내가 state값 공유를 원하는 컴포넌트를 다 감싸면 됩니다 
+
+`<App>` 컴포넌트를 감쌌습니다.  
+그럼 `<App>`컴포넌트와 그 안에있는 모든 HTML, 컴포넌트들은 전부 state를 직접! props 전송없이! 사용할 수 있습니다.  
+ 
+redux를 이렇게 셋팅해주시면 props를 쓸 필요가 없습니다.  
+
+3. redux에서 state를 하나 만드려면 createStore() 함수를 써야합니다. 
+
+```js
+(index.js)
+
+import 많은곳;
+import {Provider} from 'react-redux';
+import {createStore} from 'redux';
+
+let store = createStore(()=>{ return [{id : 0, name : '멋진신발', quan : 2}]  })
+
+ReactDOM.render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <Provider>
+        <App/>
+      </Provider>
+    </BrowserRouter>
+  </React.StrictMode>
+
+);
+```
+import한 다음에 `createStore(콜백)` 이렇게 사용하고
+콜백함수엔 뭘 작성하냐면.. 내가 원하는 state 초기값을 적으면 됩니다.
+그럼 Redux로 state 만들기 끝입니다.  
+
+4. `<Provider>`에 만든 state를 props처럼 등록하시면 끝입니다.
+
+마지막 입니다. 이러면 정말 하위컴포넌틀이 props전송없이 state를 사용가능합니다.
+
+```js
+(index.js)
+
+import 많은곳;
+import {Provider} from 'react-redux';
+import {createStore} from 'redux';
+
+let store = createStore(()=>{ return [{id : 0, name : '멋진신발', quan : 2}]  })
+
+ReactDOM.render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <Provider store={store}>
+        <App/>
+      </Provider>
+    </BrowserRouter>
+  </React.StrictMode>
+
+);
+```
+
+### store에 있는 state 꺼내쓰는 법
+
+이제 저장한 데이터를 Cart.js 가서 써보도록 합시다.  
+진짜 `<table>`내에 아까 그 장바구니용 데이터를 데이터바인딩을 해보자는겁니다.  
+근데 그냥 하시면 안되고 store 안에 있는 데이터를 props의 형태로 등록하셔야 사용가능합니다.  
+그러려면 하단에 있는 2단계 스텝을 따라주시면 됩니다.  
+
+```js
+(Cart.js)
+
+import 많은곳;
+import {connect} from 'react-redux';
+function Cart(){
+  return (
+    <div>
+      <Table responsive>
+        <tr>
+          <th>#</th>
+          <th>상품명</th>
+          <th>수량</th>
+          <th>변경</th>
+        </tr>
+        <tr>
+          <td>1</td>
+          <td>Table cell</td>
+          <td>Table cell</td>
+          <td>Table cell</td>
+        </tr>
+      </Table>
+    </div>
+  )
+}
+
+function state를props화(state){
+  return {
+    state : state
+  }
+}
+
+export default connect(state를props화)(Cart);
+```
+
+1. 일단 장바구니 데이터사용을 원하는 컴포넌트.js 파일 밑에 function을 하나 만들어줍니다.  
+2. 그 다음 export default 하던 부분에 connect() 어쩌구를 적습니다.  
+이렇게 사용하시면 이제 아까 만들어둔 state가 props로 등록이 된 것입니다.  
+props.state이름 이렇게 저장된 state를 자유롭게 사용할 수 있습니다.  
+
+셋팅과정이 복잡하지만 한번 셋팅하고 나면 셋팅완료된 모든 컴포넌트는 redux내의 state를  
+자유자재로 사용가능합니다. 하위컴포넌트가 여러개 있어도 props전송 고민 안해도됩니다.  
