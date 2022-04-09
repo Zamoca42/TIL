@@ -1874,3 +1874,411 @@ class 안의 함수들을 getter/setter로 만들어 쓰고 싶으면 이렇게 
 class에서의 getter/setter 용도는 위에서 설명한 내용과 똑같습니다.  
 새로 뽑힌 오브젝트들 내용을 편리하게 수정할 때 사용합니다.  
 굳이 get/set 키워드가 없어도 상관없습니다.
+
+# Destructuring
+
+Array, Object 자료형에 있는 중요한 자료들을 변수로 꺼내고 싶으면 어떻게 합니까.  
+한두개면 모르겠는데 여러개의 자료를 뽑아서 변수 만들려면 코드가 매우 길어지겠죠?  
+그럴 때 destructuring 문법을 사용하면 변수를 쉽게 만들 수 있습니다.  
+맨날 쉽다 별거아니다 그러는데 이번엔 진짜 쉽습니다.
+
+## Array 안에 있는 데이터를 변수에 담는 방법
+
+`[2,3,4]`라는 array가 있는데,
+
+여기안에 있는 3개의 데이터들을 전부 밖으로 꺼내서 변수에 담고 싶으면 어떻게 합니까.
+
+```js
+var array = [2, 3, 4];
+var a = array[0];
+var b = array[1];
+```
+
+뭐 이런식 아닐까요?  
+근데 더 쉽게할 수 있는 방법이 있습니다.
+
+```js
+var [a, b, c] = [2, 3, 4];
+```
+
+`[2,3,4]`라는 자료랑 비슷한 모양으로 변수를 선언해주시면 됩니다.
+
+변수 이름은 아무렇게나 해주시면 되고요.  
+그럼 a,b,c 변수가 세개 생성되는데 각각 2,3,4라는 자료를 가집니다.
+
+array에서 데이터 끄집어내서 변수 생성 끝입니다.  
+여기서 디폴트 값도 줄 수 있습니다.
+
+왼쪽 오른쪽 갯수가 다르면 변수가 제대로 만들어지지 않습니다.
+
+```js
+var [a, b, c] = [2, 3];
+```
+
+위처럼 쓰시면 c라는 변수는 값이 할당이 안되어서 undefined가 할당되어있습니다.
+
+이걸 방지하고 싶으면  
+값이 아무것도 안들어오는 변수들은 기본값을 가질 수 있게 만들 수 있습니다.
+
+```js
+var [a, b, c = 5] = [2, 3];
+```
+
+그럼 c는 아무 값도 안들어오는 경우 5라는 기본값을 할당해줍니다.  
+함수 배웠을 때 쓰던 default 파라미터 문법과 똑같이 쓰시면 됩니다.
+
+## Object 안에 있는 데이터를 변수에 담는 방법
+
+object도 좌우를 똑같이 맞춰주시면 변수가 생성됩니다.
+
+```js
+var { name: a, age: b } = { name: "Kim", age: 30 };
+```
+
+이렇게 하시면 됩니다.  
+그럼 a, b라는 변수가 생성되고 Kim과 30이라는 자료를 각각 할당해줍니다.
+
+이렇게 쓰시면 조금 더 쉽게 변수를 뽑을 수 있는데  
+변수 이름을 오브젝트 안의 key 이름과 똑같이 맞춰줄 때는 이렇게만 쓰셔도 됩니다.
+
+```js
+var { name, age } = { name: "Kim", age: 30 };
+```
+
+name : name을 name 이렇게 하나로 생략이 가능합니다.  
+이렇게 하시면 name, age라는 변수가 생성되고  
+각각 Kim, 30이라는 값을 할당해줍니다.  
+object에서 변수꺼내기 끝입니다.
+
++) array랑 똑같이 등호로 디폴트값도 적용가능합니다.
+
+이번엔 변수를 object로 집어넣고 싶은 경우
+
+```js
+var name = "Kim";
+var age = 30;
+
+var obj = { name: name, age: age };
+```
+
+변수를 object 자료형에 집어넣고 싶은 경우 이런 식으로 쓰면 되겠죠?
+
+하지만 destructuring 문법을 이용하시면 이런 것도 가능합니다.
+
+```js
+var name = "Kim";
+var age = 30;
+
+var obj = { name, age };
+```
+
+name : name 이렇게 key값과 value값이 동일하면
+name 이렇게 하나로 생략이 가능합니다.
+
+함수 파라미터 변수 만들 때도 똑같이 적용가능합니다.  
+함수가 하나 있는데 이 함수는 두개의 파라미터를 입력할 수 있습니다.  
+여기에 object 내의 Kim, 그리고 age 자료들을 입력하고 싶으면 어떻게 할까요?
+
+```js
+function 함수(name, age) {
+  console.log(name);
+  console.log(age);
+}
+
+var obj = { name: "Kim", age: 20 };
+함수(obj.name, obj.age);
+```
+
+아마 obj.name 이걸 직접 집어넣고 그러면 되겠죠?
+
+혹은 destructuring 문법을 쓰시면 됩니다.
+
+```js
+function 함수({ name, age }) {
+  console.log(name);
+  console.log(age);
+}
+
+var obj = { name: "Kim", age: 20 };
+함수(obj);
+```
+
+아마 obj.name, obj.name 이걸 두개 뽑지 않고도 넣을 수 있습니다.  
+왜냐면 파라미터는 실은 변수만드는 거랑 똑같은 행위기 때문에  
+변수만드는 문법을 그대로 적용할 수 있는 것이지요.
+
+파라미터를 입력할 때
+
+{name, age} = { name : 'Kim', age : 20 }
+
+이거 한거랑 똑같습니다.
+
+(솔직히 많이 쓰진 않습니다)
+
+이해가 안되면 조금 더 쉬운 array를 보도록 합시다.
+
+함수 파라미터로 array 내의 데이터들을 집어넣고 싶으면 어떻게 하죠?
+
+```js
+function 함수(name, age) {
+  console.log(name);
+  console.log(age);
+}
+
+var array = ["Kim", 30];
+함수(array[0], array[1]);
+```
+
+위처럼 해도 되지만  
+destructuring 문법을 이용하시면
+
+```js
+function 함수([name, age]) {
+  console.log(name);
+  console.log(age);
+}
+
+var array = ["Kim", 30];
+함수(["Kim", 30]);
+```
+
+이렇게 하셔도 됩니다.  
+파라미터인 [name, age] 를 만들 때 ['Kim', 30] 이걸 그대로 대입해서 만드는 것이죠.  
+그럼 각각 name과 age에는 Kim과 30이라는 데이터가 들어갑니다.
+
+데이터가 얼마나 복잡하든간에 좌우 형태를 똑같이 맞추시면 destructuring 문법으로 변수를 만들 수 있습니다.
+
+# import / export를 이용한 파일간 모듈식 개발
+
+자바스크립트 코드가 길어지면 다른 파일로 쪼개는게 좋은 관습입니다.  
+다른 파일로 쪼개놓고 그걸 첨부해서 사용하는 방법을 알아보도록 합시다.  
+ES6 import/export를 쓰시면 내가 원하는 변수, 함수, class만 다른 파일로 보낼 수 있습니다.  
+어떻게 하는지 알아봅시다.  
+(참고) import 해온 변수, 함수는 사용은 가능하지만 수정은 불가능합니다. read-only 입니다.
+
+파일 두개를 만들어봅시다.
+
+저는 index.html과 library.js를 만들어서  
+library.js 파일에 있는 내용을 index.html `<script>`태그 내에서 가져다 쓰도록 하겠습니다.  
+(이거 말고도 당연히 .js 파일 간에도 가능합니다.)
+
+```js
+(index.html)
+
+<script type="module">
+
+</script>
+```
+
+HTML 파일 안에서 ES6 import 문법을 쓰시려면 저렇게 script 태그 안에 type을 module로 설정해주셔야합니다.
+
+## export default / import 를 쓰면
+
+다른 파일에 있는 변수 등을 가져다쓸 수 있습니다.  
+변수 함수 class 전부 가능합니다.
+
+```js
+(library.js)
+
+var a = 10;
+export default a;
+
+------------------------
+(index.html)
+
+<script type="module">
+  import a from 'library.js';
+  console.log(a);
+</script>
+```
+
+JS 파일에서는 특정 변수를 다른 파일에서 이용할 수 있게 내보내고 싶으면  
+export default **변수명** 이라고 하시면 됩니다.
+
+그리고 그 변수를 가져다쓰고 싶다면  
+다른 파일에서 import 어쩌구 from '경로'  
+해주시면 됩니다.
+
+## 여러개를 export 할 수도 있습니다
+
+JS파일에서 변수를 여러개 만들고 그걸 다 내보내고싶으면  
+export 라는 키워드를 여러번 쓰시면 됩니다.
+
+```js
+(library.js)
+
+var a = 10;
+var b = 20;
+export {a, b};
+
+------------------------
+(index.html)
+
+<script type="module">
+  import {a,b} from 'library.js';
+  console.log(a);
+</script>
+```
+
+근데 export 라고 쓰실 땐  
+export {변수명1, 변수명2 ...} 이렇게 담아주셔야합니다.  
+혹은 export var a = 10; 이렇게 쓰셔도 됩니다.
+
+export 키워드로 내보낸 것들을 import 하실 땐  
+import {변수명1, 변수명2 ...} from '경로' 이렇게 가져오셔야합니다.
+
+export default와 차이점은
+
+- export default는 한번만 쓸 수 있고 import시엔 변수명을 새롭게 작명가능하다
+
+- export는 {변수명1, 변수명2 ...} 이렇게 담아야하고 import 할 때도 정확히 변수명을 써줘야한다
+
+라는 특징이 있습니다.
+
+## 그럼 export와 export default를 동시에 사용하면?
+
+그래도 잘 됩니다.  
+근데 import할 때 어떻게 해야할지 감이 안오죠?
+
+```js
+(library.js)
+
+var a = 10;
+var b = 20;
+var c = 30;
+export {a, b};
+export default c;
+
+------------------------
+(index.html)
+
+<script type="module">
+  import c, {a,b} from 'library.js';
+  console.log(c);
+</script>
+```
+
+이렇게 import 해오시면 됩니다.  
+export default 한건 맨 왼쪽에 써주시면 되고  
+그 다음부터 이제 {} 중괄호 안에 export 했던 변수들을 적어주시면 됩니다.
+
+## 변수명이 마음에 안들면 as로 새로 짓자
+
+import를 쓰실 때 변수명 오른쪽에 as라는 키워드를 붙일 수 있습니다.  
+변수명 as 새변수명 이렇게 하시면 import하는 변수의 변수명을 멋있는걸로 바꿀 수 있습니다.
+
+```js
+(library.js)
+
+var a = 10;
+var c = 30;
+export {a};
+export default c;
+
+------------------------
+(index.html)
+
+<script type="module">
+  import c as 간지, {a as 폭발} from 'library.js';
+  console.log(간지);
+  console.log(폭발);
+</script>
+```
+
+c라는 것은 간지라고 이름을 바꿨고  
+a라는 것은 폭발로 이름을 바꿨습니다.  
+아무튼 저렇게 변수명 오른쪽에 그대로 붙이시면 됩니다.
+
+## import할 때 변수들이 너무 많으면 \* 기호를 씁시다
+
+export 했던 변수들이 100개면  
+import 오른쪽에 변수를 100개나 쭉 써줘야합니까?  
+맞습니다.  
+근데 그러기 싫으시면 변수들을 한꺼번에 object에 담아서 import 해올 수 있습니다.
+
+```js
+(library.js)
+
+var a = 10;
+var b = 20;
+var c = 30;
+export {a,b};
+export default c;
+
+------------------------
+(index.html)
+
+<script type="module">
+  import c, {* as 변수모음} from 'library.js';
+  console.log(변수모음.a);
+  console.log(c);
+</script>
+```
+
+`*` 이라는 기호는 export 했던 애들을 그냥 다 import 해주세요~ 라는 뜻입니다.  
+근데 그냥 쓰면 안되고 as로 별명을 꼭 지어주셔야합니다.  
+그럼 이제 별명에 export 했던 변수들이 다 들어갑니다.
+
+(export default 했던건 그냥 원래대로 import 하시면 되고요)
+
+## 옛날엔 require, module.exports 라는게 있었습니다.
+
+옛날에 Require.js 이상한 라이브러리를 쓰거나 nodejs 개발시  
+자바스크립트를 모듈식으로 개발이 가능했었습니다.  
+이렇게 씁니다.
+
+```js
+(export 하는 js파일)
+
+module.exports.a = 10 ;
+
+------------------------
+(import 하는 js파일)
+
+var 가져온거 = require('/library.js');
+```
+
+이러면 a를 쓸 수 있었습니다.  
+근데 이제는 ES6 import/export를 쓰면 되기 때문에  
+아 그냥 저런게 있었구나 라고 이해만 하셔도 되겠습니다.  
+나중에 저런 옛날 코드를 해석할 일이 있으면 그 때 찾아보셔도 충분하니까요.
+
+그리고 import/export는 당연 IE 호환성이 없기 때문에  
+단순한 html css js 프론트엔드 개발시 JS파일을 HTML에 첨부하시려면  
+`<script src="경로"></script>` 이걸 쓰도록 합시다. 이것이 원조 import 문법 아니겠습니까.
+
+혹은 모던 브라우저에선 `<script type="module" src="경로"></script>` 이렇게 하면 import export 문법이 사용가능해지는데  
+대부분은 리액트 뷰 nodejs 이런거할 때 많이 사용하게 됩니다.
+
+# 브라우저 동작원리
+
+[![브라우저_동작원리](http://img.youtube.com/vi/v67LloZ1ieI/0.jpg))](https://youtu.be/v67LloZ1ieI)
+
+## 처리가 오래걸리는 코드를 만나면
+
+가끔가다가 특별한 코드를 실행해야할 경우가 있습니다.  
+서버로의 ajax 요청, 이벤트리스너, setTimeout 이런 코드들입니다.  
+이런 코드는 처리하기까지 시간이 오래걸립니다.  
+ajax 요청은 서버에서 응답을 받기까지 시간이 오래걸리고  
+버튼 이벤트리스너는 사용자가 버튼을 누르기까지 시간이 오래걸립니다.  
+그래서 그런건 Stack에 쌓아서 실행하지 않고  
+잠깐 보류해놨다가 완료가 되는 시점에 Stack으로 보냅니다.  
+
+근데 Stack은 항상 바쁘기 때문에 Stack이 텅 빈 시점에 집어넣게 되어있습니다.  
+아무튼 ajax 요청, 이벤트리스너, setTimeout 이런 코드가 실행준비가 되면  
+Queue라는 곳에 집어넣고 Queue에 있던 코드는 Stack으로 옮겨서 실행해주는데  
+Stack에 넣어서 실행하는데 Stack이 비어있을 때만 차례로 집어넣어서 실행해줍니다.   
+
+(참고로 Queue는 들어온 순서대로 차례차례 Stack으로 옮겨줍니다.)
+
+## 코드짤 때 이렇게 코드짜면 안됩니다  
+
+Stack을 바쁘게 만들면 여러분이 ajax 요청, 이벤트리스너, setTimeout 이런 코드 실행이 불가능한 것입니다.  
+반복문을 1억번 돌리면 시간이 걸리겠죠?  
+10초걸린다고 합시다.  
+그럼 10초 동안 ajax 요청, 이벤트리스너, setTimeout 이런 코드는 실행이 불가능합니다.  
+Stack이 10초동안 비지 않기 때문에 그렇습니다.  
+그럼 브라우저가 멈추거나 하얗게 변하거나 그런 현상이 일어납니다.  
+결론은 Stack을 바쁘게하면 웹사이트가 버벅이겠구나 라는 생각을 하며 코드짜도록 합시다.  
+
+
