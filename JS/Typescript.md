@@ -465,11 +465,10 @@ const 여친 = {
 
 하지만 object 자료를 const에 집어넣어도 object 내부는 마음대로 변경가능합니다.  
 const 변수는 재할당만 막아줄 뿐이지 그 안에 있는 object 속성 바꾸는 것 까지 관여하지 않기 때문입니다.  
-object 속성을 바뀌지 않게 막고 싶으면 타입스크립트 문법을 쓰십시오.  
-
+object 속성을 바뀌지 않게 막고 싶으면 타입스크립트 문법을 쓰십시오.
 
 readonly 키워드는 속성 왼쪽에 붙일 수 있으며  
-특정 속성을 변경불가능하게 잠궈줍니다.  
+특정 속성을 변경불가능하게 잠궈줍니다.
 
 ```js
 type Girlfriend = {
@@ -483,56 +482,56 @@ let 여친 :Girlfriend = {
 여친.name = '유라' //readonly라서 에러남
 ```
 
-한번 부여된 후엔 앞으로 바뀌면 안될 속성들을 readonly로 잠궈봅시다.   
-(물론 readonly는 컴파일시 에러를 내는 것일 뿐 변환된 js 파일 보시면 잘 바뀌긴 합니다)  
+한번 부여된 후엔 앞으로 바뀌면 안될 속성들을 readonly로 잠궈봅시다.  
+(물론 readonly는 컴파일시 에러를 내는 것일 뿐 변환된 js 파일 보시면 잘 바뀌긴 합니다)
 
 만약 어떤 object자료는 color, width 속성이 둘다 필요하지만  
 어떤 object 자료는 color 속성이 선택사항이라면  
-type alias를 여러개 만들어야하는게 아니라 물음표연산자만 추가하면 됩니다.  
+type alias를 여러개 만들어야하는게 아니라 물음표연산자만 추가하면 됩니다.
 
 ```js
 type Square = {
-  color? : string,
-  width : number,
-}
+  color?: string,
+  width: number,
+};
 
-let 네모2 :Square = { 
-  width : 100 
-}
+let 네모2: Square = {
+  width: 100,
+};
 ```
 
 Square라는 type alias를 적용한 object 자료를 하나 만들었습니다.  
 근데 color 속성이 없어도 에러가 나지 않습니다.  
-함수시간에 배웠죠? 넘어가도록 합시다.  
+함수시간에 배웠죠? 넘어가도록 합시다.
 
 실은 물음표는 "undefined 라는 타입도 가질 수 있다~"라는 뜻임을 잘 기억해둡시다.  
-진짠지 확인하고싶으면 마우스 올려보면 됩니다.  
+진짠지 확인하고싶으면 마우스 올려보면 됩니다.
 
 ## type 키워드는 여러개를 합칠 수 있습니다
 
 ```js
 type Name = string;
 type Age = number;
-type NewOne = Name | Age; 
+type NewOne = Name | Age;
 ```
 
 OR 연산자를 이용해서 Union type을 만들 수도 있습니다.  
-위 코드에서 NewOne 타입에 마우스 올려보시면 string | number라고 나올겁니다.  
+위 코드에서 NewOne 타입에 마우스 올려보시면 string | number라고 나올겁니다.
 
 ```js
 type PositionX = { x: number };
 type PositionY = { y: number };
-type XandY = PositionX & PositionY
-let 좌표 :XandY = { x : 1, y : 2 }
+type XandY = PositionX & PositionY;
+let 좌표: XandY = { x: 1, y: 2 };
 ```
 
 object에 지정한 타입의 경우 합치기도 가능합니다.  
 `&` 기호를 쓴다면 object 안의 두개의 속성을 합쳐줍니다.  
 위 코드에서 XandY 타입은 { x : number, y : number } 이렇게 정의되어있을 겁니다.  
-합치기는 초딩용어고 멋진 개발자말로 extend 한다라고 합니다.  
+합치기는 초딩용어고 멋진 개발자말로 extend 한다라고 합니다.
 
-물론 Type alias & Type alias 만 가능한게 아니라   
-Type alias & { name : string } 이런 것도 가능합니다.   
+물론 Type alias & Type alias 만 가능한게 아니라  
+Type alias & { name : string } 이런 것도 가능합니다.
 
 ## type 키워드는 재정의가 불가능합니다.
 
@@ -544,4 +543,397 @@ type Name = number;
 이러면 에러가 날 겁니다.  
 나중에 type 키워드랑 매우 유사한 interface 키워드를 배우게 될텐데  
 이 키워드를 쓰면 재정의가 가능합니다. 재정의하면 & 하는거랑 똑같은 기능을 하는데  
-하지만 재정의 불가능한 편이 더 안전하지 않을까요.  
+하지만 재정의 불가능한 편이 더 안전하지 않을까요.
+
+# Literal Types로 만드는 const 변수 유사품
+
+어떤 변수는 1이라는 값만 가질 수 있게 제한하고 싶으면 어쩌죠.  
+자바스크립트 const 변수 쓰면 되겠군요. 근데 1 또는 0만 가질 수 있게 제한하고 싶으면 어쩌죠.  
+그 변수에 number 이런 식으로 타입을 지정하면 너무 광범위하지않습니까.  
+그럴 땐 Literal type을 선언하도록 합시다.  
+어떤 변수가 미리 골라놓은 데이터만 가질 수 있게 도와줍니다.
+
+## Literal Type 만드는 법
+
+tring, number 이런 것만 타입이 될 수 있는게 아닙니다.  
+일반 글자같은 것도 타입이 될 수 있습니다.
+
+```js
+let john: "대머리";
+let kim: "솔로";
+```
+
+제가 방금 '대머리', '솔로'라는 타입을 만들었습니다.  
+마음대로 변수나 함수에 할당 가능합니다.
+
+그럼 신기하게도  
+john이라는 변수는 이제 '대머리' 라는 글자만 할당할 수 있습니다.  
+kim이라는 변수는 이제 '솔로' 라는 글자만 할당할 수 있습니다.  
+특정 글자나 숫자만 가질 수 있게 제한을 두는 타입을 literal type 이라고 부릅니다.  
+더욱 엄격한 실드라고 보면 되겠군요.
+
+```js
+let 방향: "left" | "right";
+방향 = "left";
+```
+
+or 기호 써도 됩니다. 이제 'left' 또는 'right' 글자만 가질 수 있는 변수가 완성되었군요.
+
+```js
+function 함수(a: "hello"): 1 | 0 | -1 {
+  return 1;
+}
+```
+
+함수도 똑같습니다.  
+파라미터 타입선언할 때 글자나 숫자를 집어넣으시면 그 만 파라미터로 넣을 수 있고  
+return 타입선언할 때도 글자나 숫자를 집어넣으시면 그 값만 return할 수 있습니다.
+
+어떻게보면 const 변수의 업그레이드버전이라고 보면 되는데  
+const 변수는 값을 바꿀 수 없는 변수입니다.
+
+```js
+const 변하면안되는변수 = 123;
+```
+
+그래서 중요한, 변하지않는 정보를 저장하고 싶을 때 const를 자주 쓰는데  
+가끔은 변하는 중요한 정보를 저장하고 싶을 땐 const가 무쓸모입니다.  
+예를 들어 변수가 'kim' 또는 'park' 만 가질 수 있는 이런 식의 엄격한 변수는 못만듭니다.
+
+```js
+const 이름 = 'kim' | 'park' (이런 식의 문법은 자바스크립트에 없음)
+```
+
+그럴 때 타입스크립트 설치하고 literal type 쓰면 되는 것입니다.
+
+## as const 문법
+
+'kim' 이라는 타입만 들어올 수 있는 함수를 만들었습니다.  
+근데 자료.name을 입력하고 싶은겁니다.
+
+```js
+var 자료 = {
+  name: "kim",
+};
+
+function 내함수(a: "kim") {}
+내함수(자료.name);
+```
+
+그래서 코드를 이렇게 짜봤는데 위 코드는 에러가 납니다.
+
+왜 에러가 나겠습니까.  
+함수는 'kim' 타입만 입력할 수 있다고 해놨고  
+자료.name 이라는건 string 타입이지 'kim' 타입이 아니기 때문입니다.
+
+이런걸 해결하고 싶으면
+
+1. object 만들 때 타입을 잘 미리 정하든가
+
+2. 예전에 배웠던 assertion을 쓰시든가 (as 'kim' 이런걸 붙이는 겁니다)
+
+3. 아니면 as const 라는걸 애초에 object 자료에 붙일 수 있습니다.
+
+```js
+var 자료 = {
+  name : 'kim'
+} as const;
+
+function 내함수(a : 'kim') {
+
+}
+내함수(자료.name)
+```
+
+as const는 효과가 2개인데
+
+1. 타입을 object의 value로 바꿔줍니다. (타입을 'kim'으로 바꿔줍니다)
+
+2. object안에 있는 모든 속성을 readonly로 바꿔줍니다 (변경하면 에러나게)
+
+object를 잠그고 싶으면 as const를 활용해보도록 합시다.
+
+# 함수와 methods에 type alias 지정하는 법
+
+함수에 들어갈 파라미터와 return으로 뱉을 값들을 타입지정할 수 있다고 배워봤습니다.  
+함수 타입도 type alias로 저장해서 쓸 수 있습니다.  
+예를 들어서
+
+1. 숫자 두개를 파라미터로 입력할 수 있고
+
+2. 숫자를 return 하는 함수를 별명을 지어서 사용하려면
+
+type NumOut = (x : number, y : number ) => number ;
+이런 식입니다.
+
+이걸 함수 만들 때 사용하려면  
+function 함수이름 :NumOut (){}
+이런 식은 불가능합니다. function 키워드에는 () 이거 내부랑 오른쪽에만 타입지정이 가능해서요.
+그래서 이렇게 합니다.
+
+```js
+type NumOut = (x: number, y: number) => number;
+let ABC: NumOut = function (x, y) {
+  return x + y;
+};
+```
+
+함수를 만들 때  
+let 함수명 = function(){} 이렇게 해도 되니까  
+함수명 오른쪽에 함수명 : 타입별명  
+이렇게 지정해서 사용하는 것입니다.  
+type alias 만들기 싫으면 그냥 함수만들 때 직접 타입작성하면 되겠죠 뭐
+
+## methods안에 타입지정하기
+
+object 자료 안에 함수도 맘대로 집어넣을 수 있습니다.  
+몰랐다면 대충 어떻게 생겼는지 알아봅시다.
+
+```js
+let 회원정보 = {
+  name: "kim",
+  age: 30,
+  plusOne(x) {
+    return x + 1;
+  },
+  changeName: () => {
+    console.log("안녕");
+  },
+};
+회원정보.plusOne(1);
+회원정보.changeName();
+```
+
+plusOne 그리고 changeName 함수를 object 자료에 집어넣었습니다.  
+arrow function, 일반함수 전부 object 안에 맘대로 집어넣을 수 있습니다.  
+넣은 함수들은 똑같이 점찍어서 사용가능합니다.
+
+왜 넣냐고요? 그냥 함수도 자료안에 보관해서 쓰고싶을 때가 있기 때문입니다.
+
+위 코드에서 회원정보라는 변수에 타입지정
+
+- plusOne이라는 속성은 함수여야하고, 숫자를 넣어서 숫자를 뱉는 함수여야합니다.
+
+- changeName이라는 속성은 함수여야하고, 아무것도 return하면 안됩니다.
+
+- type 키워드를 쓰든 말든 알아서 합시다.
+
+```js
+type Member = {
+  name: string,
+  age: number,
+  plusOne: (x: number) => number,
+  changeName: () => void,
+};
+```
+
+# 타입스크립트로 HTML 변경과 조작할 때 주의점
+
+자바스크립트의 원래 존재 목적은 단연 html 조작과 변경입니다.  
+그래서 타입스크립트를 써도 html 조작이 가능한데 근데 그냥 자바스크립트 쓸 때와 약간 다른 점이 존재합니다.  
+귀찮다는 점이요  
+왜인지는 실제로 html 조작해보며 알아봅시다.
+document.getElementById() 이거 쓰는 법을 설명할 것인데  
+근데 또 react, vue 이런걸 쓰다보면 html 조작과 변경하는 법은 몰라도 되긴 합니다.  
+근데 react, vue 사용할 때도 html 직접조작이 간혹 필요한 경우가 있어서 아예 모르면 안되겠죠
+
+우선 strictNullCheck 옵션을 켜봅시다
+
+많은 환경에서 null이 들어올 경우 체크해주는 옵션을 켜고 코드짭니다.  
+변수 조작하기 전에 이게 null인지 아닌지 캐치해낼 수 있으니까요.  
+특히 html 조작할 때 셀렉터로 찾으면 null 어쩌구가 많이 발생하는데 그거 잡을 때도 도움됩니다.
+
+```js
+{
+    "compilerOptions": {
+        "target": "ES5",
+        "module": "commonjs",
+        "strictNullChecks": true
+    }
+}
+```
+
+tsconfig.json 파일을 열어서 strickNullChecks 옵션을 true로 바꾸고 코드짜봅시다.  
+혹은 그냥 "strict" : true 이런걸 써두면 strickNullChecks 옵션도 자동으로 true로 켜집니다.
+
+## HTML 파일 준비
+
+```js
+(index.html)
+
+<h4 id="title">안녕하세요</h4>
+<a href="naver.com">링크</a>
+<button id="button">버튼</button>
+
+<script src="변환된 자바스크립트파일.js"></script>
+```
+
+당연히 타입스크립트 파일을 html에 집어넣어야 html 조작을 하든말든 하겠죠?  
+html 파일만들고 타입스크립트 -> 자바스크립트 변환된 파일을 집어넣도록 합시다.  
+그리고 조작을 체험하기 위한 html 몇개 작성했습니다.
+
+## HTML 찾고 변경해보기
+
+`<h4>`제목을 다른 글자로 변경해봅시다.
+
+```js
+let 제목 = document.querySelector("#title");
+제목.innerHTML = "반갑소";
+```
+
+이러면 원래 변경되어야하는데 타입스크립트는 에러를 내줍니다.  
+"제목이라는 변수가 null일 수 있습니다"  
+아까 켜놨던 strict 옵션 덕분에 이런 에러를 내주는데  
+이유는 셀렉터로 html을 찾으면 타입이 Element | null 이기 때문에 그렇습니다.  
+(html을 못찾을 경우 null이 됩니다)
+
+그래서 아직 확실하지 않아서 점찍고 조작하고 변경하는걸 금지시켜주는 것입니다.  
+이거 어떻게 해결하죠? 제가 앞선 강의에서 잘 기억하라던 TS 동작원리나 그런걸 떠올리면 해결책이 나올듯요  
+정답은 제목이라는 변수가 union type이기 때문에 if문으로 type narrowing 하면 됩니다.  
+아니면 as 문법으로 assertion 해도 되긴 되겠군요.
+
+### 해결책1. narrowing 하면 됩니다.
+
+```js
+let 제목 = document.querySelector("#title");
+if (제목 != null) {
+  제목.innerHTML = "반갑소";
+}
+```
+
+멋있게 else문도 추가하면 더 완벽한 코드가 되겠군요.
+
+### 해결책2. 더 좋은 instanceof 사용하는 narrowing 방법도 있습니다.
+
+```js
+let 제목 = document.querySelector("#title");
+if (제목 instanceof HTMLElement) {
+  제목.innerHTML = "반갑소";
+}
+```
+
+instanceof 라는 연산자를 쓰는 것인데 우측에 HTMLElement 입력하면 그 타입인지 체크해줍니다.  
+나중에 배우게 될 것이니 맛만 보도록 합시다.
+
+### 해결책3. assertion 써도 될듯요
+
+```js
+let 제목 = document.querySelector('#title') as HTMLElement;
+제목.innerHTML = '반갑소'
+```
+
+as 키워드를 쓰면 타입을 구라칠 수 있다고 배웠습니다.  
+HTMLElement 혹은 그냥 Element 이걸로 구라치면 됩니다.  
+물론 좋지 않은 임시 땜빵문법이 맞습니다.
+
+### 해결책4. optional chaining 연산자
+
+```js
+let 제목 = document.querySelector("#title");
+if (제목?.innerHTML != undefined) {
+  제목.innerHTML = "반갑소";
+}
+```
+
+이건 몰라도 되는데 가끔 innerHTML 작성할 때 엔터키로 자동완성시키면 ?. 이런 연산자가 자동으로 붙습니다.  
+js 신문법인데 뭔 뜻이냐면 왼쪽에 있는 object 자료안에 .innerHTML이 존재하면 그거 써주시고 없으면 undefined 남기셈~ 입니다.  
+그래서 가끔 ?. 연산자로 해결할 때도 있습니다.
+
+### 해결책5. 그냥 strict 설정 false로 끄셈
+
+null 체크해주는게 귀찮으면 그냥 설정 끄면 모든 고민이 해결되긴 합니다.  
+가장 좋은 방법은 해결책2 instanceof 연산자를 쓰는 것인데  
+이걸 써야 조작가능한 부분이 있기 때문입니다.
+
+## a 태그의 href 속성을 바꿔보자
+
+html 파일에 `<a href="naver.com"></a>` 이런 태그가 있었습니다.  
+이 태그의 href 속성을 바꾸고 싶으면 셀렉터로찾고.href = `'https://kakao.com'` 이렇게 쓰면 됩니다.  
+근데 그냥 하면 안될걸요
+
+```js
+let 링크 = document.querySelector("#link");
+if (링크 instanceof HTMLElement) {
+  링크.href = "https://kakao.com"; //에러남 ㅅㄱ
+}
+```
+
+에러납니다. HTMLElement 타입은 href 그런 속성 없다~고 하네요.  
+그럴 경우 그냥 이렇게 바꿔주면 됩니다.
+
+```js
+let 링크 = document.querySelector("#link");
+if (링크 instanceof HTMLAnchorElement) {
+  링크.href = "https://kakao.com"; //잘됨
+}
+```
+
+이러면 에러나지 않습니다.  
+html 태그 종류별로 정확한 타입명칭이 있습니다.
+
+```
+a 태그는 HTMLAnchorElement
+img 태그는 HTMLImageElement
+h4 태그는 HTMLHeadingElement
+..
+```
+
+백만개가 있는데 이런 정확한 타입으로 narrowing 해주셔야 html 속성 수정을 제대로할 수 있습니다.  
+전부 외울 필요는 없고 자동완성 잘 될걸요
+
+잠깐 왜 그래야하는지 원리를 설명하자면  
+타입스크립트에서 쓸 수 있는 HTML 타입들은 이렇게 됩니다.  
+Element, HTMLElement, HTMLAnchorElement 등이 있는데  
+Element에 들어있는걸 복사해서 몇개 더 추가해서 HTMLElement 타입을 만들어놨고  
+HTMLElement에 들어있는걸 복사해서 몇개 더 추가해서 HTMLAnchorElement 타입을 만들어놨습니다.
+
+셀렉터로 대충 찾으면 Element 타입이라는게 부여가 됩니다.  
+아직 이 태그가 뭔지 몰라서 그냥 광범위한 타입하나를 달랑 지정해주는 겁니다.  
+이건 광범위한 그냥 일반 html 태그의 특징을 정리해둔 타입이기 때문에 안에 .href .src 이런거 안들어있습니다.
+
+반면 HTMLAnchorElement 이건 조금 상세한 타입입니다.  
+이 타입은 "href, style, class, id 이런 속성을 가질 수 있다~" 라고 타입이 정의되어있습니다.  
+그래서 a태그에게 어울리는 타입인 HTMLAnchorElement 라는 타입을 쓸 수 있는지 instanceof 키워드로 확인해야합니다.  
+확인하는 과정을 narrowing으로 인정해줍니다.
+
+## 이벤트리스너 부착해보기
+
+버튼 누르면 뭐 실행해주세요~라는 코드도 많이 짭니다.  
+이것도 그냥 쓰시면 안되고 타입지정해야 잘 사용가능합니다.
+
+```js
+let 버튼 = document.getElementById("button");
+버튼.addEventListener("click", function () {
+  console.log("안녕");
+});
+```
+
+이러면 에러납니다. 버튼이라는 변수가 null 일 수도 있어요~ 라는 에러가 날걸요  
+어떻게 해결할까요? narrowing 알아서 해보십시오.
+
+근데 이런 해결책도 있습니다.
+
+```js
+let 버튼 = document.getElementById("button");
+버튼?.addEventListener("click", function () {
+  console.log("안녕");
+});
+```
+
+addEventListener 함수 붙일 때 물음표도 붙이는 것인데 이게 무슨 뜻이냐면
+
+### optional chaining 신문법
+
+2020년 이후 브라우저들은 ?. 연산자를 이용가능합니다.  
+그니까 object에서 자료뽑을 때 object.어쩌구 이렇게 자료를 뽑는데  
+object?.어쩌구 이렇게도 뽑을 수 있다는 겁니다.  
+이걸 쓰면 어쩌구라는 자료가 object에 존재하면 그거 뽑아주시고요  
+존재하지 않으면 undefined 남겨주세요~ 라는 뜻과 동일합니다.  
+그래서 간혹 narrowing할 때 && 연산자로 undefined 체크하기 귀찮을 때 간혹 사용됩니다.
+
+그래서 혹여나 버튼이라는 변수가 없을 경우 그 자리에 undefined를 내보내고,  
+HTMLElement로 잘 있으면 addEventListener() 잘 부착해주기 때문에  
+이것도 일종의 narrowing 이라고 보면 되겠습니다.  
+그래서 에러안내고 봐줌  
+
+
