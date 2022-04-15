@@ -1375,3 +1375,413 @@ function 함수({ student, age }) {
 파라미터로 들어오는 { age : 어쩌구 }는 age 라는 변수에 저장해주세요~  
 라는 뜻입니다. (object 자료니까 변수 작명할 때 object 속성명으로 잘 작명해야함)  
 항상 같은 모습의 object, array 자료가 들어올 때 쓰는 문법이라고 보면 되겠습니다.
+
+# Narrowing 할 수 있는 방법 더 알아보기
+
+Narrowing 하면서 코드짜는 것도 힘든데 특히나  
+
+1. undefined 타입일 경우 처리하는거 
+
+2. 복잡한 object자료들 narrowing 하는거
+
+이게 가장 잦고 귀찮습니다. 이걸 쉽게 하는 법을 좀 알아봅시다.  
+
+## null & undefined 체크하는 법 
+
+실제로 개발할 때 어떤 변수나 함수파라미터에 null, undefined가 들어올 경우 
+
+어떻게 대처할지 if문으로 코드짜는 경우가 매우 많을 겁니다. 
+
+```js
+if (저 변수가 undefined일 경우) 어쩌구~ 
+```
+
+이런 코드 많이 짤 텐데 왜냐면 저런 상황을 미리 방어하는게 언제나 좋기 때문입니다.  
+근데&& 스킬을 쓰면 저런 if문을 생략할 수 있습니다.  
+원래 && 이건 조건식 2개가 참이면 전부 참으로 판정해주세요~ 라는 논리연산자인데  
+여러개를 사용하면 이상한 현상이 있습니다.  
+
+&& 기호로 비교할 때 true와 false를 넣는게 아니라 자료형을 넣으면  
+&& 사이에서 처음 등장하는 falsy 값을 찾아주고 그게 아니면 마지막 값을 남겨줍니다.  
+falsy 값은 false와 유사한 기능을 하는 null, undefined, NaN 이런 값들을 의미합니다.
+
+```js
+1 && null && 3   // null이 남음
+undefined && '안녕' && 100  // undefined 남음
+```
+
+이걸 약간 exploit 하면 if문을 조금 더 간략하게 쓸 수 있습니다.  
+그래서 && 기호를 이용해서  
+
+```js
+if (변수 && typeof strs === "string") {} 
+```
+
+이렇게 사용하면 변수가 undefined라면 undefined가 남아서 if문이 실행되지 않고,  
+(if문 조건식안에 falsy 값이 남으면 if문 실행되지 않습니다)  
+변수가 string 타입이면 if문이 실행됩니다.  
+변수가 null, undefined인 경우를 쉽게 거를 수 있는 문법이라고 보면 되겠습니다.  
+
+```js
+function printAll(strs: string | undefined) {
+  if (strs && typeof strs === "string") {  
+    console.log(s);
+  } 
+}
+```
+근데 한 눈에 안들어온다면 안쓰는게 좋습니다. 
+그냥 if (저 변수가 undefined일 경우) 어쩌구~ 이렇게 if문을 하나 더 쓰는게 어떨까요.  
+참고로 if (변수 != null) 이렇게 조건식을 써도 null, undefined 이거 두 개를 동시에 거를 수 있습니다.  
+
+
+## in 연산자로 object 자료 narrowing
+
+예를 들어서 파라미터로 object가 2개 들어올 수 있다고 타입지정을 해놓은 것입니다.  
+하나는 {a : 'kim}  
+다른 하나는 {b : 'park'}  
+이렇게 서로 다른 유니크한 속성들을 가지고 있다면  
+
+if (이 파라미터가 a라는 속성을 안에 가지고 있냐)  
+이런 if문을 써도 narrowing이 가능하다는 뜻입니다.  
+if (키값 in object자료형) 이렇게 쓰면 됩니다.  
+타입스크립트 컴파일러는 똑똑한 편이라 이런 것들도 narrowing 으로 판정해줍니다.  
+
+```js
+type Fish = { swim: string };
+type Bird = { fly: string };
+function 함수(animal: Fish | Bird) {
+  if ("swim" in animal) {
+    return animal.swim
+  }
+  return animal.fly
+} 
+```
+서로 배타적인 속성을 가져와야 narrowing이 가능합니다.  
+예를 들어서 Fish와 Bird 타입이 둘 다 swim 속성을 가지고 있고 Bird만 fly 속성을 추가로 가지고 있으면 어쩌죠?  
+어떻게 narrowing하면 좋을지 한 번 생각해봅시다.  
+
+## class로부터 생산된 object라면 instanceof로 narrowing
+
+class 문법을 아는 분들만 들어보도록 합시다.  
+어떤 클래스로부터 new 키워드로 생산된 object들이 있습니다.  
+그런 object 들은 instanceof 키워드를 붙여서 부모 클래스가 누군지 검사할 수 있는데  
+이것도 narrowing 역할을 할 수 있습니다.  
+
+가장 쉽게 new 키워드로 object 생산할 수 있는게 바로 날짜인데  
+자바스크립트에선 new Date() 이렇게 하면 date object 라는게 생성됩니다.   
+그래서 instanceof로 부모 클래스가 누군지 검사할 수 있습니다.   
+
+```js
+let 날짜 = new Date();
+if (날짜 instanceof Date){
+  console.log('참이에요')
+}
+```
+
+이렇게 쓸 수 있고 이런 문법도 narrowing 역할을 할 수 있습니다.  
+이 변수가 Date()로 부터 생성된 object 자료인지, 아니면 다른 애로부터 생성된 자료인지 이런걸 구분가능하기 때문입니다.  
+class 문법모르면 뭔소린지 모르겠죠? 그럴 경우엔 뒷부분 class, prototype 수업듣고 다시 놀러오도록 합시다.   
+
+## literal type이 있으면 narrowing 쉬움 
+
+```js
+type Car = {
+  wheel : '4개',
+  color : string
+}
+type Bike = {
+  wheel : '2개',
+  color : string
+}
+
+function 함수(x : Car | Bike){
+  if (x가 Car타입이면요){
+    console.log('이 차는 ' + x.color)
+  } else {
+    console.log('이 바이크는 ' + x.color)
+  }
+}
+```
+
+지금 Car, Bike 타입을 각각 만들었는데 object 자료가 들어올 수 있습니다.  
+함수에 Car 타입을 입력할 경우 뭔가 실행하고 싶은데  
+근데 if문 안에서 narrowing 어떻게 하죠? 
+
+typeof 연산자 써도 그냥 object 입니다~ 라고만 나올걸요 왜냐면 typeof 연산자는 string, number, object 이런 것만 구분해주기 때문입니다.  
+위에서 배웠던 in 문법 이런걸로 narrowing하기엔 힘들어보입니다. Car, Bike 둘 다 배타적인 속성이 없으니까요.  
+
+실은 object들 구분할 일이 많을 때 literal type을 만들어두면 편리한데  
+그럼 서로 비슷한 object들이 들어와도 literal type으로 narrowing 가능하기 때문입니다.   
+제가 literal type 하나씩 적어둔거 보이시죠?  
+지금 Car 타입은 무조건 wheel 출력해보면 4  
+Bike 타입은 wheel 출력해보면 무조건 2가 나옵니다.  
+이거 가지고 object 끼리 narrowing 가능합니다.  
+그냥 if문으로 "지금 이 변수가 wheel 속성에 저장된게 4냐" 라고 물어보면 이건 누가봐도 Car 타입아니겠습니까.  
+
+타입스크립트는 스마트하니까 그렇게 쓰면 narrowing 충분히 가능합니다.   
+그래서 빨리 위에 코드 if문 조건식 채워보셈   
+
+```js
+type Car = {
+  wheel : '4개',
+  color : string
+}
+type Bike = {
+  wheel : '2개',
+  color : string
+}
+
+function 함수(x : Car | Bike){
+  if (x.wheel === '4개'){
+    console.log('the car is ' + x.color)
+  } else {
+    console.log('the bike is ' + x.color)
+  }
+}
+```
+
+그냥 literal type 으로 선언된 속성이 뭔지 찾아냈을 뿐입니다. 그러면 narrowing 가능   
+그래서 결론은 object 자료 비슷한걸 많이 다룰 땐  
+literal type으로 object 안에 각각 유니크한 자료를 달아두거나 그러면 나중에 구분하기 편리할 수 있습니다.  
+
+# 함수에 사용하는 never 타입
+
+함수에 붙이는 return type으로 사용가능합니다.  
+근데 좀 특이합니다.  
+
+```js
+function 함수() :never{
+
+}
+```
+
+어떤 함수가
+
+1. 절대 return을 하지 않아야하고
+
+2. 함수 실행이 끝나지 않아야합니다 (전문용어로 endpoint가 없어야합니다)
+
+그런 함수에 붙일 수 있는 타입니다.  
+실은 조건1, 2는 같은 소리인데 모든 자바스크립트 함수 맨 밑엔 return undefined 라는 숨겨진 코드를 가지고 있습니다.  
+그래서 조건2가 맞으면 1도 맞음  
+
+```js
+function 함수(){
+  console.log(123)
+}
+```
+이런 함수들에 never를 붙일 순 없습니다.  
+왜냐면 조건 1번은 만족하지만 2번은 만족하지 않습니다.  
+2번 조건은 함수 내부 코드 실행이 끝나지 않는 함수여야합니다.  
+
+```js
+function 함수() :never{
+  while ( true ) {
+    console.log(123)
+  }
+}
+```
+
+이런 함수엔 붙일 수 있습니다. 
+while 문법은 ( ) 소괄호안의 조건식이 true일 경우 계속 내부 코드를 실행해라~ 라는 뜻입니다.  
+무한히 실행되기 때문에 끝이안나죠? 그래서 never 타입을 사용가능합니다.   
+
+```js
+function 함수() :never{
+  throw new Error('에러메세지')
+}
+```
+
+이런 함수에도 붙일 수 있습니다.  
+throw new Error() 문법은 그냥 강제로 에러내라~ 라는 뜻인데  
+에러가 나면 전체 코드실행이 중단되니까 2번 조건도 나름 충족하는 것이기 때문에  
+never를 사용가능합니다.  
+
+그래서 1. 무언가 return 하지 않고 2. 끝나지도 않는 함수를 표현하고 싶을 때 never 타입을 지정하면 되는데  
+2번 조건의 함수를 만들 일이 거의 없기 때문에 never 타입은 쓸 일이 없습니다.   
+무언가를 return하고싶지 않을 경우 그냥 void 타입을 이용하시면 되며  
+배우는 이유는 가끔 코드 이상하게 짜다보면 자동으로 등장하기 때문입니다.  
+이 때 never 이게 뭘 의미하는지 이해만 잘 하면 됩니다.   
+어떨 때 등장하는지 알아봅시다.   
+
+## 파라미터가 never 타입이 되는 경우도 있음  
+
+```js
+function 함수(parameter: string) {
+  if ( typeof parameter === "string"){
+    parameter + 1;
+  } else {
+    parameter;
+  }
+}
+```
+
+위 함수는 뭔가 이상한 함수입니다.  
+지금 narrowing을 이용해서 파라미터의 타입이 string 이면 뭔가 해달라고 써놨는데  
+else 문이 존재합니다. 타입이 string이 아닐 경우 이거 해달라는 뜻입니다.  
+근데 else문은 말이 안되죠? 지금 파라미터가 string 밖에 못들어오는데 말입니다.  
+
+이런 잘못된 narrowing을 사용했을 때 파라미터의 타입이 never로 변합니다. 파라미터에 마우스 올려보셈  
+이런 건 있을 수 없다, 일어나면 안된다고 알려주는 느낌입니다.   
+그럴 때 never를 구경할 수 있으니 never 타입이 발견되는 경우 코드를 수정하는게 어떨까요.   
+
+## 자동으로 never 타입을 가지는 경우 
+
+자바스크립트는 함수를 만드는 방법이 2개 있습니다.
+
+```js
+
+function 함수(){
+
+}
+
+let 함수2 = function (){
+
+}
+```
+
+위는 함수 선언문,  
+밑은 함수 표현식이라고 부릅니다. 똑같이 함수만들 수 있는 문법입니다.   
+
+```js
+function 함수(){
+  throw new Error()
+}
+
+let 함수2 = function (){
+  throw new Error()
+}
+```
+
+함수 선언문이 아무것도 return 하지 않고 끝나지도 않을 경우 void 타입이 자동으로 return 타입으로 할당되며  
+함수 표현식이 아무것도 return 하지 않고 끝나지도 않을 경우 never 타입이 자동으로 return 타입으로 할당됩니다.  
+마우스 올려보면 나옵니다.  
+
+또는 tsconfig.json에서 strict 옵션을 켜둘 경우   
+함부로 any 타입을 지정해주지 않는 경우가 있습니다.   
+그럴 때 array 같은거 대충 타입지정 안하고 만들면  
+
+```js
+let arr = [];
+```
+
+원래는 any[] 이런 타입이 되는데 any를 가질 수 없어서   
+never[] 이런 타입이 발견되기도 합니다.   
+아무튼 쓸 일이 별로 없기 때문에 이럴 때도 등장한다고 알아두기만 하면 됩니다.  
+
+# public, private 쓰는거 보니까 타입스크립트 귀여운편
+
+타입스크립트 쓰면 자바스크립트에 없는 문법도 사용가능합니다.  
+객체지향 언어에서 제공하는 public, private, static, protected 이런 키워드를 사용가능한데   
+뭔지 한번 알아봅시다.   
+
+## public, private 키워드로 사용제한두기
+
+타입스크립트는 class 안에서 public 키워드를 사용가능합니다.  
+원하는 속성 왼쪽에 붙이면 그 속성은 아무데서나 수정이 가능합니다.  
+
+```js
+class User {
+  public name: string;
+
+  constructor(){
+    this.name = 'kim';
+  }
+}
+
+let 유저1 = new User();
+유저1.name = 'park';  //가능
+```
+
+public이 붙은 속성은 자식 object들이 마음대로 사용하고 수정가능합니다.  
+실은 public 붙이든 안붙이든 똑같긴 합니다. 맞잖아요 실험해보셈   
+왜냐면 필드값 같은걸 그냥 만들면 public이 몰래 왼쪽에 부여되기 때문입니다.  
+
+(참고) public 키워드는 class 내의 prototype 함수에도 붙일 수 있습니다.
+
+근데 private 키워드를 붙이면 수정이 불가능해집니다.  
+무조건 class { } 중괄호 안에서만 수정 및 사용가능합니다.  
+심지어 class로 부터 생산된 자식 object에서도 private 붙은건 사용불가능합니다.  
+(class 중괄호 내부가 아니니까요)  
+
+```js
+class User {
+  public name :string;
+  private familyName :string;  
+
+  constructor(){
+    this.name = 'kim';
+    let hello = this.familyName + '안뇽'; //가능
+  }
+}
+
+let 유저1 = new User();
+유저1.name = 'park';  //가능
+유저1.familyName = 456; //에러남
+```
+
+secretId 라는 속성에는 private 키워드를 추가했더니 아무데서나 수정이 불가능해졌습니다.  
+private 붙은 속성들은 오직 class { } 안에서만 수정이 가능합니다.  
+이렇게 속성을 외부에서 숨기고 싶을 때 private 키워드를 이용합니다.  
+실은 오리지널 자바스크립트 문법에서도 #이걸 속성옆에 붙이면 private 속성이 됩니다.  
+
+(참고) private 키워드는 class 내의 함수에도 붙일 수 있습니다.
+
+Q. private 부여된 속성을 class 밖에서 수정해야할 경우?
+
+ 1. private 속성을 수정하는 함수를 class 안에 만들어서 
+ 
+ 2. 함수를 실행시키면 됩니다. 
+
+위에서 private 붙여놓은 secretId 이런걸 바깥에서 수정하고 싶은 경우 이렇게 합니다.
+
+```js
+class User {
+  public name :string;
+  private familyName :string;
+
+  constructor(){
+    this.name = 'kim';
+    let hello = this.familyName + '안뇽';
+  }
+  changeSecret(){
+    this.familyName = 'park';
+  }
+}
+
+let 유저1 = new User();
+유저1.familyName = 'park';  //에러남
+유저1.changeSecret()        //가능
+```
+
+1. changeSecret() 함수를 class 안에 만들었습니다.  
+
+이 함수는 familyName을 수정해주는 함수입니다.  
+
+2. 그러면 이제 class 바깥에서도 changeSecret() 함수를 이용하면 간접적으로 familyName을 수정가능합니다.
+
+함수 불러도 에러안나고 수정 잘 됩니다.  
+중요한건 아니고 참고로 알아둡시다.  
+
+## public, private 키워드 쓰면 이런 것도 가능
+
+```js
+class Person { 
+  name;
+  constructor ( name :string ){  
+    this.name = name;
+  } 
+}
+let 사람1 = new Person('john')
+
+
+class Person { 
+  constructor ( public name :string ){  
+  
+  } 
+}
+let 사람1 = new Person('john')
+```
+위 두개의 코드는 같은 역할을 하는 코드입니다.  
+"constructor 파라미터에 public 붙이면 this.name = name 이거 생략가능하다" 라는걸 참고해주시면 되며  
+이제 Person으로부터 새로 생산되는 object들은 name 속성을 가질 수 있습니다.  
