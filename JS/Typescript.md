@@ -1785,3 +1785,216 @@ let 사람1 = new Person('john')
 위 두개의 코드는 같은 역할을 하는 코드입니다.  
 "constructor 파라미터에 public 붙이면 this.name = name 이거 생략가능하다" 라는걸 참고해주시면 되며  
 이제 Person으로부터 새로 생산되는 object들은 name 속성을 가질 수 있습니다.  
+
+# class 안에서 쓰는 protected 키워드
+
+private 이거랑 비슷한 키워드가 하나 있는데
+
+private인데 약간 보안을 해제하고 싶을 때 씁니다.
+
+protected를 달아놓으면 1. private 이거랑 똑같은데 2. extends 된 class 안에서도 사용가능하게 약간 보안을 풀어줍니다. 
+
+예제를 쉽게 다시 만들어봅시다 
+
+```js
+class User {
+  protected x = 10;
+}
+```
+
+User 라는 class의 x 속성은 protected 입니다.  
+그럼 private와 동일하게 class 안에서만 사용이 가능해지며  
+User의 자식들도 함부로 사용이 불가능합니다.  
+
+```js
+class User {
+  protected x = 10;
+}
+
+class NewUser extends User {
+  doThis(){
+    this.x = 20;
+  }
+}
+```
+
+User를 extends 하는 NewUser class를 만들었습니다.  
+NewUser가 갑자기 this.x 이런 식으로 x를 가져다가 쓰려고 하면   
+x가 private 속성일 경우엔 에러가 나지만  
+x가 protected 속성일 경우엔 에러가 나지 않습니다.   
+
+그래서 class 여러개 만들 때 class 끼리 공유할 수 있는 속성을 만들고 싶으면 protected,  
+class 하나 안에서만 쓸 수 있는 속성을 만들고 싶으면 private 이걸 쓰도록 합시다.   
+class 여러개 만들 일이 없으면 쓸모없습니다.   
+
+# class 안에서 쓰는 static 키워드  
+
+우리가 class { } 안에 집어넣는 변수, 함수 이런건 전부 class로 부터 새로 생성되는 object (일명 instance) 에 부여됩니다.  
+근데 class에 직접 변수나 함수를 부여하고 싶으면 static 키워드를 왼쪽에 붙여주면 됩니다.   
+
+예를 들어 봅시다. 
+
+```js
+class User {
+  x = 10;
+  y = 20;
+}
+
+let john = new User();
+```
+john.x //가능
+User.x //불가능
+이런 x와 y같은 변수들은 User로 부터 생성된 object들만 사용가능합니다.
+
+근데 static 키워드를 붙이면 
+
+```js
+class User {
+  static x = 10;
+  y = 20;
+}
+
+let john = new User();
+```
+john.x //불가능
+User.x //가능
+john은 사용불가능하고
+
+User는 직접 사용가능합니다. 
+
+- 함수도 static 붙이기 가능
+
+- extends 로 class를 복사할 경우 static 붙은 것들도 따라옵니다.  
+
+(참고) static은 private, protected, public 키워드와 동시 사용가능합니다. 
+
+```js
+class User {
+  private static x = 10;
+  public static y = 20;
+}
+```
+
+1. 필드값은 원래는 모든 User의 자식들에게 물려주는 속성이지만  
+x와 y에는 static 키워드가 붙었기 때문에 User.x 이런 식으로만 접근해서 쓸 수 있습니다.  
+User의 자식들은 x와 y를 쓸 수 없습니다.  
+
+2. private static x는 class 내부에서만 수정가능합니다.   
+
+3. public static y는 class 내부 외부 상관없이 수정가능합니다. public 키워드 지워도 똑같이 동작할 듯 
+
+4. protected z는 private 키워드와 유사하게 class 내부에서만 사용이 가능한데  
+약간 범위가 넓어서 extends로 복사한 class 내부에서도 사용할 수 있습니다.  
+
+ 
+Q. static 이런걸 언제 씁니까
+
+주로 class 안에 간단한 메모를 하거나, 기본 설정값을 입력하거나  
+class로 부터 생성되는 object가 사용할 필요가 없는 변수들을 만들어놓고 싶을 때 사용합니다.   
+
+## 무작위 박스 생성
+
+```js
+let 네모 = new Square(30, 30, 'red');
+네모.draw()
+네모.draw()
+네모.draw()
+네모.draw()
+```
+
+이렇게 네모.draw()를 할 때마다  
+index.html에 가로 30px, 세로 30px, 배경색이 'red' 의 `<div>` 박스가 무작위로 배치되어야합니다.  
+
+```js
+class Square {  
+  constructor (public width :number, public height :number, public color :string){
+  }
+  draw(){
+    let a = Math.random();
+    let square = `<div style="position:relative; 
+      top:${a * 400}px; 
+      left:${a * 400}px; 
+      width:${this.width}px; 
+      height : ${this.height}px; 
+      background:${this.color}"></div>`;
+    document.body.insertAdjacentHTML( 'beforeend', square );
+  }
+}
+
+
+let 네모 = new Square(30, 30, 'red');
+네모.draw()
+네모.draw()
+네모.draw()
+네모.draw()
+```
+
+
+1. constructor를 이용해서 새로뽑는 object 들은 width, height, color를 입력할 수 있게 만들었습니다.   
+
+2. 자식들은 draw()를 쓰면   
+
+(1) 0과 1사이의 무작위 숫자를 뽑습니다. 그걸 변수 a에 저장해둡니다.
+
+(2) `<div>`를 디자인합니다. 근데 `<div>`박스의 폭, 높이, 색상은 constructor로 입력한 것들을 활용합니다.
+
+(3) `<div>` 박스의 위치는 left, right 속성을 이용해서 0~400px 사이로 무작위로 배치합니다.
+
+(4) insertAdjacentHTML 이런거 이용하면 원하는 곳에 html 추가가 가능합니다.
+
+그래서 실제로 자식을 하나 뽑아서 draw() 했더니 진짜 빨간 박스 4개 나옵니다.   
+다른 사이즈, 다른 색상으로도 뽑아서 draw() 이것도 가능하겠군요   
+
+# 타입도 import export 해서 씁니다 그리고 namespace  
+
+만든 타입변수를 다른 파일에서 사용하고 싶은 경우 자바스크립트 import export 문법 그대로 사용가능합니다.  
+import export 문법이 처음이라면 듣는 의미가 없을 수 있으니 간략하게 설명하자면   
+
+a.ts -> b.ts 이렇게 변수나 함수를 가져다쓰고 싶은 경우
+
+```js
+(a.ts)
+
+export var 이름 = 'kim';
+export var 나이 = 30;
+
+
+(b.ts)
+
+import {이름, 나이} from './a'
+console.log(이름)
+```
+
+이렇게 사용하면 됩니다.   
+
+1. 우선 변수를 다른 파일에서 쓰이게 내보내고 싶으면 export 문법으로 내보내야하고
+
+2. export된 변수를 가져와서 쓰고 싶으면 import 문법으로 가져와야합니다.   
+
+export 하고 싶으면 변수나 함수 정의부분 왼쪽에 export 키워드 붙이면 되고  
+import 하고 싶으면 import {변수명} from 파일경로   
+이렇게 쓰면 됩니다. 경로는 ./ 부터 시작해야합니다 현재경로라는 뜻이고 ts 파일 확장자는 안붙여야합니다.  
+
+```js
+import * from './a';
+console.log(이름);
+console.log(나이);
+``` 
+
+변수명 쓰기 귀찮으면 import * 하셔도 됩니다. 그 파일에서 export된 변수를 전부 import 해오는 문법입니다. 
+
+a.ts -> b.ts 이렇게 정의된 타입을 가져다 쓰고 싶은 경우 
+
+```js
+(a.ts)
+
+export type Name = string | boolean;
+export type Age = (a :number) => number;
+(b.ts)
+
+import {Name, Age} from './a'
+let 이름 :Name = 'kim';
+let 함수 :Age = (a) => { return a + 10 } 
+```
+타입도 똑같이 사용하면 됩니다.
+
