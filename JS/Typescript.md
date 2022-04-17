@@ -314,7 +314,11 @@ Operator '+' cannot be applied to types 'string | number' and 'number'
 ```
 
 string | number 같은 union type 에는 일반적으로 조작을 못하게 막아놔서 그렇습니다.  
-이런 메세지를 보면 1. 타입을 하나로 Narrowing 해주거나 2. Assert 해주거나 둘 중 하나 해주면 됩니다.
+이런 메세지를 보면
+
+1. 타입을 하나로 Narrowing 해주거나
+
+2. Assert 해주거나 둘 중 하나 해주면 됩니다.
 
 ## Type Narrowing
 
@@ -1378,111 +1382,113 @@ function 함수({ student, age }) {
 
 # Narrowing 할 수 있는 방법 더 알아보기
 
-Narrowing 하면서 코드짜는 것도 힘든데 특히나  
+Narrowing 하면서 코드짜는 것도 힘든데 특히나
 
-1. undefined 타입일 경우 처리하는거 
+1. undefined 타입일 경우 처리하는거
 
 2. 복잡한 object자료들 narrowing 하는거
 
-이게 가장 잦고 귀찮습니다. 이걸 쉽게 하는 법을 좀 알아봅시다.  
+이게 가장 잦고 귀찮습니다. 이걸 쉽게 하는 법을 좀 알아봅시다.
 
-## null & undefined 체크하는 법 
+## null & undefined 체크하는 법
 
-실제로 개발할 때 어떤 변수나 함수파라미터에 null, undefined가 들어올 경우 
+실제로 개발할 때 어떤 변수나 함수파라미터에 null, undefined가 들어올 경우
 
-어떻게 대처할지 if문으로 코드짜는 경우가 매우 많을 겁니다. 
+어떻게 대처할지 if문으로 코드짜는 경우가 매우 많을 겁니다.
 
 ```js
-if (저 변수가 undefined일 경우) 어쩌구~ 
+if (저 변수가 undefined일 경우) 어쩌구~
 ```
 
 이런 코드 많이 짤 텐데 왜냐면 저런 상황을 미리 방어하는게 언제나 좋기 때문입니다.  
 근데&& 스킬을 쓰면 저런 if문을 생략할 수 있습니다.  
 원래 && 이건 조건식 2개가 참이면 전부 참으로 판정해주세요~ 라는 논리연산자인데  
-여러개를 사용하면 이상한 현상이 있습니다.  
+여러개를 사용하면 이상한 현상이 있습니다.
 
 && 기호로 비교할 때 true와 false를 넣는게 아니라 자료형을 넣으면  
 && 사이에서 처음 등장하는 falsy 값을 찾아주고 그게 아니면 마지막 값을 남겨줍니다.  
 falsy 값은 false와 유사한 기능을 하는 null, undefined, NaN 이런 값들을 의미합니다.
 
 ```js
-1 && null && 3   // null이 남음
-undefined && '안녕' && 100  // undefined 남음
+1 && null && 3; // null이 남음
+undefined && "안녕" && 100; // undefined 남음
 ```
 
 이걸 약간 exploit 하면 if문을 조금 더 간략하게 쓸 수 있습니다.  
-그래서 && 기호를 이용해서  
+그래서 && 기호를 이용해서
 
 ```js
-if (변수 && typeof strs === "string") {} 
+if (변수 && typeof strs === "string") {
+}
 ```
 
 이렇게 사용하면 변수가 undefined라면 undefined가 남아서 if문이 실행되지 않고,  
 (if문 조건식안에 falsy 값이 남으면 if문 실행되지 않습니다)  
 변수가 string 타입이면 if문이 실행됩니다.  
-변수가 null, undefined인 경우를 쉽게 거를 수 있는 문법이라고 보면 되겠습니다.  
+변수가 null, undefined인 경우를 쉽게 거를 수 있는 문법이라고 보면 되겠습니다.
 
 ```js
 function printAll(strs: string | undefined) {
-  if (strs && typeof strs === "string") {  
+  if (strs && typeof strs === "string") {
     console.log(s);
-  } 
+  }
 }
 ```
-근데 한 눈에 안들어온다면 안쓰는게 좋습니다. 
-그냥 if (저 변수가 undefined일 경우) 어쩌구~ 이렇게 if문을 하나 더 쓰는게 어떨까요.  
-참고로 if (변수 != null) 이렇게 조건식을 써도 null, undefined 이거 두 개를 동시에 거를 수 있습니다.  
 
+근데 한 눈에 안들어온다면 안쓰는게 좋습니다.
+그냥 if (저 변수가 undefined일 경우) 어쩌구~ 이렇게 if문을 하나 더 쓰는게 어떨까요.  
+참고로 if (변수 != null) 이렇게 조건식을 써도 null, undefined 이거 두 개를 동시에 거를 수 있습니다.
 
 ## in 연산자로 object 자료 narrowing
 
 예를 들어서 파라미터로 object가 2개 들어올 수 있다고 타입지정을 해놓은 것입니다.  
 하나는 {a : 'kim}  
 다른 하나는 {b : 'park'}  
-이렇게 서로 다른 유니크한 속성들을 가지고 있다면  
+이렇게 서로 다른 유니크한 속성들을 가지고 있다면
 
 if (이 파라미터가 a라는 속성을 안에 가지고 있냐)  
 이런 if문을 써도 narrowing이 가능하다는 뜻입니다.  
 if (키값 in object자료형) 이렇게 쓰면 됩니다.  
-타입스크립트 컴파일러는 똑똑한 편이라 이런 것들도 narrowing 으로 판정해줍니다.  
+타입스크립트 컴파일러는 똑똑한 편이라 이런 것들도 narrowing 으로 판정해줍니다.
 
 ```js
 type Fish = { swim: string };
 type Bird = { fly: string };
 function 함수(animal: Fish | Bird) {
   if ("swim" in animal) {
-    return animal.swim
+    return animal.swim;
   }
-  return animal.fly
-} 
+  return animal.fly;
+}
 ```
+
 서로 배타적인 속성을 가져와야 narrowing이 가능합니다.  
 예를 들어서 Fish와 Bird 타입이 둘 다 swim 속성을 가지고 있고 Bird만 fly 속성을 추가로 가지고 있으면 어쩌죠?  
-어떻게 narrowing하면 좋을지 한 번 생각해봅시다.  
+어떻게 narrowing하면 좋을지 한 번 생각해봅시다.
 
 ## class로부터 생산된 object라면 instanceof로 narrowing
 
 class 문법을 아는 분들만 들어보도록 합시다.  
 어떤 클래스로부터 new 키워드로 생산된 object들이 있습니다.  
 그런 object 들은 instanceof 키워드를 붙여서 부모 클래스가 누군지 검사할 수 있는데  
-이것도 narrowing 역할을 할 수 있습니다.  
+이것도 narrowing 역할을 할 수 있습니다.
 
 가장 쉽게 new 키워드로 object 생산할 수 있는게 바로 날짜인데  
-자바스크립트에선 new Date() 이렇게 하면 date object 라는게 생성됩니다.   
-그래서 instanceof로 부모 클래스가 누군지 검사할 수 있습니다.   
+자바스크립트에선 new Date() 이렇게 하면 date object 라는게 생성됩니다.  
+그래서 instanceof로 부모 클래스가 누군지 검사할 수 있습니다.
 
 ```js
 let 날짜 = new Date();
-if (날짜 instanceof Date){
-  console.log('참이에요')
+if (날짜 instanceof Date) {
+  console.log("참이에요");
 }
 ```
 
 이렇게 쓸 수 있고 이런 문법도 narrowing 역할을 할 수 있습니다.  
 이 변수가 Date()로 부터 생성된 object 자료인지, 아니면 다른 애로부터 생성된 자료인지 이런걸 구분가능하기 때문입니다.  
-class 문법모르면 뭔소린지 모르겠죠? 그럴 경우엔 뒷부분 class, prototype 수업듣고 다시 놀러오도록 합시다.   
+class 문법모르면 뭔소린지 모르겠죠? 그럴 경우엔 뒷부분 class, prototype 수업듣고 다시 놀러오도록 합시다.
 
-## literal type이 있으면 narrowing 쉬움 
+## literal type이 있으면 narrowing 쉬움
 
 ```js
 type Car = {
@@ -1505,54 +1511,52 @@ function 함수(x : Car | Bike){
 
 지금 Car, Bike 타입을 각각 만들었는데 object 자료가 들어올 수 있습니다.  
 함수에 Car 타입을 입력할 경우 뭔가 실행하고 싶은데  
-근데 if문 안에서 narrowing 어떻게 하죠? 
+근데 if문 안에서 narrowing 어떻게 하죠?
 
 typeof 연산자 써도 그냥 object 입니다~ 라고만 나올걸요 왜냐면 typeof 연산자는 string, number, object 이런 것만 구분해주기 때문입니다.  
-위에서 배웠던 in 문법 이런걸로 narrowing하기엔 힘들어보입니다. Car, Bike 둘 다 배타적인 속성이 없으니까요.  
+위에서 배웠던 in 문법 이런걸로 narrowing하기엔 힘들어보입니다. Car, Bike 둘 다 배타적인 속성이 없으니까요.
 
 실은 object들 구분할 일이 많을 때 literal type을 만들어두면 편리한데  
-그럼 서로 비슷한 object들이 들어와도 literal type으로 narrowing 가능하기 때문입니다.   
+그럼 서로 비슷한 object들이 들어와도 literal type으로 narrowing 가능하기 때문입니다.  
 제가 literal type 하나씩 적어둔거 보이시죠?  
 지금 Car 타입은 무조건 wheel 출력해보면 4  
 Bike 타입은 wheel 출력해보면 무조건 2가 나옵니다.  
 이거 가지고 object 끼리 narrowing 가능합니다.  
-그냥 if문으로 "지금 이 변수가 wheel 속성에 저장된게 4냐" 라고 물어보면 이건 누가봐도 Car 타입아니겠습니까.  
+그냥 if문으로 "지금 이 변수가 wheel 속성에 저장된게 4냐" 라고 물어보면 이건 누가봐도 Car 타입아니겠습니까.
 
-타입스크립트는 스마트하니까 그렇게 쓰면 narrowing 충분히 가능합니다.   
-그래서 빨리 위에 코드 if문 조건식 채워보셈   
+타입스크립트는 스마트하니까 그렇게 쓰면 narrowing 충분히 가능합니다.  
+그래서 빨리 위에 코드 if문 조건식 채워보셈
 
 ```js
 type Car = {
-  wheel : '4개',
-  color : string
-}
+  wheel: "4개",
+  color: string,
+};
 type Bike = {
-  wheel : '2개',
-  color : string
-}
+  wheel: "2개",
+  color: string,
+};
 
-function 함수(x : Car | Bike){
-  if (x.wheel === '4개'){
-    console.log('the car is ' + x.color)
+function 함수(x: Car | Bike) {
+  if (x.wheel === "4개") {
+    console.log("the car is " + x.color);
   } else {
-    console.log('the bike is ' + x.color)
+    console.log("the bike is " + x.color);
   }
 }
 ```
 
-그냥 literal type 으로 선언된 속성이 뭔지 찾아냈을 뿐입니다. 그러면 narrowing 가능   
+그냥 literal type 으로 선언된 속성이 뭔지 찾아냈을 뿐입니다. 그러면 narrowing 가능  
 그래서 결론은 object 자료 비슷한걸 많이 다룰 땐  
-literal type으로 object 안에 각각 유니크한 자료를 달아두거나 그러면 나중에 구분하기 편리할 수 있습니다.  
+literal type으로 object 안에 각각 유니크한 자료를 달아두거나 그러면 나중에 구분하기 편리할 수 있습니다.
 
 # 함수에 사용하는 never 타입
 
 함수에 붙이는 return type으로 사용가능합니다.  
-근데 좀 특이합니다.  
+근데 좀 특이합니다.
 
 ```js
-function 함수() :never{
-
-}
+function 함수(): never {}
 ```
 
 어떤 함수가
@@ -1563,52 +1567,53 @@ function 함수() :never{
 
 그런 함수에 붙일 수 있는 타입니다.  
 실은 조건1, 2는 같은 소리인데 모든 자바스크립트 함수 맨 밑엔 return undefined 라는 숨겨진 코드를 가지고 있습니다.  
-그래서 조건2가 맞으면 1도 맞음  
+그래서 조건2가 맞으면 1도 맞음
 
 ```js
-function 함수(){
-  console.log(123)
+function 함수() {
+  console.log(123);
 }
 ```
+
 이런 함수들에 never를 붙일 순 없습니다.  
 왜냐면 조건 1번은 만족하지만 2번은 만족하지 않습니다.  
-2번 조건은 함수 내부 코드 실행이 끝나지 않는 함수여야합니다.  
+2번 조건은 함수 내부 코드 실행이 끝나지 않는 함수여야합니다.
 
 ```js
-function 함수() :never{
-  while ( true ) {
-    console.log(123)
+function 함수(): never {
+  while (true) {
+    console.log(123);
   }
 }
 ```
 
-이런 함수엔 붙일 수 있습니다. 
+이런 함수엔 붙일 수 있습니다.
 while 문법은 ( ) 소괄호안의 조건식이 true일 경우 계속 내부 코드를 실행해라~ 라는 뜻입니다.  
-무한히 실행되기 때문에 끝이안나죠? 그래서 never 타입을 사용가능합니다.   
+무한히 실행되기 때문에 끝이안나죠? 그래서 never 타입을 사용가능합니다.
 
 ```js
-function 함수() :never{
-  throw new Error('에러메세지')
+function 함수(): never {
+  throw new Error("에러메세지");
 }
 ```
 
 이런 함수에도 붙일 수 있습니다.  
 throw new Error() 문법은 그냥 강제로 에러내라~ 라는 뜻인데  
 에러가 나면 전체 코드실행이 중단되니까 2번 조건도 나름 충족하는 것이기 때문에  
-never를 사용가능합니다.  
+never를 사용가능합니다.
 
 그래서 1. 무언가 return 하지 않고 2. 끝나지도 않는 함수를 표현하고 싶을 때 never 타입을 지정하면 되는데  
-2번 조건의 함수를 만들 일이 거의 없기 때문에 never 타입은 쓸 일이 없습니다.   
+2번 조건의 함수를 만들 일이 거의 없기 때문에 never 타입은 쓸 일이 없습니다.  
 무언가를 return하고싶지 않을 경우 그냥 void 타입을 이용하시면 되며  
 배우는 이유는 가끔 코드 이상하게 짜다보면 자동으로 등장하기 때문입니다.  
-이 때 never 이게 뭘 의미하는지 이해만 잘 하면 됩니다.   
-어떨 때 등장하는지 알아봅시다.   
+이 때 never 이게 뭘 의미하는지 이해만 잘 하면 됩니다.  
+어떨 때 등장하는지 알아봅시다.
 
-## 파라미터가 never 타입이 되는 경우도 있음  
+## 파라미터가 never 타입이 되는 경우도 있음
 
 ```js
 function 함수(parameter: string) {
-  if ( typeof parameter === "string"){
+  if (typeof parameter === "string") {
     parameter + 1;
   } else {
     parameter;
@@ -1619,66 +1624,61 @@ function 함수(parameter: string) {
 위 함수는 뭔가 이상한 함수입니다.  
 지금 narrowing을 이용해서 파라미터의 타입이 string 이면 뭔가 해달라고 써놨는데  
 else 문이 존재합니다. 타입이 string이 아닐 경우 이거 해달라는 뜻입니다.  
-근데 else문은 말이 안되죠? 지금 파라미터가 string 밖에 못들어오는데 말입니다.  
+근데 else문은 말이 안되죠? 지금 파라미터가 string 밖에 못들어오는데 말입니다.
 
 이런 잘못된 narrowing을 사용했을 때 파라미터의 타입이 never로 변합니다. 파라미터에 마우스 올려보셈  
-이런 건 있을 수 없다, 일어나면 안된다고 알려주는 느낌입니다.   
-그럴 때 never를 구경할 수 있으니 never 타입이 발견되는 경우 코드를 수정하는게 어떨까요.   
+이런 건 있을 수 없다, 일어나면 안된다고 알려주는 느낌입니다.  
+그럴 때 never를 구경할 수 있으니 never 타입이 발견되는 경우 코드를 수정하는게 어떨까요.
 
-## 자동으로 never 타입을 가지는 경우 
+## 자동으로 never 타입을 가지는 경우
 
 자바스크립트는 함수를 만드는 방법이 2개 있습니다.
 
 ```js
+function 함수() {}
 
-function 함수(){
-
-}
-
-let 함수2 = function (){
-
-}
+let 함수2 = function () {};
 ```
 
 위는 함수 선언문,  
-밑은 함수 표현식이라고 부릅니다. 똑같이 함수만들 수 있는 문법입니다.   
+밑은 함수 표현식이라고 부릅니다. 똑같이 함수만들 수 있는 문법입니다.
 
 ```js
-function 함수(){
-  throw new Error()
+function 함수() {
+  throw new Error();
 }
 
-let 함수2 = function (){
-  throw new Error()
-}
+let 함수2 = function () {
+  throw new Error();
+};
 ```
 
 함수 선언문이 아무것도 return 하지 않고 끝나지도 않을 경우 void 타입이 자동으로 return 타입으로 할당되며  
 함수 표현식이 아무것도 return 하지 않고 끝나지도 않을 경우 never 타입이 자동으로 return 타입으로 할당됩니다.  
-마우스 올려보면 나옵니다.  
+마우스 올려보면 나옵니다.
 
-또는 tsconfig.json에서 strict 옵션을 켜둘 경우   
-함부로 any 타입을 지정해주지 않는 경우가 있습니다.   
-그럴 때 array 같은거 대충 타입지정 안하고 만들면  
+또는 tsconfig.json에서 strict 옵션을 켜둘 경우  
+함부로 any 타입을 지정해주지 않는 경우가 있습니다.  
+그럴 때 array 같은거 대충 타입지정 안하고 만들면
 
 ```js
 let arr = [];
 ```
 
-원래는 any[] 이런 타입이 되는데 any를 가질 수 없어서   
-never[] 이런 타입이 발견되기도 합니다.   
-아무튼 쓸 일이 별로 없기 때문에 이럴 때도 등장한다고 알아두기만 하면 됩니다.  
+원래는 any[] 이런 타입이 되는데 any를 가질 수 없어서  
+never[] 이런 타입이 발견되기도 합니다.  
+아무튼 쓸 일이 별로 없기 때문에 이럴 때도 등장한다고 알아두기만 하면 됩니다.
 
 # public, private 쓰는거 보니까 타입스크립트 귀여운편
 
 타입스크립트 쓰면 자바스크립트에 없는 문법도 사용가능합니다.  
-객체지향 언어에서 제공하는 public, private, static, protected 이런 키워드를 사용가능한데   
-뭔지 한번 알아봅시다.   
+객체지향 언어에서 제공하는 public, private, static, protected 이런 키워드를 사용가능한데  
+뭔지 한번 알아봅시다.
 
 ## public, private 키워드로 사용제한두기
 
 타입스크립트는 class 안에서 public 키워드를 사용가능합니다.  
-원하는 속성 왼쪽에 붙이면 그 속성은 아무데서나 수정이 가능합니다.  
+원하는 속성 왼쪽에 붙이면 그 속성은 아무데서나 수정이 가능합니다.
 
 ```js
 class User {
@@ -1694,20 +1694,20 @@ let 유저1 = new User();
 ```
 
 public이 붙은 속성은 자식 object들이 마음대로 사용하고 수정가능합니다.  
-실은 public 붙이든 안붙이든 똑같긴 합니다. 맞잖아요 실험해보셈   
-왜냐면 필드값 같은걸 그냥 만들면 public이 몰래 왼쪽에 부여되기 때문입니다.  
+실은 public 붙이든 안붙이든 똑같긴 합니다. 맞잖아요 실험해보셈  
+왜냐면 필드값 같은걸 그냥 만들면 public이 몰래 왼쪽에 부여되기 때문입니다.
 
 (참고) public 키워드는 class 내의 prototype 함수에도 붙일 수 있습니다.
 
 근데 private 키워드를 붙이면 수정이 불가능해집니다.  
 무조건 class { } 중괄호 안에서만 수정 및 사용가능합니다.  
 심지어 class로 부터 생산된 자식 object에서도 private 붙은건 사용불가능합니다.  
-(class 중괄호 내부가 아니니까요)  
+(class 중괄호 내부가 아니니까요)
 
 ```js
 class User {
   public name :string;
-  private familyName :string;  
+  private familyName :string;
 
   constructor(){
     this.name = 'kim';
@@ -1723,15 +1723,15 @@ let 유저1 = new User();
 secretId 라는 속성에는 private 키워드를 추가했더니 아무데서나 수정이 불가능해졌습니다.  
 private 붙은 속성들은 오직 class { } 안에서만 수정이 가능합니다.  
 이렇게 속성을 외부에서 숨기고 싶을 때 private 키워드를 이용합니다.  
-실은 오리지널 자바스크립트 문법에서도 #이걸 속성옆에 붙이면 private 속성이 됩니다.  
+실은 오리지널 자바스크립트 문법에서도 #이걸 속성옆에 붙이면 private 속성이 됩니다.
 
 (참고) private 키워드는 class 내의 함수에도 붙일 수 있습니다.
 
 Q. private 부여된 속성을 class 밖에서 수정해야할 경우?
 
- 1. private 속성을 수정하는 함수를 class 안에 만들어서 
- 
- 2. 함수를 실행시키면 됩니다. 
+1.  private 속성을 수정하는 함수를 class 안에 만들어서
+
+2.  함수를 실행시키면 됩니다.
 
 위에서 private 붙여놓은 secretId 이런걸 바깥에서 수정하고 싶은 경우 이렇게 합니다.
 
@@ -1754,37 +1754,38 @@ let 유저1 = new User();
 유저1.changeSecret()        //가능
 ```
 
-1. changeSecret() 함수를 class 안에 만들었습니다.  
+1. changeSecret() 함수를 class 안에 만들었습니다.
 
-이 함수는 familyName을 수정해주는 함수입니다.  
+이 함수는 familyName을 수정해주는 함수입니다.
 
 2. 그러면 이제 class 바깥에서도 changeSecret() 함수를 이용하면 간접적으로 familyName을 수정가능합니다.
 
 함수 불러도 에러안나고 수정 잘 됩니다.  
-중요한건 아니고 참고로 알아둡시다.  
+중요한건 아니고 참고로 알아둡시다.
 
 ## public, private 키워드 쓰면 이런 것도 가능
 
 ```js
-class Person { 
+class Person {
   name;
-  constructor ( name :string ){  
+  constructor ( name :string ){
     this.name = name;
-  } 
+  }
 }
 let 사람1 = new Person('john')
 
 
-class Person { 
-  constructor ( public name :string ){  
-  
-  } 
+class Person {
+  constructor ( public name :string ){
+
+  }
 }
 let 사람1 = new Person('john')
 ```
+
 위 두개의 코드는 같은 역할을 하는 코드입니다.  
 "constructor 파라미터에 public 붙이면 this.name = name 이거 생략가능하다" 라는걸 참고해주시면 되며  
-이제 Person으로부터 새로 생산되는 object들은 name 속성을 가질 수 있습니다.  
+이제 Person으로부터 새로 생산되는 object들은 name 속성을 가질 수 있습니다.
 
 # class 안에서 쓰는 protected 키워드
 
@@ -1792,9 +1793,9 @@ private 이거랑 비슷한 키워드가 하나 있는데
 
 private인데 약간 보안을 해제하고 싶을 때 씁니다.
 
-protected를 달아놓으면 1. private 이거랑 똑같은데 2. extends 된 class 안에서도 사용가능하게 약간 보안을 풀어줍니다. 
+protected를 달아놓으면 1. private 이거랑 똑같은데 2. extends 된 class 안에서도 사용가능하게 약간 보안을 풀어줍니다.
 
-예제를 쉽게 다시 만들어봅시다 
+예제를 쉽게 다시 만들어봅시다
 
 ```js
 class User {
@@ -1804,7 +1805,7 @@ class User {
 
 User 라는 class의 x 속성은 protected 입니다.  
 그럼 private와 동일하게 class 안에서만 사용이 가능해지며  
-User의 자식들도 함부로 사용이 불가능합니다.  
+User의 자식들도 함부로 사용이 불가능합니다.
 
 ```js
 class User {
@@ -1819,20 +1820,20 @@ class NewUser extends User {
 ```
 
 User를 extends 하는 NewUser class를 만들었습니다.  
-NewUser가 갑자기 this.x 이런 식으로 x를 가져다가 쓰려고 하면   
+NewUser가 갑자기 this.x 이런 식으로 x를 가져다가 쓰려고 하면  
 x가 private 속성일 경우엔 에러가 나지만  
-x가 protected 속성일 경우엔 에러가 나지 않습니다.   
+x가 protected 속성일 경우엔 에러가 나지 않습니다.
 
 그래서 class 여러개 만들 때 class 끼리 공유할 수 있는 속성을 만들고 싶으면 protected,  
-class 하나 안에서만 쓸 수 있는 속성을 만들고 싶으면 private 이걸 쓰도록 합시다.   
-class 여러개 만들 일이 없으면 쓸모없습니다.   
+class 하나 안에서만 쓸 수 있는 속성을 만들고 싶으면 private 이걸 쓰도록 합시다.  
+class 여러개 만들 일이 없으면 쓸모없습니다.
 
-# class 안에서 쓰는 static 키워드  
+# class 안에서 쓰는 static 키워드
 
 우리가 class { } 안에 집어넣는 변수, 함수 이런건 전부 class로 부터 새로 생성되는 object (일명 instance) 에 부여됩니다.  
-근데 class에 직접 변수나 함수를 부여하고 싶으면 static 키워드를 왼쪽에 붙여주면 됩니다.   
+근데 class에 직접 변수나 함수를 부여하고 싶으면 static 키워드를 왼쪽에 붙여주면 됩니다.
 
-예를 들어 봅시다. 
+예를 들어 봅시다.
 
 ```js
 class User {
@@ -1842,11 +1843,12 @@ class User {
 
 let john = new User();
 ```
+
 john.x //가능
 User.x //불가능
 이런 x와 y같은 변수들은 User로 부터 생성된 object들만 사용가능합니다.
 
-근데 static 키워드를 붙이면 
+근데 static 키워드를 붙이면
 
 ```js
 class User {
@@ -1856,17 +1858,18 @@ class User {
 
 let john = new User();
 ```
+
 john.x //불가능
 User.x //가능
 john은 사용불가능하고
 
-User는 직접 사용가능합니다. 
+User는 직접 사용가능합니다.
 
 - 함수도 static 붙이기 가능
 
-- extends 로 class를 복사할 경우 static 붙은 것들도 따라옵니다.  
+- extends 로 class를 복사할 경우 static 붙은 것들도 따라옵니다.
 
-(참고) static은 private, protected, public 키워드와 동시 사용가능합니다. 
+(참고) static은 private, protected, public 키워드와 동시 사용가능합니다.
 
 ```js
 class User {
@@ -1876,46 +1879,45 @@ class User {
 ```
 
 1. 필드값은 원래는 모든 User의 자식들에게 물려주는 속성이지만  
-x와 y에는 static 키워드가 붙었기 때문에 User.x 이런 식으로만 접근해서 쓸 수 있습니다.  
-User의 자식들은 x와 y를 쓸 수 없습니다.  
+   x와 y에는 static 키워드가 붙었기 때문에 User.x 이런 식으로만 접근해서 쓸 수 있습니다.  
+   User의 자식들은 x와 y를 쓸 수 없습니다.
 
-2. private static x는 class 내부에서만 수정가능합니다.   
+2. private static x는 class 내부에서만 수정가능합니다.
 
-3. public static y는 class 내부 외부 상관없이 수정가능합니다. public 키워드 지워도 똑같이 동작할 듯 
+3. public static y는 class 내부 외부 상관없이 수정가능합니다. public 키워드 지워도 똑같이 동작할 듯
 
 4. protected z는 private 키워드와 유사하게 class 내부에서만 사용이 가능한데  
-약간 범위가 넓어서 extends로 복사한 class 내부에서도 사용할 수 있습니다.  
+   약간 범위가 넓어서 extends로 복사한 class 내부에서도 사용할 수 있습니다.
 
- 
 Q. static 이런걸 언제 씁니까
 
 주로 class 안에 간단한 메모를 하거나, 기본 설정값을 입력하거나  
-class로 부터 생성되는 object가 사용할 필요가 없는 변수들을 만들어놓고 싶을 때 사용합니다.   
+class로 부터 생성되는 object가 사용할 필요가 없는 변수들을 만들어놓고 싶을 때 사용합니다.
 
 ## 무작위 박스 생성
 
 ```js
-let 네모 = new Square(30, 30, 'red');
-네모.draw()
-네모.draw()
-네모.draw()
-네모.draw()
+let 네모 = new Square(30, 30, "red");
+네모.draw();
+네모.draw();
+네모.draw();
+네모.draw();
 ```
 
 이렇게 네모.draw()를 할 때마다  
-index.html에 가로 30px, 세로 30px, 배경색이 'red' 의 `<div>` 박스가 무작위로 배치되어야합니다.  
+index.html에 가로 30px, 세로 30px, 배경색이 'red' 의 `<div>` 박스가 무작위로 배치되어야합니다.
 
 ```js
-class Square {  
+class Square {
   constructor (public width :number, public height :number, public color :string){
   }
   draw(){
     let a = Math.random();
-    let square = `<div style="position:relative; 
-      top:${a * 400}px; 
-      left:${a * 400}px; 
-      width:${this.width}px; 
-      height : ${this.height}px; 
+    let square = `<div style="position:relative;
+      top:${a * 400}px;
+      left:${a * 400}px;
+      width:${this.width}px;
+      height : ${this.height}px;
       background:${this.color}"></div>`;
     document.body.insertAdjacentHTML( 'beforeend', square );
   }
@@ -1929,10 +1931,9 @@ let 네모 = new Square(30, 30, 'red');
 네모.draw()
 ```
 
+1. constructor를 이용해서 새로뽑는 object 들은 width, height, color를 입력할 수 있게 만들었습니다.
 
-1. constructor를 이용해서 새로뽑는 object 들은 width, height, color를 입력할 수 있게 만들었습니다.   
-
-2. 자식들은 draw()를 쓰면   
+2. 자식들은 draw()를 쓰면
 
 (1) 0과 1사이의 무작위 숫자를 뽑습니다. 그걸 변수 a에 저장해둡니다.
 
@@ -1942,59 +1943,718 @@ let 네모 = new Square(30, 30, 'red');
 
 (4) insertAdjacentHTML 이런거 이용하면 원하는 곳에 html 추가가 가능합니다.
 
-그래서 실제로 자식을 하나 뽑아서 draw() 했더니 진짜 빨간 박스 4개 나옵니다.   
-다른 사이즈, 다른 색상으로도 뽑아서 draw() 이것도 가능하겠군요   
+그래서 실제로 자식을 하나 뽑아서 draw() 했더니 진짜 빨간 박스 4개 나옵니다.  
+다른 사이즈, 다른 색상으로도 뽑아서 draw() 이것도 가능하겠군요
 
-# 타입도 import export 해서 씁니다 그리고 namespace  
+# 타입도 import export 해서 씁니다 그리고 namespace
 
 만든 타입변수를 다른 파일에서 사용하고 싶은 경우 자바스크립트 import export 문법 그대로 사용가능합니다.  
-import export 문법이 처음이라면 듣는 의미가 없을 수 있으니 간략하게 설명하자면   
+import export 문법이 처음이라면 듣는 의미가 없을 수 있으니 간략하게 설명하자면
 
 a.ts -> b.ts 이렇게 변수나 함수를 가져다쓰고 싶은 경우
 
 ```js
-(a.ts)
+a.ts;
 
-export var 이름 = 'kim';
+export var 이름 = "kim";
 export var 나이 = 30;
 
+b.ts;
 
-(b.ts)
-
-import {이름, 나이} from './a'
-console.log(이름)
+import { 이름, 나이 } from "./a";
+console.log(이름);
 ```
 
-이렇게 사용하면 됩니다.   
+이렇게 사용하면 됩니다.
 
 1. 우선 변수를 다른 파일에서 쓰이게 내보내고 싶으면 export 문법으로 내보내야하고
 
-2. export된 변수를 가져와서 쓰고 싶으면 import 문법으로 가져와야합니다.   
+2. export된 변수를 가져와서 쓰고 싶으면 import 문법으로 가져와야합니다.
 
 export 하고 싶으면 변수나 함수 정의부분 왼쪽에 export 키워드 붙이면 되고  
-import 하고 싶으면 import {변수명} from 파일경로   
-이렇게 쓰면 됩니다. 경로는 ./ 부터 시작해야합니다 현재경로라는 뜻이고 ts 파일 확장자는 안붙여야합니다.  
+import 하고 싶으면 import {변수명} from 파일경로  
+이렇게 쓰면 됩니다. 경로는 ./ 부터 시작해야합니다 현재경로라는 뜻이고 ts 파일 확장자는 안붙여야합니다.
 
 ```js
 import * from './a';
 console.log(이름);
 console.log(나이);
-``` 
+```
 
-변수명 쓰기 귀찮으면 import * 하셔도 됩니다. 그 파일에서 export된 변수를 전부 import 해오는 문법입니다. 
+변수명 쓰기 귀찮으면 import \* 하셔도 됩니다. 그 파일에서 export된 변수를 전부 import 해오는 문법입니다.
 
-a.ts -> b.ts 이렇게 정의된 타입을 가져다 쓰고 싶은 경우 
+a.ts -> b.ts 이렇게 정의된 타입을 가져다 쓰고 싶은 경우
 
 ```js
-(a.ts)
+a.ts;
 
 export type Name = string | boolean;
-export type Age = (a :number) => number;
-(b.ts)
+export type Age = (a: number) => number;
+b.ts;
 
-import {Name, Age} from './a'
-let 이름 :Name = 'kim';
-let 함수 :Age = (a) => { return a + 10 } 
+import { Name, Age } from "./a";
+let 이름: Name = "kim";
+let 함수: Age = (a) => {
+  return a + 10;
+};
 ```
+
 타입도 똑같이 사용하면 됩니다.
 
+# 타입을 파라미터로 입력하는 Generic
+
+함수만들 때 () 여기에 파라미터 입력하지않습니까  
+근데 타입스크립트를 쓰시면 파라미터로 타입을 입력할 수도 있습니다.  
+<> 여기에 집어넣으면 됩니다.
+
+함수 return 값의 타입이 애매하면
+예를 들어
+
+1. 아무렇게나 생긴 array 자료를 입력하면
+
+2. array의 첫 자료를 그대로 출력해주는 함수를 만들었다고 합시다.
+
+```js
+function 함수(x: unknown[]) {
+  return x[0];
+}
+
+let a = 함수([4, 2]);
+console.log(a);
+```
+
+이러면 콘솔창에 4가 출력됩니다.  
+근데 마우스 올려서 a의 타입을 확인해보면 숫자는 아니고 unknown 타입입니다.  
+왜냐면 지금 입력하는 array도 unknown 타입이라서 그렇습니다.  
+여기서 중요포인트는 타입스크립트는 타입을 알아서 변경해주지 않습니다.  
+스마트하게 숫자가 return 되면 "number 타입입니다~" 문자가 return 되면 "string 타입입니다~"  
+그런거 안해준다는 것입니다.
+
+```js
+function 함수(x: unknown[]) {
+  return x[0];
+}
+
+let a = 함수([4, 2]);
+console.log(a + 1);
+```
+
+그래서 이런 연산도 에러가 납니다.  
+a는 사람이 보기에 분명히 숫자가 맞지만 아직 타입은 unknown 타입이니까요.  
+님들이 함수의 return 타입지정을 :number 이런 걸로 강제로 바꾸기 전까지는 number 타입으로 변하지 않습니다.
+
+그래서 여러분이 함수에 불확실한 unknown, any, union 타입을 입력하면
+나오는 값도 unknown, any, union 타입이고, 이 때문에 일어나는 문제들이 많습니다.  
+예를 들면 "함수가 10을 return 하는데 타입이 unknown 이라서 맘대로 조작을 못하네" 문제요  
+해결책은
+
+1. narrowing 잘 하면 해결됩니다. 근데 귀찮음
+
+2. 그냥 애초에 타입을 파라미터로 함수에 미리 입력하는 방법도 있습니다. 그럼 원하는 곳에 가변적으로 타입지정 가능
+
+2번을 Generic 이라고 부릅니다.
+
+## Generic 적용한 함수만들기
+
+함수에 <> 이런 괄호를 열면 파라미터를 또 입력할 수 있습니다.
+
+근데 여기 안엔 타입만 입력할 수 있습니다. 타입파라미터 문법임
+
+```js
+function 함수<MyType>(x: MyType[]): MyType {
+  return x[0];
+}
+
+let a = 함수 < number > [4, 2];
+let b = 함수 < string > ["kim", "park"];
+```
+
+그럼 이제 함수를 사용할 때도 <> 안에 파라미터처럼 타입을 입력할 수 있습니다.  
+그럼 님들이 이제 `함수<number>( )` 이렇게 쓰는 순간  
+MyType 이라는 변수에 number 라는게 들어간다고 보시면 됩니다.  
+그럼 이제 함수( x : number[] ) :number { } 이거랑 똑같이 동작합니다.
+
+그럼 뭐가 좋겠습니까. 아까 unknown 가득한 예제와는 다르게  
+return 되는 타입이 number입니다.  
+b 변수는 return되는 타입은 string이 될겁니다.
+
+아무튼 결론 : Generic을 쓰면 여러분이 정한 타입을 return 값으로 뱉는 함수를 제작가능한 것입니다.  
+<> 문법만 잘 쓰면 됩니다.
+
+```js
+function 함수<MyType>(x: MyType[]): MyType {
+  return x[0];
+}
+
+let a = 함수([4, 2]);
+let b = 함수(["kim", "park"]);
+```
+
+실은 함수 사용시 꼭 <> 안써도 알아서 기본 타입을 유추해서 집어넣어줍니다.  
+이래도 결과는 똑같습니다.
+
+(참고)
+
+- 타입파라미터는 자유작명가능 보통 `<T>` 이런걸로 많이 합니다.
+
+- 일반 함수파라미터 처럼 2개 이상 넣기도 가능합니다
+
+## 근데 왜 - 1은 불가능함
+
+함수 이런거 만들었는데 왜 에러가 나는 것이죠?
+
+```js
+function 함수<MyType>(x: MyType) {
+  return x - 1;
+}
+
+let a = 함수 < number > 100;
+```
+
+`<MyType>` 자리에 number 이런거 타입 꽂아넣으면  
+MyType 붙은 곳에 다 집어넣어진다면서요  
+근데 x - 1 은 불가능하네요?
+
+이유는 에러메세지를 잘 보면 됩니다.
+
+```
+The left-hand side of an arithmetic operation must be of type 'any','number','bigint' or an enum type. (2362)
+```
+
+어디서 많이 보던 문장입니다.  
+`<MyType>` 이라는 곳에 number 말고도 다른거 혹시 집어넣을 수 있으니까 저런 - 1 연산을 미리 방지해주는 것입니다.  
+그래서 해결책은 narrowing을 하셔도 되는데 MyType에 집어넣을 수 있는 타입을 미리 제한하는 것도 하나의 해결책입니다.
+
+## Generic 타입 제한하기 (constraints)
+
+extends 문법을 쓰면 넣을 수 있는 타입을 제한할 수 있습니다.  
+그래서 MyType extends number 라고 쓰면 타입 파라미터에 넣을 수 있는 타입을 제한가능합니다.  
+interface 문법에 쓰는 extends와는 살짝 다른 느낌입니다.  
+그 extends는 복사인데 이번 extends는 number와 비슷한 속성을 가지고 있는지 if 문으로 체크하는 문법이라고 보면 됩니다.
+
+```js
+function 함수<MyType extends number>(x: MyType) {
+  return x - 1
+}
+
+let a = 함수<number>(100) //잘됩니다
+```
+
+그래서 그렇게 써봤습니다. 이러면 에러없이 잘됩니다.  
+return 타입지정을 안한 이유는 숫자 - 숫자를 했으니 알아서 number 타입이 됩니다.
+
+## 언제나 커스텀 타입도 extends 가능
+
+예를 들어서 문자로 파라미터를 넣으면 자릿수를 세어서 출력해주는 함수를 Generic으로 만들고 싶습니다.
+
+```js
+function 함수<MyType>(x: MyType) {
+  return x.length;
+}
+
+let a = 함수 < string > "hello";
+```
+
+문자에 .length 붙이면 몇자리의 문자인지 출력해주는데  
+에러나고 안됩니다.  
+왜냐면 MyType에 string을 집어넣었지만 나중에 number 이런거 실수로 집어넣으면 어쩔 것임  
+그럴 수 있어서 아직 .length같은 조작을 일단 방지해주는 것입니다.  
+그래서 MyType을 extends 이런걸로 정확히 제한해주면 되는데  
+이번엔 interface로 만들어둔 타입을 extends 해봅시다.
+
+```js
+interface lengthCheck {
+  length : number
+}
+function 함수<MyType extends lengthCheck>(x: MyType) {
+  return x.length
+}
+
+let a = 함수<string>('hello')  //가능
+let a = 함수<number>(1234) //에러남
+```
+
+1. length 속성을 가지고 있는 타입을 하나 만들었습니다. 이름은 lengthCheck로 했습니다.
+
+2. 그걸 extends 해주면 MyType도 length 속성을 복사해서 가집니다.
+
+3. 그래서 MyType은 length가 분명히 있기 때문에 맘대로 MyType을 부여받은 x는 .length 조작이 가능합니다.
+
+(참고) class도 class `<MyType> {}` 이런 식으로 만들면 new로 뽑을 때 타입파라미터를 집어넣을 수 있습니다.  
+`type Age<MyType> = MyType` 이런 식으로 타입변수에도 사용가능
+
+# React + TypeScript 사용할 때 알아야할 점
+
+리액트프로젝트 설치는 이런 명령어를 사용합니다.
+
+```
+npx create-react-app 프로젝트명 --template typescript
+```
+
+typescript 셋팅이 완료된 프로젝트 설치하는 법인데
+
+기존 프로젝트에 타입스크립트만 더하고 싶으면  
+기존 프로젝트 경로에서 터미널을 오픈하신 후
+
+```
+npm install --save typescript @types/node @types/react @types/react-dom @types/jest
+```
+
+입력해주면 끝입니다. 이제 .js 파일을 .ts 파일로 바꿔서 이용가능합니다.  
+이런거 할 바엔 깔끔하게 그냥 새로 프로젝트 만드는게 안전합니다.
+
+그럼 프로젝트가 생성되는데 일반 프로젝트와 다른 점은  
+컴포넌트 파일은 js가 아니라 tsx로 확장자를 사용하셔야한다는 점입니다. ts랑 똑같은데 jsx 문법을 지원합니다.  
+코드짜는 것은 일반 리액트와 큰 다른점이 없습니다.  
+다만 함수, 컴포넌트, state, props 타입체크를 잘 해줘야 에러가 나지 않습니다.  
+그래서 리액트에선 TS 문법을 어디에 써야하는지 4개로 정리해드리겠습니다.  
+그냥 타입관련 버그가 생길 것 같은 곳에 타입지정하면 끝입니다.
+
+## 일반 변수, 함수 타입지정
+
+그냥 타입스크립트 배웠던 대로 똑같이 하면 됩니다.
+
+## JSX 타입지정
+
+리액트에선 변수나 자료에 `<div></div>` 이런걸 쌩으로 담아서 쓸 수 있습니다.  
+왜냐면 리액트에서 `<div></div>` 이렇게 쓰면 HTML이 아니라 JSX라고 부르는 자료가 됩니다.  
+이런 자료를 타입지정하고 싶으면 JSX.Element 라는 타입을 쓰시면 됩니다.
+
+```js
+let 박스: JSX.Element = <div></div>;
+let 버튼: JSX.Element = <button></button>;
+```
+
+이러면 끝입니다.
+
+실은 더 정확히 타입지정하시려면
+
+`<div>`, `<a>`, `<h4>` 같은 기본 태그들은 JSX.IntrinsicElements 라는 이름의 타입을 쓰면 됩니다.
+
+```js
+let 박스: JSX.IntrinsicElements["div"] = React.createElement("div");
+let 버튼: JSX.IntrinsicElements["button"] = <button></button>;
+```
+
+위처럼 `<button>` 이런 간단한 태그를 타입지정하고 싶으면 저렇게 쓰십시오.  
+참고로 React.createElement('div') 이건 `<div></div>` 가 남습니다.  
+JSX 안쓰면 createElement 라는 이상한 함수로 리액트 코딩하셔야합니다.
+
+## function component 타입지정
+
+```js
+function App() {
+  return <div>안녕하세요</div>;
+}
+```
+
+리액트의 컴포넌트는 이렇게 생겼습니다.  
+컴포넌트 타입지정은 어떻게 하게요  
+당연히 함수니까 파라미터와 return 타입지정하면 됩니다.  
+파라미터는 항상 props기 때문에 props가 어떻게 생겼는지 조사해서 타입지정하시면 되고  
+근데 컴포넌트는 JSX를 return 한다는게 문제입니다. return 타입에 대체 뭘 기입해야하죠
+
+```js
+type AppProps = {
+  name: string,
+};
+
+function App(props: AppProps): JSX.Element {
+  return <div>{message}</div>;
+}
+```
+
+props 파라미터는 어떻게 생겼는지 조사해서 알아서 타입지정해주면 되고  
+return 타입은 JSX.Element 써주시면 됩니다. 근데 생략해도 자동으로 타입지정됩니다.
+
+## state 문법 사용시 타입지정
+
+state 만들 땐 그냥 자동으로 타입이 할당되어서 걱정할 필요는 없습니다.  
+state 타입이 나중에 변화할 수 있다고요? 그런 경우는 흔치 않겠지만 그러면 미리 지정하십시오.
+
+```js
+const [user, setUser] = (useState < string) | (null > "kim");
+```
+
+그냥 <> 열고 타입넣으시면 됩니다.  
+Generic 문법을 이용해서 타입을 useState함수에 집어넣는 식으로 설정하면 됩니다.
+
+## type assertion 문법 사용할 때
+
+```js
+let code: any = 123;
+let employeeCode = <number> code; //안됩니다
+```
+
+assertion 하고 싶으면 as 또는 <> 쓰면 되는데  
+리액트에서 컴포넌트로 오해할 수 있어서 꺾쇠 괄호는 리액트에서 쓰지않습니다.  
+as 키워드만 씁시다.  
+하지만 as 키워드는 타입스크립트 보안해제기 때문에 타입이 100% 확실할 때만 사용하도록 합시다.  
+결론은 타입스크립트 쓴다고 뭔가 리액트 개발방식이 달라지는게 아니라  
+함수 변수 정의부분 타입지정을 할 수 있다는 것만 달라집니다.  
+"props엔 무조건 { name : string }만 들어올 수 있습니다"  
+이런 문법을 작성하는게 끝이고 그냥 에디터 부가기능 수준일 뿐임  
+여러분이 변수 함수 class 타입지정 하는 법을 잘 배우셨으면 누구나 응용가능합니다.
+
+# array 자료에 붙일 수 있는 tuple type
+
+array 자료에 타입을 지정하고 싶으면 string[] 이렇게 기입하라고 했습니다.  
+하지만 보다 구체적으로 타입지정하고싶을 때가 있습니다.  
+"첫 자료는 무조건 string, 둘째 자료는 무조건 number인 array"  
+이런 것도 가능합니다. tuple 타입 쓰면 됩니다.
+
+tuple type은 array에 붙일 수 있는 타입인데  
+자료의 위치까지 정확히 지정할 수 있는 타입입니다.
+
+```js
+let 멍멍이: [string, boolean];
+멍멍이 = ["dog", true];
+```
+
+[ ] 괄호 안에 타입 적으시면 tuple type이 됩니다.  
+[ ] 안에 차례로 세부 타입을 기입하면 됩니다.  
+그럼 정말 첫 자료는 무조건 string, 둘째 자료는 무조건 boolean만 허용해주고 다른게 들어오면 에러로 잡아줍니다.
+
+## Tuple 응용 : rest parameter
+
+```js
+function 함수(...x: string[]) {
+  console.log(x);
+}
+```
+
+함수 정의할 때 파라미터 왼쪽에 점3개 붙이면 rest parameter라고 했습니다.  
+"여기에 파라미터가 몇 개 들어올지 아직 몰라요~" 라는 뜻으로 사용하는 파라미터입니다.  
+x 자리에 입력한 파라미터들은 array에 담겨오기 때문에 array 처럼 타입지정을 해주는게 일반적입니다.  
+근데 tuple을 이용해서 타입지정을 해주는 것도 가능
+
+```js
+function 함수(...x: [string, number]) {
+  console.log(x);
+}
+함수("kim", 123); //가능
+함수("kim", 123, 456); //에러
+함수("kim", "park"); //에러
+```
+
+rest parameter를 엄격하게 사용가능합니다.  
+일반 파라미터 2개 넣는 것과 기능상 다를 바는 없는데  
+차이는 rest parameter 쓰시면 파라미터가 전부 array에 담겨서 오는게 차이입니다.
+
+## tuple 안에도 옵션가능
+
+```js
+type Num = [number, number?, number?];
+let 변수1: Num = [10];
+let 변수2: Num = [10, 20];
+let 변수3: Num = [10, 20, 10];
+```
+
+물음표 넣어서 옵션이라고 표현가능합니다.  
+하지만 이런 코드는 어떻습니까.
+
+```js
+type Num = [number, number?, number];
+```
+
+이거 말이 됩니까  
+array 중간에 있는 자료는 옵션이라고요?  
+중간을 빼고 만들 수도 없고 뭔가 논리적으로 이상합니다.
+
+그래서 ? 옵션기호는 뒤에만 붙일 수 있습니다.  
+물음표 2개 쓰고 싶으시면 뒤에서 2개만 붙일 수 있음  
+물음표 100개 쓰고 싶으시면 뒤에서 100개만 붙일 수 있음
+
+## array 두개를 spread 연산자로 합치는 경우 타입지정은?
+
+```js
+let arr = [1, 2, 3];
+let arr2 = [4, 5, ...arr];
+```
+
+점 3개 spread 연산자를 사용하면 array의 괄호를 벗겨준다고 했습니다.  
+그래서 위 예제처럼 쓰면 array 두개를 합치고 그럴 수 있습니다.  
+근데 그럼 arr2 타입지정은 대체 어떻게 해야할까요 tuple 타입으로요.  
+arr 자리에 자료 몇개가 들어올지도 모르는 상황이라면요
+
+```js
+let arr = [1,2,3]
+let arr2 :[number, number, ...number[]] = [4,5, ...arr]
+```
+
+tuple 타입에 점3개 붙이면 됩니다.  
+점3개 붙이면 아직 여기에 몇개의 자료가 들어올지 모른다는  
+rest parameter 같은 느낌으로다가 활용가능합니다.
+
+```js
+let arr2 :[number, number, ...number[]] = [4,5,6,7,8,9,10]
+```
+
+rest parameter 처럼 맘껏 집어넣을 수 있습니다.
+
+# 외부 파일 이용시 declare & 이상한 특징인 ambient module
+
+님들이 코드를 짜다보면 외부 자바스크립트 파일을 이용하는 경우가 있을 겁니다.  
+import 문법으로 가져다가 쓰면 되는데  
+근데 안타깝게도 그 파일이 Typescript로 작성된게 아니라 JavaScript 로 작성된 파일이면  
+무수한 에러가 여러분들을 기다리고 있습니다.  
+당연히 타입지정이 안되어있으니까요.
+
+예를 들어서 data.js 라는 파일이 있다고 칩시다.  
+그리고 index.ts 파일에서 저기 있던 a라는 변수를 쓰고싶으면 어떻게 합니까.
+
+```js
+data.js;
+
+var a = 10;
+var b = { name: "kim" };
+
+index.ts;
+
+console.log(a + 1);
+```
+
+간단한 html css js 개발시엔 index.html에 저 파일 두개를 첨부하면 됩니다.
+
+```js
+(index.html)
+
+<script src="data.js"></script>
+<script src="index.js"></script>  //index.ts에서 변환된 js 파일
+```
+
+이게 원래 프론트엔드에서 import하는 방법입니다.  
+아무튼 콘솔창에 11 잘 나옵니다.  
+근데 타입스크립트 파일에선 a가 정의가 안되었다고 에러가 나는군요.
+
+왜냐면 저거 `<script>` 태그로 자바스크립트 파일 2개를 연결해서 쓰는건 html 입장이고  
+ts 입장에서는 a라는 변수를 import 해온 적이 없기 때문에 에러가 나는 것입니다.  
+컴파일러가 징징대는걸 제압해봅시다.
+
+## declare 키워드로 재정의하기
+
+declare 쓰면 이미 정의된 변수나 함수를 재정의할 수 있습니다.  
+물론 타입도 포함해서 재정의가 가능합니다.
+
+```js
+(data.js)
+
+var a = 10;
+var b = {name :'kim'};
+
+
+(index.ts)
+
+declare let a :number;
+console.log(a + 1);
+```
+
+declare 우측에 let a 같은 변수 정의 집어넣으면 됩니다.  
+"a 라는 변수를 이 파일에서 잠깐 정의해주세요" 라는 뜻입니다.  
+"a 라는 변수는 분명 어딘가에 있긴 하니까 그만 징징대세요" 라는 뜻이 더 맞습니다.  
+그래서 js파일 변수를 가져다 쓰는데 '타입에러나 변수없다는 에러'를 방지하고 싶으면  
+징징대는걸 막을 수 있는 공갈젖꼭지 declare 키워드를 씁시다.
+
+(특징) declare 이게 붙은 코드들은 js로 변환되지 않습니다.  
+그냥 컴파일러에게 힌트를 주는 역할의 코드라서 그렇습니다.
+
+그래서 자바스크립트로만 작성된 외부 라이브러리들을 쓸 때도 나름 유용합니다.  
+타입스크립트 버전이 없다면 직접 declare로 타입작성하면 됩니다.  
+ts 파일들은 변수만들 때 타입까먹어도 자동으로 타입지정이 되어있으니 굳이 쓸 이유는 없습니다
+
+근데 여러분이 tsconfig.json 안에 allowJs 옵션을 true로 켜두면  
+js파일도 타입지정이 알아서 implicit 하게 됩니다.  
+리액트 같은 프로젝트에서 유용
+
+## TS의 이상한 특징 : Ambient Module
+
+타입스크립트가 제공하는 이상한 기능이 있습니다.  
+바로 import export 없이도 타입들을 다른 파일에서 가져다쓸 수 있다는 점인데  
+그니까 a.ts 에 있던 변수나 타입정의를 b.ts 에서도 아무런 설정없이 그냥 가져다쓸 수 있습니다.
+
+```js
+data.ts;
+
+type Age = number;
+let 나이: Age = 20;
+
+index.ts;
+
+console.log(나이 + 1); //가능
+let 철수: Age = 30; //가능
+```
+
+지금 같은 폴더에 아무데나 data.ts 만들고 타입, 변수 이런거 넣어보십시오.  
+그럼 index.ts에서도 data.ts에 있던 변수와 타입을 자유롭게 사용가능합니다.
+import export 그런거 안해도 같은 폴더에 있는 ts 파일은 그냥 사용가능합니다.  
+왜냐면 그냥 ts 파일에 대충 입력한 변수와 타입들은 전부 global 변수 취급을 받습니다.  
+전역으로 쓸 수 있는 파일을 전문용어로 ambient module 이라고 칭합니다.  
+(타입스크립트에서 let name 이라는 이름의 변수생성이 안되는 이유를 여기서 찾을 수 있습니다. 어디선가 기본으로 let name 이미 쓰고있음)
+
+반면에 import 혹은 export 키워드가 들어간 ts 파일은 다릅니다.  
+import / export 키워드가 적어도 하나 있으면 그 파일은 로컬 모듈이 되고  
+거기 있는 모든 변수는 export를 해줘야 다른 파일에서 사용가능합니다.  
+그래서 타입스크립트 파일이 다른 파일에 영향끼치는걸 막고싶으면 export 키워드를 강제로 추가하면 됩니다.
+
+```js
+data.ts;
+export {};
+type Age = number;
+let 나이: Age = 20;
+index.ts;
+
+console.log(나이 + 1); //불가능
+let 철수: Age = 30; //불가능
+```
+
+이러면 data.ts에 있던 파일은 더 이상 글로벌 모듈 (ambient module)이 되지 않으며  
+다른 파일에서 함부로 가져다쓸 수 없습니다. import export 써야함
+
+대체 왜 이딴식인가 생각을 해보면 옛날 js 파일과의 호환성 때문에 그런 것 같은데 약간 불편할 때가 많습니다.
+
+## delare global
+
+ts 파일에 import export 문법이 없으면 글로벌 모듈이 됩니다.  
+ts 파일에 import export 문법이 있으면 로컬 모듈입니다.  
+근데 로컬 모듈에서 갑자기 전역으로 변수를 만들고 싶을 때가 있습니다.  
+실은 별로 없는데 아무튼 있다고 가정합시다.  
+따로 설정 없어도 프로젝트 내의 모든 파일에서 이용가능한 타입을 만들고 싶으면 이걸 붙여서 만드시면 됩니다.
+
+```js
+declare global {
+  type Dog = string;
+}
+```
+
+이런 코드를 로컬 파일에 적어두시면 모든 파일에서 Dog 타입을 이용가능합니다.  
+이것도 일종의 namespace 문법인데 여기다 적은건 global 이라는 이름의 namespace에 추가된다고 보시면 됩니다.  
+그리고 global namespace는 모든 파일에서 기본적으로 이용이 가능하고요.  
+아무튼 로컬 모듈에서 전역변수 만들고 싶을 때 씁시다.
+
+# d.ts 파일 이용하기
+
+declare 키워드를 배웠으면 이제 d.ts 파일도 이해가 갑니다.  
+코드짜다보면 어디선가 d.ts 파일이 등장합니다.  
+이 파일은 타입만 저장할 수 있는 파일형식입니다. (그래서 definition의 약자인 d가 들어감)  
+그리고 자바스크립트로 컴파일되지 않습니다.
+
+어디다 쓰냐면
+
+1. 타입정의만 따로 저장해놓고 import 해서 쓰려고
+
+2. 프로젝트에서 사용하는 타입을 쭉 정리해놓을 레퍼런스용으로 사용
+
+## 타입만 따로 d.ts에 모아놓으려면
+
+1. 어쩌구.d.ts 라고 작성하신 파일은 타입 정의만 넣을 수 있습니다.  
+   type 키워드, interface 이런걸로요.  
+   함수의 경우 함수에 { } 중괄호 붙이기는 불가능합니다. 파라미터 & return 타입만 지정가능합니다.
+
+```js
+export type Age = number;
+export type multiply = (x: number, y: number) => number;
+export interface Person {
+  name: string;
+}
+```
+
+2. 정의해둔 타입은 export 해서 써야합니다.  
+   d.ts 파일은 ts 파일이 아니기 때문에 그냥 써도 ambient module이 되지 않습니다.  
+   그래서 export를 추가해줘야 다른 ts 파일에서 가져다쓸 수 있습니다.
+
+3. 한 번에 많은 타입을 export 하고 싶은 경우 namespace에 담든가  
+   아니면 자바스크립트 배운 사람처럼 import \* as 어쩌구 문법을 쓰십시오.
+
+d.ts 파일을 레퍼런스용으로 쓰려면  
+ts파일마다 d.ts 파일을 자동생성하시면 됩니다.
+
+```js
+(tsconfig.json)
+
+{
+    "compilerOptions": {
+        "target": "es5",
+        "module": "es6",
+        "declaration": true,
+    }
+}
+```
+
+tsconfig에다가 declaration 옵션을 true로 바꿔주면 됩니다.  
+그럼 저장시 자동으로 ts파일마다 d.ts 파일이 옆에 생성됩니다.  
+열어보시면 타입정의만 쭉 정리되어서 담겨있음
+
+```js
+index.ts;
+
+let 이름: string = "kim";
+let 나이 = 20;
+interface Person {
+  name: string;
+}
+let 사람: Person = { name: "park" };
+```
+
+이렇게 작성하면
+
+```js
+(index.d.ts)
+
+declare let 이름: string;
+declare let 나이: number;
+interface Person {
+    name: string;
+}
+declare let 사람: Person;
+```
+
+이런 파일이 생성됩니다. (안생기면 import 문법 다 지워보셈)  
+어쩌구.d.ts 라는 파일엔 어쩌구.ts 파일에 있는 모든 변수와 함수 타입정의가 들어있습니다.  
+자동생성의 경우 따로 수정하거나 그럴 순 없어서 (수정해도 어쩌구.ts 저장시 자동생성이라 의미없음)  
+그냥 레퍼런스용으로 사용하거나 하시면 됩니다.
+
+## export 없이 d.ts 파일을 글로벌 모듈 만들기
+
+원래 d.ts 파일은 import export 없어도 로컬모듈입니다.  
+그래서 다른 ts파일에서 import를 해서 쓸 수 밖에 없는데  
+이게 귀찮으면 d.ts를 글로벌 모듈로 만들어보십시오.  
+파일이 많아지면 섞이기 때문에 굳이 왜 하나 싶지만
+
+프로젝트 내에 types/common 이런 폴더 두개를 만드시고  
+tsconfig.json 파일에 `"typeRoots": ["./types"]` 이런 옵션을 추가해주면 됩니다.  
+이러면 ts 파일 작성할 때 타입없으면 자동으로 여기서 타입 찾아서 적용해줌
+
+- 다만 이걸 쓸 경우 파일명.d.ts 자동생성 기능은 끄는게 좋을 듯 합니다.
+
+- d.ts 파일명은 기존 ts 파일명과 안겹치게 작성하는게 좋습니다.
+
+- 하지만 이런거 쓰다가 로컬 타입과 저런 글로벌 타입이 겹치면 어쩌쥬 역시 import export가 안전합니다.
+
+## 유명한 JS 라이브러리들은 d.ts 파일을 제공
+
+님들이 jQuery 혹은 Bootstrap 애니메이션 라이브러리를 가져다 쓴다고 합시다.  
+근데 이건 당연히 .js 로 끝나는 자바스크립트 파일이겠죠?  
+그럼 당연히 ts 파일에서 쓰려면 에러가 나겠죠?
+
+그럼 여러분들이 직접 jquery.d.ts 파일을 만들어서 타입정의를 하시거나 그러면 되는데  
+근데 유명한 라이브러리들은 전부 d.ts 파일을 누군가 만들어 놨기 때문에  
+그거 찾아서 다운받거나 하시면 됩니다  
+[Definitely Typed](https://github.com/DefinitelyTyped/DefinitelyTyped) 여기가 주로 쓰는 라이브러리 모아놓은 github repository인데  
+아마 대부분 라이브러리의 타입정의 파일을 찾을 수 있을 겁니다.
+
+근데 요즘은 npm으로 라이브러리 설치시 타입스크립트 타입정의된 버전을 따로 찾아서 설치하실 수 있습니다.  
+[TypeSearch](https://www.typescriptlang.org/dt/search?search=) 여기 들어가면 타입정의된 npm 패키지 찾아볼 수 있음  
+타입이 정의된 라이브러리를 npm으로 설치하면  
+node_modules/@types 이런 경로에 타입이 설치됩니다.  
+그리고 타입스크립트 컴파일러는 자동으로 여기 있는 타입 파일을 참고해서 타입을 가져오게 되어있습니다.
+
+(참고) "typeRoots" 옵션이 있을 경우 node_modules/@types 폴더를 추가해야합니다. 아니면 그냥 "typeRoots" 옵션을 제거해보자
+
+혹은 따로 타입부분만 설치할 수도 있습니다.  
+예를 들어 타입파일이 제공되지 않는 jQuery 같은 경우
+
+```
+npm install --save @types/jquery
+```
+
+이렇게 강제로 설치하시면 이제 jQuery 문법 사용할 때 타입정의 안하셔도 됩니다.
