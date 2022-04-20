@@ -2658,3 +2658,425 @@ npm install --save @types/jquery
 ```
 
 이렇게 강제로 설치하시면 이제 jQuery 문법 사용할 때 타입정의 안하셔도 됩니다.
+
+# implements
+
+interface는 object 타입지정할 때 쓴다고 배워봤습니다.  
+하지만 용도가 하나 더 있는데 class 타입을 확인하고 싶을 때도 interface 문법을 사용할 수 있습니다.  
+근데 implements 키워드도 필요함
+
+class를 하나 만들어봅시다.
+
+```js
+class Car {
+  model: string;
+  price: number = 1000;
+  constructor(a: string) {
+    this.model = a;
+  }
+}
+let 붕붕이 = new Car("morning");
+```
+
+class Car 로부터 생산되는 object들은 model과 price 속성을 가지게 됩니다.  
+근데 class가 model, price 속성을 가지고 있는지 타입으로 확인하고 싶으면 어떻게합니까.  
+그럴 경우 interface + implements 키워드로 확인하면 됩니다.
+
+```js
+interface CarType {
+  model: string;
+  price: number;
+}
+
+class Car implements CarType {
+  model: string;
+  price: number = 1000;
+  constructor(a: string) {
+    this.model = a;
+  }
+}
+let 붕붕이 = new Car("morning");
+```
+
+class 이름 우측에 implements를 쓰고 interface 이름을 쓰면  
+"이 class가 이 interface에 있는 속성을 다 들고있냐"  
+라고 확인이 가능합니다.  
+그래서 다 갖고 있으면 별말 안해주고  
+혹여나 빠진 속성이 있으면 에러로 알려줍니다.
+
+implements는 타입지정문법이 아닙니다  
+implements라는건 interface에 들어있는 속성을 가지고 있는지 확인만하라는 뜻입니다.  
+class에다가 타입을 할당하고 변형시키는 키워드는 아닙니다.
+
+```js
+interface CarType {
+  model: string;
+  tax: (price: number) => number;
+}
+
+class Car implements CarType {
+  model; ///any 타입됨
+  tax(a) {
+    ///a 파라미터는 any 타입됨
+    return a * 0.1;
+  }
+}
+```
+
+지금 CarType을 implements 했냐고 써봤습니다.
+근데 CarType에 있던 model : string 이런게 반영되는건 아닙니다. class 안에서의 model은 any 타입임  
+class 함수도 마찬가지로 함수에 있던 number 타입이 전혀 반영되지 않습니다.  
+결론은 implements는 class의 타입을 체크하는 용도지 할당하는게 아님을 명심합시다.
+
+# object index signatures
+
+object 자료에 타입을 미리 만들어주고 싶은데
+
+1. object 자료에 어떤 속성들이 들어올 수 있는지 아직 모르는 경우
+
+2. 타입지정할 속성이 너무 많은 경우
+
+index signatures를 사용하면 편리합니다.
+
+이렇게 작성해봅시다.
+
+```js
+interface StringOnly {
+  [key: string]: string;
+}
+
+let obj: StringOnly = {
+  name: "kim",
+  age: "20",
+  location: "seoul",
+};
+```
+
+StringOnly 라는 interface를 하나 만들었습니다.  
+근데 안에 타입을 적을 때 [어쩌구 : string] : string 이렇게 적으면  
+모든 string으로 들어오는 key값에 할당되는 value는 string 이어야합니다~ 라는 타입이 됩니다.  
+쉽게 말하면 { 모든속성 : string } 이라는 뜻과 동일합니다.  
+이제 이 object에 들어오는 모든 속성은 우측에 string을 가져야합니다.  
+딱 코드 한 줄로 모든 속성 타입지정이 가능해서 편리할 수 있습니다.
+
+```js
+interface StringOnly {
+  age: number; ///에러남 ㅅㄱ
+  [key: string]: string;
+}
+
+interface StringOnly {
+  age: string; ///가능
+  [key: string]: string;
+}
+```
+
+[ ] 이 문법은 다른 속성과 함께 사용할 수 있지만  
+{ 모든 속성 : string, age : number } 이건 뭔가 논리적으로 말이 되지 않아 금지시킵니다.
+
+```js
+interface StringOnly {
+  age: number; ///가능
+  [key: string]: string | number;
+}
+```
+
+이건 가능합니다.  
+{ 모든속성 : string | number, age : number } 이렇게 해주면 논리적으로 말이 됩니다.
+
+## array 형태도 가능
+
+님들 자바스크립트에서 array와 object는 실은 별 다를게 없는 같은 자료형입니다.
+
+```js
+let obj = {
+  0 : 'kim'
+  1 : '20',
+  2 : 'seoul'
+}
+console.log(obj[2]) //이러면 'seoul' 출력됨
+```
+
+위 코드를 보면 array랑 똑같이 사용가능하죠?  
+아무튼 object로도 array 처럼 사용가능  
+(object 자료도 대괄호쳐서 안에 있는 데이터 뽑을 수 있습니다)
+
+```js
+interface StringOnly {
+  [key: number]: string,
+}
+
+let obj :StringOnly = {
+  0 : 'kim'
+  1 : '20',
+  2 : 'seoul'
+}
+```
+
+[ ] 여기 안에 key값의 타입을 number 로 지정할 수도 있습니다. (대괄호 안엔 string 또는 number만 가능)  
+그럼 이제 object의 키값이 숫자로 들어오는 경우 value로 string을 가져야한다는 타입입니다.  
+쉽게 말하면 { 모든숫자속성 : string } 이라는 뜻과 동일합니다.  
+그래서 array처럼 쓰고싶은 object가 있으면 저렇게 타입지정도 가능하다는 소리입니다.  
+숫자 key만 넣을거면 그냥 array + tuple 타입 쓰는게 더 직관적일 수 있습니다.
+
+## Recursive Index Signatures
+
+여러분 이런거 타입지정할 생각 해본 적 있습니까
+
+```js
+let obj = {
+  "font-size": {
+    "font-size": {
+      "font-size": 14,
+    },
+  },
+};
+```
+
+object 안에 object 안에 object가 들어있습니다.  
+실제로는 별로 쓸모가 없어보이지만 아무튼 중첩된 object들을 한 번에 타입지정하려면 어떻게 해야할까요.  
+직접 interface 안에 {} 이걸 3번 중첩되게 만드셔도 되긴 하지만
+
+```js
+interface MyType {
+  "font-size": {
+    "font-size": {
+      "font-size": number,
+    },
+  };
+}
+```
+
+귀찮을 경우 이런 테크닉을 사용할 수 있습니다.
+
+```js
+interface MyType {
+  "font-size": MyType | number;
+}
+
+let obj: MyType = {
+  "font-size": {
+    "font-size": {
+      "font-size": 14,
+    },
+  },
+};
+```
+
+MyType을 만들었는데  
+'font-size' 속성은 MyType 이거랑 똑같이 생겼다고 타입을 만들었습니다.  
+그럼 이제 타입 귀찮게 길게 중첩해서 안써도 됩니다.  
+그리고 object자료가 4중첩 5중첩 X중첩되어도 대응가능
+
+# object 타입 변환기 만들기
+
+가끔 object를 다른 타입으로 변환하고 싶을 때가 있습니다.  
+모든 속성들에 문자가 들어오는 타입을 갑자기 숫자가 들어오도록 바꾸고 싶을 때요.  
+그럴 땐 처음부터 타입을 다시 작성하는 것이 아니라 mapping을 이용하면 됩니다.
+
+그 전에 간단히 keyof 연산자를 짚고 넘어가야합니다.  
+keyof는 object 타입에 사용하면 object 타입이 가지고 있는 모든 key값을 union type으로 합쳐서 내보내줍니다.  
+object의 key를 뽑아서 새로운 타입을 만들고 싶을 때 사용하는 연산자입니다.  
+
+```js
+interface Person {
+  age: number;
+  name: string;
+}
+type PersonKeys = keyof Person;   //"age" | "name" 타입됩니다
+let a :PersonKeys = 'age'; //가능
+let b :PersonKeys = 'ageeee'; //불가능
+```
+
+Person 타입은 age, name 이라는 key를 가지고 있었기 때문에   
+이제 PersonKeys는 정말 'age' | 'name' 타입이 됩니다.  
+literal type이네요  
+
+```js
+interface Person {
+  [key :string]: number;
+}
+type PersonKeys = keyof Person;   //string | number 타입됩니다
+let a :PersonKeys = 'age'; //가능
+let b :PersonKeys = 'ageeee'; //가능
+```
+
+Person 타입은 모든 문자 key를 가질 수 있기 때문에  
+keyof Person 이렇게 하면 string 타입이 됩니다.  
+실은 string | number 타입이 됩니다. object key값에 숫자 넣어도 문자로 치환되어서 그렇습니다.  
+[key :number] 이렇게 숫자만 들어올 수 있다고 해놓으면 keyof Person 이렇게 하면 number 타입이 됩니다.  
+
+(참고) 쌩자바스크립트는 .keys() 이런거 붙이면 key값을 array자료로 담아줍니다.
+
+## Mapped Types
+
+가끔 object안에 있는 속성들을 다른 타입으로 한번에 싸그리 변환하고 싶을 때가 있습니다.  
+그럴 때 유용한 타입변환기를 만들어봅시다.  
+
+```js
+type Car = {
+  color: boolean,
+  model : boolean,
+  price : boolean | number,
+}; 
+```
+
+팀원이 만든 쓰레기같은 Car 타입이 있다고 합시다.  
+여기 있는 모든 속성을 string 타입으로 바꾸고 싶어진 것입니다.  
+속성이 3개면 직접 다시 만들어도 되겠지만 100개면 어쩌죠? 매우 귀찮습니다.   
+
+```js
+type Car = {
+  color: boolean,
+  model : boolean,
+  price : boolean | number,
+};
+
+type TypeChanger <MyType> = {
+  [key in keyof MyType]: string;
+};
+```
+
+그럴 땐 TypeChanger 처럼 생긴 타입을 만들어봅시다.  
+그냥 쓰는 법이 정해져있는데  
+[ 자유작명 in keyof 타입파라미터 ] : 원하는 타입  
+이렇게 입력하시면 object 타입을 입력했을 때 속성명은 그대로지만 다른 타입으로 변환해주는 변환기를 만들 수 있습니다.  
+
+in 키워드는 왼쪽이 오른쪽에 들어있냐라는 뜻이고  
+keyof는 오브젝트 타입에서 key값만 union type으로 뽑아주는 역할이라 머리쓰면 이해는 될듯요  
+
+```js
+type Car = {
+  color: boolean,
+  model : boolean,
+  price : boolean | number,
+};
+
+type TypeChanger <MyType> = {
+  [key in keyof MyType]: string;
+};
+
+type 새로운타입 = TypeChanger<Car>;
+
+let obj :새로운타입 = {
+  color: 'red',
+  model : 'kia',
+  price : '300',
+}
+```
+
+이렇게 하면 이제 새로운타입은 color, model, price 속성을 가지고 있으며 전부 string 타입이 됩니다.  
+key 값이 100개 있는 object 타입을 변경할 일이 있으면 쓰도록 합시다.   
+
+# 조건문으로 타입만들기 & infer
+
+타입만들 때 초보처럼 type Age = string 이렇게 하드코딩하는 법만 배워봤습니다.  
+근데 if 조건문처럼 "조건에 따라서 이럴 경우 string, 저럴 경우 number"이런 식으로 타입지정도 가능합니다.  
+하지만 자주 쓰는 내용은 아니기 때문에 어짜피 다음날 까먹습니다.  
+이런게 있다고 기억해두고 나중에 필요하면 찾아서 쓰는게 좋은 방법입니다.   
+
+자바스크립트 기본 문법 중에 삼항연산자라는게 있습니다.  
+if문 대용품인데 평소에 if가 들어갈 수 없는 곳들에 간략하게 if문을 넣을 수 있는 방법입니다.  
+
+```
+조건문 ? 참일때실행할코드 : 거짓일때실행할코드
+3 > 1 ? console.log('맞아요') : console.log('아님')
+```
+이렇게 if문처럼 사용합니다.  
+기본 문법 잠깐 짚어봤습니다.  
+
+## 조건부로 타입만들기
+
+예를 들면 이런 코드가 있다고 칩시다.  
+
+```js
+type Age<T> = T;
+이러면 이제 Age<number> 이렇게 쓰면 그 자리에 number가 남습니다.
+```
+
+(타입변수에도 타입파라미터 넣기 가능)
+
+근데 이걸 이렇게 바꿔봅시다.  
+"타입파라미터 자리에 string 타입을 집어넣으면 string 부여해주시고 그게 아니면 전부 unknown 부여해주셈"   
+if문을 쓰자는 겁니다. 만약 T가 string이면 string, 그게 아니면 unknown 를 남기도록요   
+
+타입 조건식은 주로 extends 키워드와 삼항연산자를 이용합니다.  
+"extends는 왼쪽이 오른쪽의 성질을 가지고 있냐" 라는 뜻으로 사용할 수 있기 때문에  
+나름 조건식 용도로 사용가능합니다. 비유하자면 수학에서 쓰는 ⊂ 이런 기호 역할이겠군요  
+
+```js
+type Age<T> = T extends string ? string : unknown;
+let age : Age<string> //age는 string 타입
+let age2 : Age<number> //age는 unknown 타입
+```
+
+그래서 이렇게 썼습니다.  
+"T라는 파라미터가 string 성질 가지고 있냐? 그러면 string 남기고 아니면 unknown 남겨라"  
+그랬더니 정말 `<string>` 집어넣으면 string, `<number>` 이렇게 집어넣으면 unknown을 남겨줍니다.  
+이게 if문 쓰는 방법입니다.  
+아직 타입이 확실하지 않은 <타입파라미터> 다룰 때 많이 사용하겠죠?  
+
+Q. 그럼 파라미터로 array 자료를 입력하면 array의 첫 자료의 타입을 그대로 남겨주고,  
+array 자료가 아니라 다른걸 입력하면 any 타입을 남겨주는 타입은 어떻게 만들면 될까요?  
+
+```js
+let age1 :FirstItem<string[]>;
+let age2 :FirstItem<number>; 
+```
+
+이러면 age1의 타입은 string, age2의 타입은 any가 되어야합니다.  
+FirstItem이라는 타입을 알아서 만들어봅시다.  
+
+```js
+type FirstItem<T> = T extends any[] ? T[0] : any 
+
+let age1 :FirstItem<string[]>;
+let age2 :FirstItem<number>; 
+```
+
+이러면 정말 age1의 타입은 string, age2의 타입은 any가 됩니다.  
+
+## infer 키워드
+
+조건문에 사용할 수 있는 특별한 infer 키워드가 있습니다.  
+infer 키워드는 지금 입력한 타입을 변수로 만들어주는 키워드입니다.  
+평상시에 굳이 쓸 이유는 없는데 나오면 읽을 줄은 알아야하니 간단히 알아보도록 합시다.   
+
+```js
+type Person<T> = T extends infer R ? R : unknown; 
+type 새타입 = Person<string> // 새타입은 string 타입입니다 
+```
+
+1. infer 키워드는 조건문 안에서만 사용가능합니다.  
+
+2. infer 우측에 자유롭게 작명해주면 타입을 T에서 유추해서 R이라는 변수에 집어넣어라~ 라는 뜻입니다.  
+
+그래서 위의 예제에서 `<string>` 이렇게 타입파라미터자리에 string 집어넣으면 R은 string이 됩니다.  
+
+3. R을 조건식 안에서 맘대로 사용가능합니다.  
+
+이런 식으로 타입파라미터에서 타입을 추출해서 쓰고싶을 때 쓰는 키워드라고 보시면 됩니다.   
+근데 무슨 용도로 쓰는지 알아야 나중에 코드짤 때 활용이 가능하기 때문에 어디다 쓰냐면   
+
+1. array 안에 있던 타입이 어떤 타입인지 뽑아서 변수로 만들어줄 수 있습니다.
+
+```js
+type 타입추출<T> = T extends (infer R)[] ? R : unknown; 
+type NewType = 타입추출< boolean[] > // NewType 은 boolean 타입입니다 
+```
+이런 식으로도 사용할 수 있는데 
+(infer R)[] 이렇게 하면 array가 가지고 있던 타입부분만 쏙 뽑아서 R 변수에 할당할 수 있습니다.  
+
+2. 함수의 return 타입이 어떤 타입인지 뽑아서 변수로 만들어줄 수 있습니다.  
+
+```js
+type 타입추출<T> = T extends ( ()=> infer R ) ? R : unknown; 
+type NewType = 타입추출< () => number > // NewType은 number 타입입니다 
+```
+
+이런 식으로도 사용할 수 있는데   
+타입파라미터에 <함수>를 집어넣었습니다. 그 타입파라미터에 있는 return 타입을 쏙 뽑아서 R이라는 변수에 담는 코드입니다.  
+일정한 규칙이 있다기 보다 그냥 타입을 추출하는 식으로 이해하면 되겠습니다.   
+
+실은 이런 것도 직접 만들어쓸 필요는 없고  
+ReturnType<> 이런 예약 타입이 있는데 여기에 함수타입 집어넣으면 return 타입만 뽑아서 알려줌   
