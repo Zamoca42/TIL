@@ -183,7 +183,7 @@ mutation {
 
 # 프로젝트 시작하기
 
->GraphQL을 사용하는 백엔드 서버
+> GraphQL을 사용하는 백엔드 서버
 
 ## a.프로젝트 생성
 
@@ -208,8 +208,8 @@ npm init
 2. index.js
 
 ```js
-const database = require('./database')
-console.log(database)
+const database = require("./database");
+console.log(database);
 ```
 
 3. 필요 모듈 설치 뒤 테스트
@@ -223,11 +223,9 @@ npm start
 
 1. 아폴로 서버 실행
 
-       
-
 ```js
-const database = require('./database')
-const { ApolloServer, gql } = require('apollo-server')
+const database = require("./database");
+const { ApolloServer, gql } = require("apollo-server");
 const typeDefs = gql`
   type Query {
     teams: [Team]
@@ -241,30 +239,30 @@ const typeDefs = gql`
     cleaning_duty: String
     project: String
   }
-`
+`;
 const resolvers = {
   Query: {
-    teams: () => database.teams
-  }
-}
-const server = new ApolloServer({ typeDefs, resolvers })
+    teams: () => database.teams,
+  },
+};
+const server = new ApolloServer({ typeDefs, resolvers });
 server.listen().then(({ url }) => {
-console.log(`🚀  Server ready at ${url}`)
-})
+  console.log(`🚀  Server ready at ${url}`);
+});
 ```
 
-코드 설명  
+코드 설명
 
- - typeDef와 resolver를 인자로 받아 서버생성
-    - typeDef
-        - GraphQL 명세에서 사용될 데이터, 요청의 타입 지정
-        - gql(template literal tag)로 생성
-    - resolver
-        - 서비스의 액션들을 함수로 지정
-        - 요청에 따라 데이터를 반환, 입력, 수정, 삭제
-    - GraphQL Playground
-        - 작성한 GraphQL type, resolver 명세 확인
-        - 데이터 요청 및 전송 테스트
+- typeDef와 resolver를 인자로 받아 서버생성
+  - typeDef
+    - GraphQL 명세에서 사용될 데이터, 요청의 타입 지정
+    - gql(template literal tag)로 생성
+  - resolver
+    - 서비스의 액션들을 함수로 지정
+    - 요청에 따라 데이터를 반환, 입력, 수정, 삭제
+  - GraphQL Playground
+    - 작성한 GraphQL type, resolver 명세 확인
+    - 데이터 요청 및 전송 테스트
 
 ```
 npm start
@@ -285,3 +283,322 @@ query {
   }
 }
 ```
+
+# Query 구현하기
+
+## Query 루트 타입
+
+```
+type Query {
+    teams: [Team]
+}
+```
+
+- 자료요청에 사용될 쿼리들을 정의
+- 쿼리 명령문마다 반환될 데이터 형태를 지정
+
+## Type 살펴보기
+
+```js
+type Team {
+    id: Int
+    manager: String
+    office: String
+    extension_number: String
+    mascot: String
+    cleaning_duty: String
+    project: String
+}
+```
+
+- 반환될 데이터의 형태를 지정
+- 자료형을 가진 필드들로 구성
+
+## Resolver 살펴보기
+
+```js
+const resolvers = {
+  Query: {
+    teams: () => database.teams,
+  },
+};
+```
+
+- Query란 object의 항목들로 데이터를 반환하는 함수 선언
+- 실제 프로젝트에서는 MySQL 조회 코드 등..
+
+## equipments를 반환하는쿼리 만들어보기
+
+- dbtester.js 생성
+
+  ```js
+  const database = require("./database");
+  console.log(database.equipments);
+  ```
+
+- equipment의 데이터 자료형
+
+  ```js
+  type Equipment {
+    id: String,
+    used_by: String,
+    count: Int,
+    new_or_used: String
+  }
+  ```
+
+- 다수의 equipment를 반환하는 쿼리
+
+  ```js
+  type Query {
+    ...
+    equipments: [Equipment]
+  }
+  ```
+
+- 데이터베이스에서 equipments를 추출하여 반환하는 resolver
+
+  ```js
+  Query: {
+    // ...
+    equipments: () => database.equipments;
+  }
+  ```
+
+## supplies 받아오기 추가
+
+```js
+query {
+    ...
+    type Supply {
+        id: String,
+        team: Int
+    }
+}
+```
+
+```js
+type Query {
+    ...
+    supplies: [Supply]
+}
+```
+
+```js
+type Query {
+    //...
+    supplies: () => database.supplies
+}
+```
+
+## 특정 team만 받아오기
+
+- args로 주어진 id에 해당하는 team만 필터링하여 반환
+
+  ```js
+  Query: {
+    //...
+    team: (parent, args, context, info) => database.teams
+        .filter((team) => {
+            return team.id === args.id
+        })[0],
+  }
+  ```
+
+- id를 인자로 받아 하나의 Team 데이터를 반환
+
+  ```js
+  type Query {
+    ...
+    team(id: Int): Team
+  }
+  ```
+
+  ```
+  query {
+    team(id: 1) {
+      id
+      manager
+      office
+      extension_number
+      mascot
+      cleaning_duty
+      project
+    }
+  }
+  ```
+
+## team에 supplies 연결해서 받아오기
+
+- Team 목록을 반환 시 해당하는 supplies를 supplies 항목에 추가
+
+  ```js
+  Query: {
+    // ...
+    teams: () => database.teams
+    .map((team) => {
+        team.supplies = database.supplies
+        .filter((supply) => {
+            return supply.team === team.id
+        })
+        return team
+    }),
+  }
+  ```
+
+- Team의 항목들 중 supplies: 다수의 Supply를 반환
+
+  ```js
+  type Team {
+    id: Int
+    manager: String
+    office: String
+    extension_number: String
+    mascot: String
+    cleaning_duty: String
+    project: String
+    supplies: [Supply]
+  }
+  ```
+
+# Mutation 구현하기
+
+## Equipment 데이터 삭제하기
+
+- Mutation - 삭제 루트 타입
+
+  ```js
+  type Mutation {
+    deleteEquipment(id: String): Equipment
+  }
+  ```
+
+  - String 인자 id를 받는 deleteEquipment: 삭제된 Equipment를 반환
+
+- 삭제 resolver
+
+  ```js
+  Mutation: {
+    deleteEquipment: (parent, args, context, info) => {
+      const deleted = database.equipments.filter((equipment) => {
+        return equipment.id === args.id;
+      })[0];
+      database.equipments = database.equipments.filter((equipment) => {
+        return equipment.id !== args.id;
+      });
+      return deleted;
+    };
+  }
+  ```
+
+  - 삭제 후 결과값으로 받아올 데이터를 deleted 변수에 저장
+  - 데이터에서 해당 데이터 삭제 후 deleted 반환
+  - 실제 프로젝트에서는 SQL의 DELETE 문 등으로 구현
+
+  ```
+  mutation {
+    deleteEquipment(id: "notebook") {
+      id
+      used_by
+      count
+      new_or_used
+    }
+  }
+  ```
+
+## Equipment 데이터 추가하기
+
+- Mutation - 추가 루트 타입
+
+  ```js
+  type Mutation {
+    insertEquipment(
+        id: String,
+        used_by: String,
+        count: Int,
+        new_or_used: String
+    ): Equipment
+    ...
+  }
+  ```
+
+  - 추가할 Equipment의 요소 값들을 인자로 받고 추가된 Equipment를 반환
+
+- 추가 resolver
+
+  ```
+  Mutation: {
+    insertEquipment: (parent, args, context, info) => {
+        database.equipments.push(args)
+        return args
+    },
+    //...
+  }
+  ```
+
+  ```
+  mutation {
+    insertEquipment (
+      id: "laptop",
+      used_by: "developer",
+      count: 17,
+      new_or_used: "new"
+    ) {
+      id
+      used_by
+      count
+      new_or_used
+    }
+  }
+  ```
+
+## Equipment 데이터 수정하기
+
+- Mutation - 수정 루트 타입
+
+  ```
+  type Mutation {
+    editEquipment(
+        id: String,
+        used_by: String,
+        count: Int,
+        new_or_used: String
+    ): Equipment
+    ...
+  }
+  ```
+
+  - 수정할 Equipment의 요소 값들을 인자로 받고 추가된 Equipment를 반환
+
+- 수정 resolver
+
+  ```
+  Mutation: {
+    // ...
+    editEquipment: (parent, args, context, info) => {
+        return database.equipments.filter((equipment) => {
+            return equipment.id === args.id
+        }).map((equipment) => {
+            Object.assign(equipment, args)
+            return equipment
+        })[0]
+    },
+    // ...
+  }
+  ```
+
+  ```
+  mutation {
+    editEquipment (
+      id: "pen tablet",
+      new_or_used: "new",
+      count: 30,
+      used_by: "designer"
+    ) {
+      id
+      new_or_used
+      count
+      used_by
+    }
+  }
+  ```
