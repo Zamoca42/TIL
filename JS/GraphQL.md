@@ -602,3 +602,810 @@ type Query {
     }
   }
   ```
+
+# 서버 구성요소 모듈화
+
+## apoolo-server 생성자 인자 모듈화
+
+- [apoolo-server](https://www.apollographql.com/docs/apollo-server/api/apollo-server/) 문서 참조
+- typeDefs: 단일 변수 또는 배열로 지정 가능
+- resolvers: 단일 Object 또는 Merge 된 배열로 가능
+
+typedefs-resolvers/\_queries.js
+
+```js
+// ...
+const typeDefs = gql`
+  type Query {
+    equipments: [Equipment]
+  }
+`;
+// ...
+```
+
+typedefs-resolvers/\_mutations.js
+
+```js
+// ...
+const typeDefs = gql`
+  type Mutation {
+    deleteEquipment(id: String): Equipment
+  }
+`;
+// ...
+```
+
+typedefs-resolvers/equipments.js
+
+```js
+// ...
+const typeDefs = gql`
+  type Equipment {
+    id: String
+    used_by: String
+    count: Int
+    new_or_used: String
+  }
+`;
+const resolvers = {
+  Query: {
+    equipments: (parent, args) => dbWorks.getEquipments(args),
+  },
+  Mutation: {
+    deleteEquipment: (parent, args) => dbWorks.deleteItem("equipments", args),
+  },
+};
+// ...
+```
+
+typedefs-resolvers/index.js
+
+```js
+// ...
+const queries = require('./typedefs-resolvers/_queries')
+const mutations = require('./typedefs-resolvers/_mutations')
+const equipments = require('./typedefs-resolvers/equipments'
+// ...
+const typeDefs = [
+    queries,
+    mutations,
+    equipments.typeDefs,
+]
+const resolvers = [
+    equipments.resolvers
+]
+// ...
+```
+
+## dbWorks.js 살펴보기
+
+- Resolver에 사용할 기능들 모듈화
+
+## Supply 모듈 추가해보기
+
+typedefs-resolvers/supplies.js
+
+```js
+const typeDefs = gql`
+  type Supply {
+    id: String
+    team: Int
+  }
+`;
+const resolvers = {
+  Query: {
+    supplies: (parent, args) => dbWorks.getSupplies(args),
+  },
+  Mutation: {
+    deleteSupply: (parent, args) => dbWorks.deleteItem("supplies", args),
+  },
+};
+```
+
+typedefs-resolvers/\_queries.js
+
+```js
+// ...
+const typeDefs = gql`
+    type Query {
+        ...
+        supplies: [Supply]
+    }
+`;
+// ...
+```
+
+typedefs-resolvers/\_mutations.js
+
+```js
+// ...
+const typeDefs = gql`
+    type Mutation {
+        ...
+        deleteSupply: [Supply]
+    }
+`;
+// ...
+```
+
+typedefs-resolvers/index.js
+
+```js
+// ...
+const supplies = require("./typedefs-resolvers/supplies");
+// ...
+const typeDefs = [
+  // ...
+  supplies.typeDefs,
+];
+const resolvers = [
+  // ...
+  supplies.resolvers,
+];
+// ...
+```
+
+# GraphQL의 기본 타입들
+
+## 스칼라 타입
+
+- GraphQL 내장 자료형
+
+```js
+type EquipmentAdv {
+    id: ID!
+    used_by: String!
+    count: Int!
+    use_rate: Float
+    is_new: Boolean!
+}
+```
+
+| 타입      | 설명                                                 |
+| --------- | ---------------------------------------------------- |
+| ID        | 기본적으로는 String이나, 고유 식별자 역할임을 나타냄 |
+| String    | UTF-8 문자열                                         |
+| Int       | 부호가 있는 32비트 정수                              |
+| Float     | 부호가 있는 부동소수점 값                            |
+| Boolean   | 참/거짓                                              |
+| !(느낌표) | null을 반환할 수 없음                                |
+
+equipments.js
+
+```js
+const resolvers = {
+  Query: {
+    // ...
+    equipmentAdvs: (parent, args) =>
+      dbWorks.getEquipments(args).map((equipment) => {
+        if (equipment.used_by === "developer") {
+          equipment.use_rate = Math.random().toFixed(2);
+        }
+        equipment.is_new = equipment.new_or_used === "new";
+        return equipment;
+      }),
+  },
+  // ...
+};
+```
+
+\_queries.js
+
+```js
+type Query {
+    ...
+    equipmentAdvs: [EquipmentAdv]
+    ...
+}
+```
+
+```
+query {
+    equipmentAdvs {
+        id
+        used_by
+        count
+        use_rate
+        is_new
+    }
+}
+```
+
+## 열거 타입
+
+- 미리 지정된 값들 중에서만 반환
+
+\_enums.js
+
+```js
+const { gql } = require("apollo-server");
+const typeDefs = gql`
+  enum Role {
+    developer
+    designer
+    planner
+  }
+  enum NewOrUsed {
+    new
+    used
+  }
+`;
+module.exports = typeDefs;
+```
+
+index.js
+
+```js
+// ...
+const enums = require("./typedefs-resolvers/_enums");
+// ...
+const typeDefs = [
+  // ...
+  enums,
+  // ...
+];
+```
+
+equipments.js
+
+```js
+const typeDefs = gql`
+  type Equipment {
+    id: ID!
+    used_by: Role!
+    count: Int!
+    new_or_used: NewOrUsed!
+  }
+  type EquipmentAdv {
+    id: ID!
+    used_by: Role!
+    count: Int!
+    use_rate: Float
+    is_new: Boolean!
+  }
+`;
+```
+
+```
+query {
+  equipments {
+    id
+    used_by
+    count
+    new_or_used
+  }
+	equipmentAdvs {
+    id
+    used_by
+    count
+    use_rate
+    is_new
+  }
+}
+```
+
+## 리스트 타입
+
+- 특정 타입의 배열을 반환
+
+equipments.js
+
+```js
+const typeDefs = gql`
+    // ...
+    type EquipmentAdv {
+        id: ID!
+        used_by: Role!
+        count: Int!
+        use_rate: Float
+        is_new: Boolean!,
+        users: [String!]
+    }
+`;
+// ...
+const resolvers = {
+  Query: {
+    // ...
+    equipmentAdvs: (parent, args) =>
+      dbWorks.getEquipments(args).map((equipment) => {
+        if (equipment.used_by === "developer") {
+          equipment.use_rate = Math.random().toFixed(2);
+        }
+        equipment.is_new = equipment.new_or_used === "new";
+        if (Math.random() > 0.5) {
+          equipment.users = [];
+          dbWorks.getPeople(args).forEach((person) => {
+            if (person.role === equipment.used_by && Math.random() < 0.2) {
+              equipment.users.push(person.last_name);
+            }
+          });
+        }
+        return equipment;
+      }),
+  },
+  // ...
+};
+```
+
+```
+query {
+	equipmentAdvs {
+    id
+    used_by
+    count
+    use_rate
+    is_new
+    users
+  }
+}
+```
+
+| 선언부     | users: null | users: [ ] | users: [..., null] |
+| ---------- | ----------- | ---------- | ------------------ |
+| [String]   | ✔           | ✔          | ✔                  |
+| [String!]  | ✔           | ✔          | ❌                 |
+| [String]!  | ❌          | ✔          | ✔                  |
+| [String!]! | ❌          | ✔          | ❌                 |
+
+# 유니언과 스페이스
+
+## Union
+
+- 타입 여럿을 한 배열에 반환하고자 할 때 사용
+
+## Equipment와 Supply를 함께 반환하기
+
+givens.js
+
+```js
+const { gql } = require("apollo-server");
+const dbWorks = require("../dbWorks.js");
+const typeDefs = gql`
+  union Given = Equipment | Supply
+`;
+const resolvers = {
+  Query: {
+    givens: (parent, args) => {
+      return [...dbWorks.getEquipments(args), ...dbWorks.getSupplies(args)];
+    },
+  },
+  Given: {
+    __resolveType(given, context, info) {
+      if (given.used_by) {
+        return "Equipment";
+      }
+      if (given.team) {
+        return "Supply";
+      }
+      return null;
+    },
+  },
+};
+module.exports = {
+  typeDefs: typeDefs,
+  resolvers: resolvers,
+};
+```
+
+\_queries.js
+
+```js
+const typeDefs = gql`
+    type Query {
+        // ...
+        givens: [Given]
+    }
+`;
+```
+
+index.js
+
+```js
+// ...
+const givens = require("./typedefs-resolvers/givens");
+// ...
+const typeDefs = [
+  // ...
+  givens.typeDefs,
+];
+// ...
+const resolvers = [
+  // ...
+  givens.resolvers,
+];
+// ...
+```
+
+```
+query {
+  givens {
+    __typename
+    ... on Equipment {
+      id
+      used_by
+      count
+      new_or_used
+    }
+    ... on Supply {
+      id
+      team
+    }
+  }
+}
+```
+
+## interface
+
+- 유사한 객체 타입을 만들기 위한 공통 필드 타입
+- 추상 타입 - 다른 타입에 implement 되기 위한 타입
+
+```
+type Equipment {
+    id: ID!
+    used_by: Role!
+    count: Int
+    new_or_used: NewOrUsed!
+}
+...
+type Software {
+    id: ID!
+    used_by: Role!
+    developed_by: String!
+    description: String
+}
+```
+
+- 공통적으로 가진 필드: id, used_by
+
+tools.js
+
+```js
+const { gql } = require("apollo-server");
+const typeDefs = gql`
+  interface Tool {
+    id: ID!
+    used_by: Role!
+  }
+`;
+const resolvers = {
+  Tool: {
+    __resolveType(tool, context, info) {
+      if (tool.developed_by) {
+        return "Software";
+      }
+      if (tool.new_or_used) {
+        return "Equipment";
+      }
+      return null;
+    },
+  },
+};
+module.exports = {
+  typeDefs: typeDefs,
+  resolvers: resolvers,
+};
+```
+
+equipments.js
+
+```js
+type Equipment implements Tool {
+    id: ID!
+    used_by: Role!
+    count: Int
+    new_or_used: NewOrUsed!
+}
+```
+
+equipments.js
+
+```js
+type Software implements Tool {
+    id: ID!
+    used_by: Role!
+    developed_by: String!
+    description: String
+}
+```
+
+index.js
+
+```js
+// ...
+const tools = require("./typedefs-resolvers/tools");
+// ...
+const typeDefs = [
+  // ...
+  tools.typeDefs,
+];
+// ...
+const resolvers = [
+  // ...
+  tools.resolvers,
+];
+// ...
+```
+
+```
+query {
+  equipments {
+    id
+    used_by
+    count
+    new_or_used
+  }
+  softwares {
+    id
+    used_by
+    description
+    developed_by
+  }
+}
+```
+
+### People 쿼리에 적용
+
+people.js
+
+```js
+const { gql } = require("apollo-server");
+const dbWorks = require("../dbWorks.js");
+const typeDefs = gql`
+  type People {
+    id: ID!
+    first_name: String!
+    last_name: String!
+    sex: Sex!
+    blood_type: BloodType!
+    serve_years: Int!
+    role: Role!
+    team: ID!
+    from: String!
+    tools: [Tool]
+    givens: [Given]
+  }
+`;
+const resolvers = {
+  Query: {
+    people: (parent, args) => dbWorks.getPeople(args),
+    person: (parent, args) => dbWorks.getPeople(args)[0],
+  },
+};
+module.exports = {
+  typeDefs: typeDefs,
+  resolvers: resolvers,
+};
+```
+
+\_queries.js
+
+```js
+const typeDefs = gql`
+    type Query {
+        people: [People],
+        // ...
+    }
+`;
+```
+
+index.js
+
+```js
+// ...
+const people = require("./typedefs-resolvers/people");
+// ...
+const typeDefs = [
+  // ...
+  people.typeDefs,
+];
+// ...
+const resolvers = [
+  // ...
+  people.resolvers,
+];
+// ...
+```
+
+```
+query {
+  people {
+    id
+    first_name
+    last_name
+    givens {
+        __typename
+    	... on Equipment {
+      	id
+      	used_by
+      	count
+      	new_or_used
+    	}
+    	... on Supply {
+      	id
+      	team
+    	}
+  	}
+    tools {
+      __typename
+      ... on Equipment {
+        id
+        used_by
+        count
+        new_or_used
+      }
+      ... on Software {
+        id
+        used_by
+        description
+        developed_by
+      }
+    }
+  }
+}
+```
+
+# 인자와 인풋 타입
+
+## People 데이터 조건들로 필터 넣어 받아오기
+
+\_queries.js
+
+```js
+type Query {
+    ...
+    peopleFiltered(
+        team: Int,
+        sex: Sex,
+        blood_type: BloodType,
+        from: String
+    ): [People]
+    ...
+}
+```
+
+people.js
+
+```js
+Query: {
+  // ...
+  peopleFiltered: (parent, args) => dbWorks.getPeople(args),
+}
+```
+
+```
+query {
+  peopleFiltered (
+    team: 1
+    blood_type: B
+    from: "Texas"
+  ) {
+    id
+    first_name
+    last_name
+    sex
+    blood_type
+    serve_years
+    role
+    team
+    from
+  }
+}
+```
+
+## 페이지로 나누어 받아오기
+
+\_queries.js
+
+```js
+type Query {
+    ...
+    peoplePaginated(
+        page: Int!,
+        per_page: Int!
+    ): [People]
+    ...
+}
+```
+
+people.js
+
+```js
+Query: {
+    // ...
+    peoplePaginated: (parent, args) => dbWorks.getPeople(args),
+    // ...
+}
+```
+
+```
+query {
+	peoplePaginated(page: 1, per_page: 7) {
+    id
+    first_name
+    last_name
+    sex
+    blood_type
+    serve_years
+    role
+    team
+    from
+  }
+}
+```
+
+## 별칭으로 받아오기
+
+```js
+query {
+  badGuys: peopleFiltered(sex: male, blood_type: B) {
+    first_name
+    last_name
+    sex
+    blood_type
+  }
+  newYorkers: peopleFiltered(from: "New York") {
+    first_name
+    last_name
+    from
+  }
+}
+```
+
+## 인풋 타입
+
+people.js
+
+```
+const typeDefs = gql`
+    ....
+    input PostPersonInput {
+        first_name: String!
+        last_name: String!
+        sex: Sex!
+        blood_type: BloodType!
+        serve_years: Int!
+        role: Role!
+        team: ID!
+        from: String!
+    }
+`
+const resolvers = {
+    // ...
+    Mutation: {
+        postPerson: (parent, args) => dbWorks.postPerson(args),
+    }
+}
+```
+
+\_mutation.js
+
+```js
+type Mutation {
+    postPerson(input: PostPersonInput): People!
+    ...
+}
+```
+
+```
+mutation {
+  postPerson(input: {
+    first_name: "Hanna"
+    last_name: "Kim"
+    sex: female
+    blood_type: O
+    serve_years: 3
+    role: developer
+    team: 1
+    from: "Pusan"
+  }) {
+    id
+    first_name
+    last_name
+    sex
+    blood_type
+    role
+    team
+    from
+  }
+}
+```
