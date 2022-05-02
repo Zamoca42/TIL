@@ -1409,3 +1409,229 @@ mutation {
   }
 }
 ```
+
+# React와 Apollo Client
+
+App.js
+
+| 코드     | 설명                                                 |
+| -------- | ---------------------------------------------------- |
+| NavMenus | menu값에 따라 상단 App-header의 버튼을 표시하는 함수 |
+| mainComp | App-header 아래 메인 화면에 나타날 컴포넌트 매핑     |
+
+roles.js, teams.js, people.js
+
+| 코드         | 설명                        | 비고                                |
+| ------------ | --------------------------- | ----------------------------------- |
+| AsideItems   | 메인화면 왼쪽의 사이드 섹션 | 리스트가 나타날 곳                  |
+| MainContents | 메인화면                    | 리스트 각 항목의 내용부가 표시될 곳 |
+
+## Apollo Client 사용하기
+
+- [아폴로 클라이언트 문서](https://www.apollographql.com/docs/react/get-started/)
+
+아폴로 클라이언트 모듈 적용
+
+```
+npm install @apollo/client graphql
+```
+
+App.js
+
+```js
+// ...
+import { ApolloProvider } from "@apollo/client";
+import { ApolloClient, InMemoryCache } from "@apollo/client";
+// ...
+```
+
+- ApolloClient 모듈 임포트
+
+App.js
+
+```js
+// ...
+const client = new ApolloClient({
+  uri: "http://localhost:4000",
+  cache: new InMemoryCache(),
+});
+// ...
+```
+
+| 코드   | 설명                                               |
+| ------ | -------------------------------------------------- |
+| client | GraphQL 서버로와 정보를 주고받을 ApolloClient 객체 |
+| uri    | GraphQL 서버의 주소                                |
+| cache  | InMemoryCache를 통한 캐시 관리                     |
+
+```js
+//   ...
+return (
+  <div className="App">
+    <ApolloProvider client={client}>
+      <header className="App-header">
+        <h1>Company Management</h1>
+        <nav>
+          <ul>{NavMenus()}</ul>
+        </nav>
+      </header>
+      <main>{mainComp[menu]}</main>
+    </ApolloProvider>
+  </div>
+);
+//   ...
+```
+
+- 내부 요소들을 ApolloProvider 로 감싸준다.
+
+## GraphQL 서버로부터 목록 받아와 표시하기
+
+roles.js
+
+```js
+// ...
+import { useState } from "react";
+import { useQuery, gql } from "@apollo/client";
+// ...
+```
+
+- 필요한 모듈들 임포트
+
+roles.js
+
+```js
+// ...
+const GET_ROLES = gql`
+  query GetRoles {
+    roles {
+      id
+    }
+  }
+`;
+// ...
+```
+
+- 쿼리 작성
+
+roles.js
+
+```js
+// ...
+const [contentId, setContentId] = useState("");
+// ...
+```
+
+- 렌더링될 컨텐츠 id를 저장할 state 지정
+
+roles.js
+
+```js
+// ...
+function AsideItems() {
+  const roleIcons = {
+    developer: "💻",
+    designer: "🎨",
+    planner: "📝",
+  };
+  const { loading, error, data } = useQuery(GET_ROLES);
+  if (loading) return <p className="loading">Loading...</p>;
+  if (error) return <p className="error">Error :(</p>;
+  return (
+    <ul>
+      {data.roles.map(({ id }) => {
+        return (
+          <li
+            key={id}
+            className={"roleItem " + (contentId === "id" ? "on" : "")}
+            onClick={() => {
+              setContentId(id);
+            }}
+          >
+            <span>{contentId === id ? "🔲" : "⬛"}</span>
+            {roleIcons[id]} {id}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+// ...
+```
+
+- AsideItems 함수에서, GraphQL로부터 데이터를 받아와 목록을 렌더링하도록 작성
+
+| 코드    | 설명                                       |
+| ------- | ------------------------------------------ |
+| loading | GraphQL 서버에서 정보를 받아오는 동안 표시 |
+| error   | 요청에 오류가 발생할 시 반환               |
+| data    | GraphQL 요청대로 받아진 정보               |
+
+## GraphQL 서버로부터 id로 컨텐츠 받아와 표시하기
+
+roles.js
+
+```js
+// ...
+const GET_ROLE = gql`
+  query GetRole($id: ID!) {
+    role(id: $id) {
+      id
+      requirement
+      members {
+        id
+        last_name
+        serve_years
+      }
+      equipments {
+        id
+      }
+      softwares {
+        id
+      }
+    }
+  }
+`;
+// ...
+```
+
+- 쿼리 작성
+
+roles.js
+
+```js
+function MainContents() {
+  const { loading, error, data } = useQuery(GET_ROLE, {
+    variables: { id: contentId },
+  });
+
+  if (loading) return <p className="loading">Loading...</p>;
+  if (error) return <p className="error">Error :(</p>;
+  if (contentId === "") return <div className="roleWrapper">Select Role</div>;
+
+  return (
+    <div className="roleWrapper">
+      <h2>{data.role.id}</h2>
+      <div className="requirement">
+        <span>{data.role.requirement}</span> required
+      </div>
+      <h3>Members</h3>
+      <ul>
+        {data.role.members.map((member) => {
+          return <li>{member.last_name}</li>;
+        })}
+      </ul>
+      <h3>Equipments</h3>
+      <ul>
+        {data.role.equipments.map((equipment) => {
+          return <li>{equipment.id}</li>;
+        })}
+      </ul>
+      <h3>Softwares</h3>
+      {data.role.softwares.map((software) => {
+        return <li>{software.id}</li>;
+      })}
+      <ul></ul>
+    </div>
+  );
+}
+```
