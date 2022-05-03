@@ -1635,3 +1635,461 @@ function MainContents() {
   );
 }
 ```
+
+# Query와 Mutation을 사용하여 웹페이지 만들기
+
+모듈 로드
+
+```js
+// ...
+import { useState } from "react";
+import { useQuery, useMutation, gql } from "@apollo/client";
+// ...
+```
+
+state 준비
+
+```js
+// ...
+const [contentId, setContentId] = useState(0);
+const [inputs, setInputs] = useState({
+  manager: "",
+  office: "",
+  extension_number: "",
+  mascot: "",
+  cleaning_duty: "",
+  project: "",
+});
+// ...
+```
+
+## 팀 목록 받아오기
+
+쿼리 작성
+
+```js
+// ...
+const GET_TEAMS = gql`
+  query GetTeams {
+    teams {
+      id
+      manager
+      members {
+        id
+        first_name
+        last_name
+        role
+      }
+    }
+  }
+`;
+// ...
+```
+
+목록 받아와 보여주기 함수
+
+```js
+// ...
+function AsideItems() {
+  const roleIcons = {
+    developer: "💻",
+    designer: "🎨",
+    planner: "📝",
+  };
+
+  const { loading, error, data, refetch } = useQuery(GET_TEAMS);
+
+  if (loading) return <p className="loading">Loading...</p>;
+  if (error) return <p className="error">Error :(</p>;
+
+  return (
+    <ul>
+      {data.teams.map(({ id, manager, members }) => {
+        return (
+          <li key={id}>
+            <span
+              className="teamItemTitle"
+              onClick={() => {
+                setContentId(id);
+              }}
+            >
+              Team {id} : {manager}'s
+            </span>
+            <ul className="teamMembers">
+              {members.map(({ id, first_name, last_name, role }) => {
+                return (
+                  <li key={id}>
+                    {roleIcons[role]} {first_name} {last_name}
+                  </li>
+                );
+              })}
+            </ul>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+// ...
+```
+
+## 항목 받아오기
+
+쿼리 작성
+
+```js
+// ...
+const GET_TEAM = gql`
+  query GetTeam($id: ID!) {
+    team(id: $id) {
+      id
+      manager
+      office
+      extension_number
+      mascot
+      cleaning_duty
+      project
+    }
+  }
+`;
+// ...
+```
+
+항목 받아와 보여주기 함수
+
+```js
+// ...
+function MainContents() {
+  const { loading, error } = useQuery(GET_TEAM, {
+    variables: { id: contentId },
+    onCompleted: (data) => {
+      if (contentId === 0) {
+        setInputs({
+          manager: "",
+          office: "",
+          extension_number: "",
+          mascot: "",
+          cleaning_duty: "",
+          project: "",
+        });
+      } else {
+        setInputs({
+          manager: data.team.manager,
+          office: data.team.office,
+          extension_number: data.team.extension_number,
+          mascot: data.team.mascot,
+          cleaning_duty: data.team.cleaning_duty,
+          project: data.team.project,
+        });
+      }
+    },
+  });
+
+  if (loading) return <p className="loading">Loading...</p>;
+  if (error) return <p className="error">Error :(</p>;
+
+  function handleChange(e) {
+    const { name, value } = e.target;
+    setInputs({
+      ...inputs,
+      [name]: value,
+    });
+  }
+
+  return (
+    <div className="inputContainer">
+      <table>
+        <tbody>
+          {contentId !== 0 && (
+            <tr>
+              <td>Id</td>
+              <td>{contentId}</td>
+            </tr>
+          )}
+          <tr>
+            <td>Manager</td>
+            <td>
+              <input
+                type="text"
+                name="manager"
+                value={inputs.manager}
+                onChange={handleChange}
+              />
+            </td>
+          </tr>
+          <tr>
+            <td>Office</td>
+            <td>
+              <input
+                type="text"
+                name="office"
+                value={inputs.office}
+                onChange={handleChange}
+              />
+            </td>
+          </tr>
+          <tr>
+            <td>Extension Number</td>
+            <td>
+              <input
+                type="text"
+                name="extension_number"
+                value={inputs.extension_number}
+                onChange={handleChange}
+              />
+            </td>
+          </tr>
+          <tr>
+            <td>Mascot</td>
+            <td>
+              <input
+                type="text"
+                name="mascot"
+                value={inputs.mascot}
+                onChange={handleChange}
+              />
+            </td>
+          </tr>
+          <tr>
+            <td>Cleaning Duty</td>
+            <td>
+              <input
+                type="text"
+                name="cleaning_duty"
+                value={inputs.cleaning_duty}
+                onChange={handleChange}
+              />
+            </td>
+          </tr>
+          <tr>
+            <td>Project</td>
+            <td>
+              <input
+                type="text"
+                name="project"
+                value={inputs.project}
+                onChange={handleChange}
+              />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      {contentId === 0 ? (
+        <div className="buttons">
+          <button onClick={() => {}}>Submit</button>
+        </div>
+      ) : (
+        <div className="buttons">
+          <button onClick={() => {}}>Modify</button>
+          <button onClick={() => {}}>Delete</button>
+          <button
+            onClick={() => {
+              setContentId(0);
+            }}
+          >
+            New
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+//   ...
+```
+
+## 항목 삭제하기
+
+쿼리 & 함수 작성
+
+```js
+// ...
+const DELETE_TEAM = gql`
+  mutation DeleteTeam($id: ID!) {
+    deleteTeam(id: $id) {
+      id
+    }
+  }
+`;
+// ...
+function execDeleteTeam() {
+  if (window.confirm("이 항목을 삭제하시겠습니까?")) {
+    deleteTeam({ variables: { id: contentId } });
+  }
+}
+const [deleteTeam] = useMutation(DELETE_TEAM, {
+  onCompleted: deleteTeamCompleted,
+});
+function deleteTeamCompleted(data) {
+  console.log(data.deleteTeam);
+  alert(`${data.deleteTeam.id} 항목이 삭제되었습니다.`);
+  setContentId(0);
+}
+// ...
+```
+
+버튼에 적용
+
+```js
+// ...
+<button onClick={execDeleteTeam}>Delete</button>
+// ...
+```
+
+수정된 데이터 다시 로드
+
+```js
+// ...
+let refetchTeams;
+// ...
+refetchTeams = refetch;
+// ...
+alert(`${data.deleteTeam.id} 항목이 삭제되었습니다.`);
+refetchTeams();
+// ...
+```
+
+## 항목 수정하기
+
+```js
+// ...
+const EDIT_TEAM = gql`
+  mutation EditTeam($id: ID!, $input: PostTeamInput!) {
+    editTeam(id: $id, input: $input) {
+      id
+      manager
+      office
+      extension_number
+      mascot
+      cleaning_duty
+      project
+    }
+  }
+`;
+// ...
+function execEditTeam() {
+  editTeam({
+    variables: {
+      id: contentId,
+      input: inputs,
+    },
+  });
+}
+const [editTeam] = useMutation(EDIT_TEAM, { onCompleted: editTeamCompleted });
+function editTeamCompleted(data) {
+  console.log(data.editTeam);
+  alert(`${data.editTeam.id} 항목이 수정되었습니다.`);
+  refetchTeams();
+}
+//   ...
+<button onClick={execEditTeam}>Modify</button>;
+//   ...
+```
+
+## 항목 추가하기
+
+```js
+// ...
+const POST_TEAM = gql`
+  mutation PostTeam($input: PostTeamInput!) {
+    postTeam(input: $input) {
+      id
+      manager
+      office
+      extension_number
+      mascot
+      cleaning_duty
+      project
+    }
+  }
+`;
+// ...
+function execPostTeam() {
+  postTeam({
+    variables: { input: inputs },
+  });
+}
+
+const [postTeam] = useMutation(POST_TEAM, { onCompleted: postTeamCompleted });
+j;
+function postTeamCompleted(data) {
+  console.log(data.postTeam);
+  alert(`${data.postTeam.id} 항목이 생성되었습니다.`);
+  refetchTeams();
+  setContentId(0);
+}
+//   ...
+<button onClick={execPostTeam}>Submit</button>;
+// ...
+```
+
+# Fragment 사용하기
+
+- 여러 쿼리에 사용될 수 있는, 재사용 가능한 필드셋
+- 중복을 줄임으로써 전체 코드를 간소화
+
+재사용되는 요소들 fragment로 분리
+
+```js
+const Names = gql`
+  fragment names on People {
+    first_name
+    last_name
+  }
+`;
+const HealthInfo = gql`
+  fragment healthInfo on People {
+    sex
+    blood_type
+  }
+`;
+const WorkInfo = gql`
+  fragment workInfo on People {
+    serve_years
+    role
+    team
+    from
+  }
+`;
+```
+
+쿼리들에 적용
+
+```js
+const GET_PEOPLE = gql`
+  query GetPeople {
+    people {
+      id
+      ...names
+      ...healthInfo
+    }
+  }
+  ${Names}
+  ${HealthInfo}
+`;
+```
+
+```js
+const GET_PERSON = gql`
+  query GetPerson($id: ID!) {
+    person(id: $id) {
+      id
+      ...names
+      ...healthInfo
+      ...workInfo
+      tools {
+        __typename
+        ... on Software {
+          id
+        }
+        ... on Equipment {
+          id
+          count
+        }
+      }
+    }
+  }
+  ${Names}
+  ${HealthInfo}
+  ${WorkInfo}
+`;
+```
