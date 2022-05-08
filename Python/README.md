@@ -870,3 +870,177 @@ print(result)
 - URL을 입력하면 수집 결과를 퉤 뱉어주는 크롤러함수를 만들어두고
 
 - 그거 두개를 동시에 멀티쓰레딩 map 함수에 집어넣으면 되겠네요.
+
+# 인스타그램 봇 만들기
+
+## 셀레니움 설치/ 간단한 수집
+
+파이썬을 이용하시면
+
+인스타그램에 자동으로 로그인해서 원하는 페이지로 이동한 후 
+
+이미지를 싸그리 수집하거나 자동으로 댓글, 좋아요를 남기는 봇을 만들 수 있습니다. 
+
+인스타 팔로워수 늘리려고 "와 정말 좋은 정보네요~" "우와 대박" 이렇게 무성의한 댓글쓰는 시간을 줄일 수 있겠네요. 
+
+근데 우리는 그보다 유용한 이미지 수집을 해보도록 합시다.
+
+딥러닝용 개 고양이 사진 수집할 때 이만한 곳이 없습니다. 
+
+1. chromedriver를 구글에 검색해 내 os에 맞는 파일을 다운받습니다.  
+진행 중에 에러가 뜨거나 안되면 내 크롬 버전과 동일한 버전을 다운받으십시오.   
+크롬버전 확인하려면 크롬 브라우저 주소창에 chrome://version 쳐보시면 됩니다.  
+다운받아서 압축풀고 내 파이썬 파일과 같은 공간에 넣어두시면 됩니다.  
+
+ 
+
+2. 셀레니움을 설치합니다.  
+    ```
+    pip install selenium==3.141.0
+    ```
+    터미널에 입력하십시오. 
+
+
+3. 다음 코드를 입력하면 시작할 준비가 끝입니다. 
+    ```
+    from selenium import webdriver
+    from selenium.webdriver.common.keys import Keys 
+    import time
+
+    driver = webdriver.Chrome('chromedriver.exe')
+    ```
+    파이썬 파일에 입력하시길 바랍니다. chromedriver.exe 부분엔 아까 다운받은 그 파일을 입력해주시면 됩니다. 
+
+    맥북은 크롬드라이버 파일 우클릭 - 정보 가져오기 누르시면 경로가 나오는데
+
+    거기뜨는경로/크롬드라이버파일이름 이렇게 입력해주시면 됩니다. 
+
+
+
+셀레니움은 원래 웹개발할 때 로그인 기능 잘 되는지 글발행 잘 되는지 테스트해보는 작업이 필요합니다.  
+
+테스트할 때마다 직접 입력하기 귀찮아서 자동화하려고 나온 라이브러리가 셀레니움입니다.  
+
+하지만 사람들이 데이터수집에 활용하기 시작했습니다.  
+
+- 기존 requests + bs4 만으로 수집하기 어려웠던 이상한 구조의 사이트들,
+
+- ajax라는게 많이 들어간 사이트들
+
+- 로그인이 필요한 사이트들을 수집할 때 유용합니다.
+
+## 셀레니움 주요 사용법 몇개 
+
+원하는 URL 접속 & 이동 
+
+```py
+driver.get('https://instagram.com')
+```
+
+원하는 요소 찾기
+```py
+driver.find_element_by_css_selector('.class명')
+driver.find_element_by_css_selector('#id명')
+driver.find_element_by_css_selector('태그명[속성이름="속성명"]')
+```
+
+css_selector가 안되면 이런 것도 가능합니다. 얘는 아예 클래스명으로 찾는다는 함수라서 마침표 필요없습니다. 
+```py
+driver.find_element_by_class_name('class명')
+```
+
+같은 class명이 매우 여러개 있을 경우 그 중 X번째 등장하는 요소를 찾고 싶은 경우 
+
+```py
+driver.find_elements_by_css_selector('.class명')[X]
+``` 
+
+원하는 요소 안에 있는 글자 가져오기 
+
+```py
+driver.find_element_by_css_selector('.class명').text
+```
+
+## class명이 없는 경우
+
+수집하고 싶은게 있는데 class가 안달려있습니다.
+
+그럴 땐 그 글자를 싸매고 있는 윗 요소를 찾은 다음에 .text 하시면 됩니다. 
+
+아니면 
+
+```py
+driver.find_element_by_css_selector('.LC20lb span').text
+```
+이런 식으로 윗요소의 클래스명 + 띄어쓰기 + 밑요소의 태그명 이렇게 하면 
+
+원하는 `<span>`이라는 요소를 찾을 수도 있습니다. 
+
+## 찾고싶은 요소가 class도 id도 없을 때
+
+
+```html
+<input aria-label="비밀번호" autocorrect="off" name="password" type="password" value>
+```
+
+`<input>`이라는 태그인데 class나 id가 없습니다. 이건 name="password" 이런걸로 찾을 수 있습니다. 
+
+```py
+driver.find_element_by_css_selector('input[name="password"]')
+```
+이렇게 하면 찾을 수 있습니다.
+
+아무런 . # 기호없이 input 이렇게 쓰면 `<input>`태그라는 뜻입니다. 
+
+그리고 그 태그가 name="password"를 가지고 있다면 찾으라는 뜻입니다. 
+
+응용하면 name 말고도 저기 보이는 type="" 이런 것들로도 찾을 수 있겠네요. 
+
+원하는 요소 클릭 / 키입력하기 
+
+```py
+driver.find_element_by_css_selector('.class명').click()
+driver.find_element_by_css_selector('.class명').send_keys('codingapple_test')
+driver.find_element_by_css_selector('.class명').send_keys(Keys.ENTER)  #엔터키입력
+```
+
+가끔 click() 클릭이 안되면 강제클릭하는 법 
+
+```py
+e = driver.find_element_by_css_selector('클릭하고싶은요소')
+driver.execute_script('arguments[0].click();', e)
+```
+(그래도 클릭이 안되면 요소를 잘못찾은 겁니다.)
+
+## 페이지 이동과 이미지 수집
+
+이미지 수집을 해보도록 합시다. 원하는 HTML 요소를 잘 찾는게 중요합니다. 
+
+이미지의 src 속성을 가져오시고 이걸 다음 코드를 이용해서 파일로 저장하면 끝인데
+
+이미지를 띄우기 위해서 여러번의 클릭질이 필요할 수 있습니다. 
+
+셀레니움으로 여러번 클릭질을 해보도록 합시다. 
+
+### class로 찾는 것의 문제점
+
+class=""는 id=""와 다르게 여러 HTML 요소들에서 중복으로 출현할 수 있습니다. 
+
+그래서 class 하나만으로 찾는건 원치않는 버그가 발생할 수 있으니 언제나 같은 class명이 있는지 확인하시거나
+
+CSS 셀렉터를 이용해서 상세히 찾도록 합시다. 
+
+### 이미지 URL을 알고있을 때 파일로 저장하는 법
+
+```py
+import urllib.request #이건 import 모여있는 맨위에다가 작성
+
+urllib.request.urlretrieve(이미지URL, '파일명')
+```
+이 코드 한줄이면 됩니다. 끝!
+
+이미지 URL 란에는 여러분이 찾아온 이미지 URL 진짜 담으시면 되고
+
+'파일명' 부분에는 '어쩌구.jpg' 이런 식으로 파일명 맘대로 작성해주시면 됩니다. 
+
+실행하면 파이썬 파일이랑 나란한 곳에 어쩌구.jpg가 저장됩니다. 
