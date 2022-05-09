@@ -877,51 +877,50 @@ print(result)
 
 파이썬을 이용하시면
 
-인스타그램에 자동으로 로그인해서 원하는 페이지로 이동한 후 
+인스타그램에 자동으로 로그인해서 원하는 페이지로 이동한 후
 
-이미지를 싸그리 수집하거나 자동으로 댓글, 좋아요를 남기는 봇을 만들 수 있습니다. 
+이미지를 싸그리 수집하거나 자동으로 댓글, 좋아요를 남기는 봇을 만들 수 있습니다.
 
-인스타 팔로워수 늘리려고 "와 정말 좋은 정보네요~" "우와 대박" 이렇게 무성의한 댓글쓰는 시간을 줄일 수 있겠네요. 
+인스타 팔로워수 늘리려고 "와 정말 좋은 정보네요~" "우와 대박" 이렇게 무성의한 댓글쓰는 시간을 줄일 수 있겠네요.
 
 근데 우리는 그보다 유용한 이미지 수집을 해보도록 합시다.
 
-딥러닝용 개 고양이 사진 수집할 때 이만한 곳이 없습니다. 
+딥러닝용 개 고양이 사진 수집할 때 이만한 곳이 없습니다.
 
 1. chromedriver를 구글에 검색해 내 os에 맞는 파일을 다운받습니다.  
-진행 중에 에러가 뜨거나 안되면 내 크롬 버전과 동일한 버전을 다운받으십시오.   
-크롬버전 확인하려면 크롬 브라우저 주소창에 chrome://version 쳐보시면 됩니다.  
-다운받아서 압축풀고 내 파이썬 파일과 같은 공간에 넣어두시면 됩니다.  
+   진행 중에 에러가 뜨거나 안되면 내 크롬 버전과 동일한 버전을 다운받으십시오.  
+   크롬버전 확인하려면 크롬 브라우저 주소창에 chrome://version 쳐보시면 됩니다.  
+   다운받아서 압축풀고 내 파이썬 파일과 같은 공간에 넣어두시면 됩니다.
 
- 
+2. 셀레니움을 설치합니다.
 
-2. 셀레니움을 설치합니다.  
-    ```
-    pip install selenium==3.141.0
-    ```
-    터미널에 입력하십시오. 
+   ```
+   pip install selenium==3.141.0
+   ```
 
+   터미널에 입력하십시오.
 
-3. 다음 코드를 입력하면 시작할 준비가 끝입니다. 
-    ```
-    from selenium import webdriver
-    from selenium.webdriver.common.keys import Keys 
-    import time
+3. 다음 코드를 입력하면 시작할 준비가 끝입니다.
 
-    driver = webdriver.Chrome('chromedriver.exe')
-    ```
-    파이썬 파일에 입력하시길 바랍니다. chromedriver.exe 부분엔 아까 다운받은 그 파일을 입력해주시면 됩니다. 
+   ```
+   from selenium import webdriver
+   from selenium.webdriver.common.keys import Keys
+   import time
 
-    맥북은 크롬드라이버 파일 우클릭 - 정보 가져오기 누르시면 경로가 나오는데
+   driver = webdriver.Chrome('chromedriver.exe')
+   ```
 
-    거기뜨는경로/크롬드라이버파일이름 이렇게 입력해주시면 됩니다. 
+   파이썬 파일에 입력하시길 바랍니다. chromedriver.exe 부분엔 아까 다운받은 그 파일을 입력해주시면 됩니다.
 
+   맥북은 크롬드라이버 파일 우클릭 - 정보 가져오기 누르시면 경로가 나오는데
 
+   거기뜨는경로/크롬드라이버파일이름 이렇게 입력해주시면 됩니다.
 
-셀레니움은 원래 웹개발할 때 로그인 기능 잘 되는지 글발행 잘 되는지 테스트해보는 작업이 필요합니다.  
+셀레니움은 원래 웹개발할 때 로그인 기능 잘 되는지 글발행 잘 되는지 테스트해보는 작업이 필요합니다.
 
-테스트할 때마다 직접 입력하기 귀찮아서 자동화하려고 나온 라이브러리가 셀레니움입니다.  
+테스트할 때마다 직접 입력하기 귀찮아서 자동화하려고 나온 라이브러리가 셀레니움입니다.
 
-하지만 사람들이 데이터수집에 활용하기 시작했습니다.  
+하지만 사람들이 데이터수집에 활용하기 시작했습니다.
 
 - 기존 requests + bs4 만으로 수집하기 어려웠던 이상한 구조의 사이트들,
 
@@ -929,33 +928,35 @@ print(result)
 
 - 로그인이 필요한 사이트들을 수집할 때 유용합니다.
 
-## 셀레니움 주요 사용법 몇개 
+## 셀레니움 주요 사용법 몇개
 
-원하는 URL 접속 & 이동 
+원하는 URL 접속 & 이동
 
 ```py
 driver.get('https://instagram.com')
 ```
 
 원하는 요소 찾기
+
 ```py
 driver.find_element_by_css_selector('.class명')
 driver.find_element_by_css_selector('#id명')
 driver.find_element_by_css_selector('태그명[속성이름="속성명"]')
 ```
 
-css_selector가 안되면 이런 것도 가능합니다. 얘는 아예 클래스명으로 찾는다는 함수라서 마침표 필요없습니다. 
+css_selector가 안되면 이런 것도 가능합니다. 얘는 아예 클래스명으로 찾는다는 함수라서 마침표 필요없습니다.
+
 ```py
 driver.find_element_by_class_name('class명')
 ```
 
-같은 class명이 매우 여러개 있을 경우 그 중 X번째 등장하는 요소를 찾고 싶은 경우 
+같은 class명이 매우 여러개 있을 경우 그 중 X번째 등장하는 요소를 찾고 싶은 경우
 
 ```py
 driver.find_elements_by_css_selector('.class명')[X]
-``` 
+```
 
-원하는 요소 안에 있는 글자 가져오기 
+원하는 요소 안에 있는 글자 가져오기
 
 ```py
 driver.find_element_by_css_selector('.class명').text
@@ -965,38 +966,45 @@ driver.find_element_by_css_selector('.class명').text
 
 수집하고 싶은게 있는데 class가 안달려있습니다.
 
-그럴 땐 그 글자를 싸매고 있는 윗 요소를 찾은 다음에 .text 하시면 됩니다. 
+그럴 땐 그 글자를 싸매고 있는 윗 요소를 찾은 다음에 .text 하시면 됩니다.
 
-아니면 
+아니면
 
 ```py
 driver.find_element_by_css_selector('.LC20lb span').text
 ```
-이런 식으로 윗요소의 클래스명 + 띄어쓰기 + 밑요소의 태그명 이렇게 하면 
 
-원하는 `<span>`이라는 요소를 찾을 수도 있습니다. 
+이런 식으로 윗요소의 클래스명 + 띄어쓰기 + 밑요소의 태그명 이렇게 하면
+
+원하는 `<span>`이라는 요소를 찾을 수도 있습니다.
 
 ## 찾고싶은 요소가 class도 id도 없을 때
 
-
 ```html
-<input aria-label="비밀번호" autocorrect="off" name="password" type="password" value>
+<input
+  aria-label="비밀번호"
+  autocorrect="off"
+  name="password"
+  type="password"
+  value
+/>
 ```
 
-`<input>`이라는 태그인데 class나 id가 없습니다. 이건 name="password" 이런걸로 찾을 수 있습니다. 
+`<input>`이라는 태그인데 class나 id가 없습니다. 이건 name="password" 이런걸로 찾을 수 있습니다.
 
 ```py
 driver.find_element_by_css_selector('input[name="password"]')
 ```
+
 이렇게 하면 찾을 수 있습니다.
 
-아무런 . # 기호없이 input 이렇게 쓰면 `<input>`태그라는 뜻입니다. 
+아무런 . # 기호없이 input 이렇게 쓰면 `<input>`태그라는 뜻입니다.
 
-그리고 그 태그가 name="password"를 가지고 있다면 찾으라는 뜻입니다. 
+그리고 그 태그가 name="password"를 가지고 있다면 찾으라는 뜻입니다.
 
-응용하면 name 말고도 저기 보이는 type="" 이런 것들로도 찾을 수 있겠네요. 
+응용하면 name 말고도 저기 보이는 type="" 이런 것들로도 찾을 수 있겠네요.
 
-원하는 요소 클릭 / 키입력하기 
+원하는 요소 클릭 / 키입력하기
 
 ```py
 driver.find_element_by_css_selector('.class명').click()
@@ -1004,31 +1012,32 @@ driver.find_element_by_css_selector('.class명').send_keys('codingapple_test')
 driver.find_element_by_css_selector('.class명').send_keys(Keys.ENTER)  #엔터키입력
 ```
 
-가끔 click() 클릭이 안되면 강제클릭하는 법 
+가끔 click() 클릭이 안되면 강제클릭하는 법
 
 ```py
 e = driver.find_element_by_css_selector('클릭하고싶은요소')
 driver.execute_script('arguments[0].click();', e)
 ```
+
 (그래도 클릭이 안되면 요소를 잘못찾은 겁니다.)
 
 ## 페이지 이동과 이미지 수집
 
-이미지 수집을 해보도록 합시다. 원하는 HTML 요소를 잘 찾는게 중요합니다. 
+이미지 수집을 해보도록 합시다. 원하는 HTML 요소를 잘 찾는게 중요합니다.
 
 이미지의 src 속성을 가져오시고 이걸 다음 코드를 이용해서 파일로 저장하면 끝인데
 
-이미지를 띄우기 위해서 여러번의 클릭질이 필요할 수 있습니다. 
+이미지를 띄우기 위해서 여러번의 클릭질이 필요할 수 있습니다.
 
-셀레니움으로 여러번 클릭질을 해보도록 합시다. 
+셀레니움으로 여러번 클릭질을 해보도록 합시다.
 
 ### class로 찾는 것의 문제점
 
-class=""는 id=""와 다르게 여러 HTML 요소들에서 중복으로 출현할 수 있습니다. 
+class=""는 id=""와 다르게 여러 HTML 요소들에서 중복으로 출현할 수 있습니다.
 
 그래서 class 하나만으로 찾는건 원치않는 버그가 발생할 수 있으니 언제나 같은 class명이 있는지 확인하시거나
 
-CSS 셀렉터를 이용해서 상세히 찾도록 합시다. 
+CSS 셀렉터를 이용해서 상세히 찾도록 합시다.
 
 ### 이미지 URL을 알고있을 때 파일로 저장하는 법
 
@@ -1037,10 +1046,255 @@ import urllib.request #이건 import 모여있는 맨위에다가 작성
 
 urllib.request.urlretrieve(이미지URL, '파일명')
 ```
+
 이 코드 한줄이면 됩니다. 끝!
 
 이미지 URL 란에는 여러분이 찾아온 이미지 URL 진짜 담으시면 되고
 
-'파일명' 부분에는 '어쩌구.jpg' 이런 식으로 파일명 맘대로 작성해주시면 됩니다. 
+'파일명' 부분에는 '어쩌구.jpg' 이런 식으로 파일명 맘대로 작성해주시면 됩니다.
 
-실행하면 파이썬 파일이랑 나란한 곳에 어쩌구.jpg가 저장됩니다. 
+실행하면 파이썬 파일이랑 나란한 곳에 어쩌구.jpg가 저장됩니다.
+
+# 이미지를 한번에 리사이즈하고 용량압축 하려면
+
+대량의 이미지를 리사이즈하거나 압축하고 싶을 때가 가끔 있습니다.
+
+특헤 파이썬으로 웹서버만들 때 사용자들의 사진업로드를 받는 경우가 있는데
+
+그런 사진들을 전부 적절한 사이즈로 압축/리사이즈 해야합니다. 안그러면 서버 하드용량과 트래픽 폭발
+
+이미지 다룰 땐 PIL 라이브러리를 쓰면 되는데 설치부터 하시면 됩니다.
+
+pip install Pillow 하시면 됩니다.
+
+그리고 강의 하단 첨부파일로 이미지 몇개 첨부해봤습니다.
+
+## Pillow 라이브러리로 이미지 오픈하기
+
+```py
+from PIL import Image
+img = Image.open('images/photo1.jpg')
+```
+
+이미지 조작을 하시려면 일단 오픈부터 해야합니다.
+
+import 잘 해오시면 되며 Image.open(이미지경로) 하시면 이미지 오픈할 수 있습니다.
+
+## 이미지 리사이즈하고 사본저장하기
+
+```py
+from PIL import Image
+img = Image.open('images/photo1.jpg')
+img = img.resize((300,500))
+img.save('new_photo1.jpg')
+```
+
+img.resize( 사이즈 ) 이걸 쓰면 됩니다. 안엔 튜플형식으로 가로세로 사이즈 px 집어넣으면 됩니다.
+
+그리고 그걸 변수에 저장하든 해서 .save(경로) 하시면 리사이즈된 사본을 저장 가능합니다.
+
+## 이미지 비율을 깨지않게 리사이즈하기
+
+```py
+from PIL import Image
+img = Image.open('images/photo1.jpg')
+img.thumbnail((300,500))
+img.save('new_photo1.jpg')
+```
+
+img.thumbnail( 사이즈 ) 이걸 쓰면 됩니다.
+
+얘는 특이하게도 변수에 저장할 필요 없습니다.
+
+## JPG 저장시 세부설정
+
+```py
+from PIL import Image
+img = Image.open('images/photo1.jpg')
+img.thumbnail((300,500))
+img.save('new_photo1.jpg', quality=65, progressive=True)
+```
+
+jpg 저장할 때 quality 옵션을 줄 수 있습니다. 퀄리티가 하락하지만 용량줄이기가 가능합니다. 95까지 가능
+
+progressive 옵션을 켜면 웹상에서 빠르게 보이는 듯 사기칠 수 있는 특이한 jpg를 만들 수 있습니다.
+
+참고로 PNG 파일로 변환하고 싶으면 그냥 저장시 파일명을 .png로 바꾸면 됩니다.
+
+PNG 파일은 압축그런게 없기 때문에 색상을 줄이거나 그러는데 quantize 옵션 이런거 찾아보시면 되겠습니다.
+
+## 이미지 자르기
+
+```py
+from PIL import Image
+img = Image.open('images/photo1.jpg')
+img = img.crop( (40, 50, 160, 150) )
+img.save('new_photo1.jpg')
+```
+
+crop() 안에 좌표 2개를 차례로 적으시면 됩니다.
+
+위의 예제는 왼쪽에서 40~160px 위에서 50~150px 부분만큼 이미지를 잘라줍니다.
+
+현재 이미지의 폭 이런것도 출력가능하기 때문에 응용하면 현재 이미지의 폭의 10%만큼 자르기 이런 것도 가능하겠군요.
+
+## 많은 이미지들을 전부 리사이즈 하려면?
+
+예를 들어 폴더에 있는 모든 이미지를 가로 최대 500px로 리사이즈하고 싶으면 어떻게 코드를 짜야합니까.
+
+그냥 위에 했던 resize 문법을 여러번 쓰면 됩니다.
+
+photo1.jpg 열고 리사이즈하고 저장하고
+
+photo2.jpg 열고 리사이즈하고 저장하고
+
+.. 계속 합니다. 반복문 같은거 돌리면 좋겠군요.
+
+근데 특정 폴더 안에 있는 파일명들을 전부 [] 리스트에 담은 다음 그걸로 반복문을 돌려볼겁니다.
+
+```py
+from PIL import Image
+
+import os
+현재경로 = os.getcwd()
+파일명들 = os.listdir( 현재경로 + '/images' )
+
+for i in 파일명들:
+  img = Image.open('images/' + i)
+  img.thumbnail((500,6500))
+  img.save('new_' + i)
+```
+
+os 라이브러리를 import해온 뒤에 특정 폴더에 있는 파일 명을 전부 [] 리스트로 가져옵니다.
+
+그걸로 반복문을 돌리는겁니다.
+
+리스트로 반복문 돌리면 어떤 현상이 일어난다고 했습니까.
+
+아마 설명 안해도 다 알지않을까요.
+
+아무튼 이렇게 하면 파이썬 파일 옆에
+
+가로 500px로 축소된 새로운 파일들을 전부 생성해줍니다.
+
+포토샵 이런 프로그램도 자동프로세스 이런 기능으로 대량이미지 처리가 가능한데
+
+파이썬이 세부설정이 조금 더 편리합니다.
+
+그리고 크롤러나 웹서버 만들 때 붙일 수 있다는게 큰 장점이기도 합니다.
+
+# 파이썬으로 이메일 알림 보내는 법 (SMTP)
+
+파이썬 코드로 이메일 전송하고싶을 경우 어떻게하는지 알려드립니다.
+
+오래걸리는 작업 (웹크롤링 등) 끝났다고 알림을 주거나 결과파일을 보내고 싶을 경우 이메일 쓰시면 편리합니다.
+
+이메일 주고받는건 SMTP서버라는 것들 끼리 가능합니다.
+
+그래서 이메일 보내려면 SMTP 서버를 만들거나.. 아니면 네이버 이런 곳의 SMTP서버를 빌려봅시다.
+
+## 하단 코드를 복붙하면 이메일갑니다
+
+```py
+import smtplib
+from email.mime.text import MIMEText
+
+text = "메일 내용입니다"
+msg = MIMEText(text)
+
+msg['Subject'] ="이것은 메일제목"
+msg['From'] = '보내는사람이메일'
+msg['To'] = '받는사람이름이나 이메일'
+print(msg.as_string())
+
+s = smtplib.SMTP( '네이버smtp주소' , 포트번호 )
+s.starttls() #TLS 보안 처리
+s.login( '네이버아이디' , '비번' ) #네이버로그인
+s.sendmail( '발송자이메일', '수신자이메일', msg.as_string() )
+s.close()
+```
+
+이것이 네이버 SMTP 서버를통해 이메일 보내는 방법입니다.
+
+이런 내용들은 외워서 쓴다기 보다 필요하면 복붙해서 쓰는게 일반적입니다.
+
+참고로 네이버 smtp 주소는 smtp.naver.com, 포트번호는 587 입니다.
+
+다른 메일서비스의 smtp주소, 포트번호, 아이디비번을 알면 그것도 가능합니다.
+
+## 하단 코드를 복붙하면 메일 내 HTML 작성도 가능합니다
+
+```py
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+msg = MIMEMultipart('alternative')
+내용 = """
+여기에 HTML로 작성가능
+"""
+part1 = MIMEText(내용, "html")
+msg.attach(part1)
+
+
+msg['Subject'] ="이것은 메일제목"
+msg['From'] = '보내는사람이메일'
+msg['To'] = '받는사람이름이나 이메일'
+print(msg.as_string())
+
+s = smtplib.SMTP( '네이버smtp주소' , 포트번호 )
+s.starttls() #TLS 보안 처리
+s.login( '네이버아이디' , '비번' ) #네이버로그인
+s.sendmail( '발송자이메일', '수신자이메일', msg.as_string() )
+s.close()
+```
+
+HTML 문법을 이용해서 굵은 제목도 넣고 사진도 넣고 링크도 넣고 그럴 수 있습니다.
+
+여러분이 HTML 문법을 알면 유용한 기능입니다.
+
+참고로 원래 문자자료형 안에선 엔터키칠 수 없습니다. 치는 순간 문자자료형이 깨집니다.
+
+""" 따옴표3개 """ 안에 문자를 작성하시면 엔터키 자유롭게 칠 수 있습니다.
+
+## 하단 코드를 복붙하면 첨부파일도 넣을 수 있습니다
+
+```py
+import smtplib
+from email.mime.text import MIMEText
+from email import encoders
+from email.mime.base import MIMEBase
+from email.mime.multipart import MIMEMultipart
+
+text = "메일 내용입니다"
+msg = MIMEMultipart()
+msg['Subject'] ="이것은 메일제목"
+msg['From'] = '보내는자이메일'
+msg['To'] = '받는자이메일또는이름'
+msg.attach(MIMEText(text))
+print(msg.as_string())
+
+#원하는 파일 rb로 오픈
+with open('보낼파일경로', 'rb') as 파일:
+  part = MIMEBase('application', 'octet-stream')
+  part.set_payload(파일.read())
+
+#파일 base64 인코딩
+encoders.encode_base64(part)
+part.add_header('Content-Disposition', 'attachment; filename="경로제외보낼파일명"')
+msg.attach(part)
+
+s = smtplib.SMTP( 'smtp.naver.com' , 587 )
+s.starttls()
+s.login( '네이버아이디' , '비번' )
+s.sendmail( '보내는사람', '받는사람', msg.as_string() )
+s.close()
+```
+
+with open('보낼파일경로', 'rb') 여기에 보낼 파일이 어딨는지 경로까지 잘 작성해주시고
+
+'attachment; filename="경로제외보낼파일명"' 이 부분에는 파일명만 잘 얌전히 적어주시면 됩니다.
+
+예를 들면 엑셀파일이면 'attachment; filename="data.xlsx"' 이런 식입니다.
+
+크롤링 다된 파일같은거 보낼 때 유용하겠군요.
