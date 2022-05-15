@@ -319,3 +319,183 @@ class Post(models.Model):
 
 - 추후에 좀 더 능숙해지면 admin기능 대신에 별도의 페이지를 만들어서 관리해보기
 
+# Static & Media 파일
+
+## Static 파일
+
+- 개발 리소스로서의 정적인 파일(js,css,image 등)
+- 앱 / 프로젝트 단위로 저장 / 서빙
+
+## Media 파일
+
+- django에만 있는 용어
+- FileField / ImageField를 통해 저장한 모든 파일
+  - models.py 통해 관리
+- DB필드에는 저장경로를 저장하며, 파일은 파일 스토리지에 저장
+  - 실제로 문자열을 저장하는 필드(중요)
+- 프로젝트 단위로 저장 / 서빙
+
+이미지 라이브러리 설치
+
+```
+pip3 install pillow
+```
+
+app/models.py
+
+```py
+class Post(models.Model):
+    message = models.TextField()
+    # 사진을 저장할 수 있는 필드 추가
+    photo = models.ImageField(blank=True)
+    #...
+```
+
+## Media 파일 처리 순서
+
+1. HttpRequest.Files를 통해 파일이 전달
+
+2. 뷰 로직이나 폼 로직을 통해, 유효성 검증을 수행
+
+3. FileField/ImageField 필드에 "경로(문자열)"을 저장하고
+
+4. settings.MEDIA_ROOT 경로에 파일을 저장
+
+## Media 파일 관련 settings 예시
+
+각 설정의 디폴트 값
+
+settings.py
+
+- MEDIA_URL = ""
+  - 각 media 파일에 대한 URL Prefix
+  - 필드명.url 속성에 의해서 참조되는 설정
+- MEDIA_ROOT = ""
+  - 파일필드를 통한 저장 시, 실제 파일을 저장할 ROOT 경로
+
+```py
+MEDIA_URL = '/media/'
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = BASE_DIR / 'media'
+```
+
+## 개발환경에서의 media 파일 서빙
+
+- static 파일과 다르게, 장고 개발서버에서 서빙 미지원
+- 개발 편의성 목적으로 직접 서빙 Rule 추가 가능
+
+urls.py
+
+```py
+from django.conf.urls.static import static
+# ...
+# media url요청 시 이미지 파일 보여줌
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+```
+
+app/admin.py
+
+```py
+#...
+from django.utils.safestring import mark_safe
+
+class PostAdmin(admin.ModelAdmin):
+    list_display = ['id', 'photo_tag', 'message',
+                    'message_length', 'is_public', 'created_at', 'update_at']
+                    # ...
+                    def photo_tag(self, post):
+                        if post.photo:
+                            return mark_safe(f'<img src="{post.photo.url}" style="width: 100px" />')
+                        return None
+```
+
+## 사용할 만한 필드 옵션
+
+- blank 옵션
+  - 업로드 옵션처리 여부
+  - 디폴트 : False
+- upload_to 옵션
+  - settings.MEDIA_ROOT 하위에서 저장한 파일명/경로명 결정
+  - 디폴트 : 파일명 그대로 settings.MEDIA_ROOT에 저장
+    - 추천) 성능을 위해, 한 디렉토리에 너무 많은 파일들이 저장되지 않도록 조정하기
+  - 동일 파일명으로 저장 시에, 파일명에 더미 문자열을 붙여 파일 덮어쓰기 방지
+
+models.py
+
+```py
+class Post(models.Model):
+    message = models.TextField()
+    photo = models.ImageField(blank=True, upload_to='instagram/post/%Y/%m/%d')
+    # upload_to 경로를 지정해주면 이미지파일을 저장할때 경로를 나눠줌
+    # 보통 연/월/일로 나누고 폴더를 나눌수록 찾는데 한 폴더에 있을 때 보다 적게걸림
+    # ...
+```
+
+- 참조하지 않는 이미지파일은 삭제되지 않기 때문에 삭제하고싶으면 배치명령을 작성해서 삭제
+
+# 모델을 통한 조회 (기초)
+
+https://docs.djangoproject.com/en/4.0/topics/db/managers/
+
+## Model Manager
+
+- 데이터베이스 질의 인터페이스를 제공
+- 디폴트 manager로서 ModelCls.objects가 제공
+
+```
+# 생성되는 대강의 SQL 윤곽 -> SELECT * FROM app_model;
+ModelCls.objects.all()
+
+# 생성되는 대강의 SQL 윤곽 -> SELECT * FROM app_model ORDER BY id DESC LIMIT 10;
+ModelCls.objects.all().order_by('-id')[:10]
+
+# 생성되는 대강의 SQL 윤곽 -> SELECT * FROM app_model (title) VALUES ("New Title");
+ModelCls.objects.create(title="New Title")
+
+```
+<img src="https://user-images.githubusercontent.com/96982072/168478198-bfd83c89-ea1d-4598-837d-033c236e7a11.png">
+
+## QuerySet
+
+- SQL을 생성해주는 인터페이스
+- 순회가능한 객체
+- Model Manager를 통해, 해당 Model에 대한 QuerySet을 획득
+  - Post.objects.all() 코드는 "SELECT \* FROM post ...;"
+  - Post.objects.create(...) 코드는 "INSERT INTO ...;"
+
+## QuerySet은 Chaining을 지원
+
+- Post.objects.all().filter(...).exclude(...).filter(...) -> QuerySet
+- QuerySet은 Lazy한 특성
+  - QuerySet을 만드는 동안에는 DB접근을 하지 않습니다.
+  - 실제로 데이터가 필요한 시점에 접근을 합니다.
+- 데이터가 필요한 시점은 언제인가?
+  1. queryset
+  2. print(queryset)
+  3. list(queryset)
+  4. for instance in queryset: print(instance)
+
+<img src="https://user-images.githubusercontent.com/96982072/168478308-799eb68e-0496-4ecc-9247-7f4386e5a26e.png">
+
+## 다양한 조회요청 방법
+
+- 조건을 추가한 Queryset, 획득할 준비
+    - queryset.filter(...) -> queryset
+    - queryset.exclude(...) -> queryset
+- 특정 모델객체 1개 획득을 시도
+    - queryset`[숫자인덱스]`
+     - 모델객체 혹은 예외발생 (IndexError)
+    - queryset.get(...)
+     - 모델객체 혹은 예외발생 (DoesNotExist, MultipleObjectsReturned)
+    - queryset.first() -> 모델객체 혹은 None
+    - queryset.last() -> 모델객체 혹은 None 
+
+## filter <-> exclude
+
+- 인자로 "필드명 = 조건값" 지정
+- 1개 이상의 인자 지정 -> 모두 AND 조건으로 묶임
+- OR 조건을 묶으려면, django.db.models.Q 활용
+
+<img src="https://user-images.githubusercontent.com/96982072/168478369-fca50045-e2ad-4ff6-8665-0552e8292843.png">
