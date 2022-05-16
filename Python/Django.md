@@ -455,6 +455,7 @@ ModelCls.objects.all().order_by('-id')[:10]
 ModelCls.objects.create(title="New Title")
 
 ```
+
 <img src="https://user-images.githubusercontent.com/96982072/168478198-bfd83c89-ea1d-4598-837d-033c236e7a11.png">
 
 ## QuerySet
@@ -482,15 +483,15 @@ ModelCls.objects.create(title="New Title")
 ## 다양한 조회요청 방법
 
 - 조건을 추가한 Queryset, 획득할 준비
-    - queryset.filter(...) -> queryset
-    - queryset.exclude(...) -> queryset
+  - queryset.filter(...) -> queryset
+  - queryset.exclude(...) -> queryset
 - 특정 모델객체 1개 획득을 시도
-    - queryset`[숫자인덱스]`
-     - 모델객체 혹은 예외발생 (IndexError)
-    - queryset.get(...)
-     - 모델객체 혹은 예외발생 (DoesNotExist, MultipleObjectsReturned)
-    - queryset.first() -> 모델객체 혹은 None
-    - queryset.last() -> 모델객체 혹은 None 
+  - queryset`[숫자인덱스]`
+  - 모델객체 혹은 예외발생 (IndexError)
+  - queryset.get(...)
+  - 모델객체 혹은 예외발생 (DoesNotExist, MultipleObjectsReturned)
+  - queryset.first() -> 모델객체 혹은 None
+  - queryset.last() -> 모델객체 혹은 None
 
 ## filter <-> exclude
 
@@ -499,3 +500,309 @@ ModelCls.objects.create(title="New Title")
 - OR 조건을 묶으려면, django.db.models.Q 활용
 
 <img src="https://user-images.githubusercontent.com/96982072/168478369-fca50045-e2ad-4ff6-8665-0552e8292843.png">
+
+# Queryset을 통한 간단 검색구현
+
+## 실전예제) Item 목록/간단검색 페이지
+
+instagram/views.py
+
+```py
+from django.shortcuts import render
+from .models import Post
+
+# Create your views here.
+
+def post_list(request):
+    qs = Post.objects.all()
+    q = request.GET.get('q', '') # 검색어 q를 요청해서 있으면 q를 반환하고 없으면 빈문자열 반환
+    if q:
+        qs = qs.filter(message__icontains=q) # 검색어가 있으면 검색어가 포함된 단어 출력
+    # instagram/templates/instagram/post_list.html
+    return render(request, 'instagram/post_list.html',{
+        'post_list': qs,
+    })
+    # request.POST
+    # request.FILES
+```
+
+instagram/templates/instagram/post_list.html
+
+```html
+{{ post_list }}
+```
+
+instagram/urls.py
+
+```py
+from django.urls import path
+
+from . import views
+
+urlpatterns = [
+    path('', views.post_list),
+]
+```
+
+localhost:8000/instagram
+
+결과물
+<img src="https://user-images.githubusercontent.com/96982072/168571524-1a4ba635-aee9-4940-8137-00a21065152b.png">
+
+검색기능 + 템플릿 추가
+
+post_list.html
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
+      crossorigin="anonymous"
+    />
+    <title>Instagram / Post List</title>
+  </head>
+  <body>
+    <form action="" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="검색" />
+    </form>
+    <table class="table table-bordered table-hover">
+      <tbody>
+        {% for post in post_list %}
+        <tr>
+          <td>
+            {% if post.photo %}
+            <img src="{{ post.photo.url }}" width="25%" />
+            {% else %} No Photo {% endif %}
+          </td>
+          <td>{{ post.message }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>
+```
+
+결과물
+
+검색어 없을 때
+
+<img src="https://user-images.githubusercontent.com/96982072/168575440-380bbe0c-3f53-4409-96c4-ceec7bc0faf5.png">
+
+검색어 입력 후
+
+<img src="https://user-images.githubusercontent.com/96982072/168575483-a3916ea5-a4af-42cc-8b8b-994cc60105a1.png">
+
+url에 ?q=두번째가 추가되었다  
+QuerySet을 직접 써보고, 외부 인자에 의해서 적절한 조건을 걸어서 보기 원하는 포스팅만 볼 수 있는 기능을 구현
+
+# Queryset의 정렬 및 범위 조건
+
+## 정렬 조건 추가
+
+- SELECT 쿼리에 "OREDER BY" 추가
+
+- 정렬 조건을 추가하지 않으면 일관된 순서를 보장받을 수 없음
+
+- DB에서 다수 필드에 대한 정렬을 지원
+
+  - 하지만, 가급적 단일 필드로 하는 것이 성능에 이익
+  - 시간순/역순 정렬이 필요할 경우, id 필드를 활용해볼 수 있음
+
+- 정렬 조건을 지정하는 2가지 방법
+  1. (추천) 모델 클래스의 Meta 속성으로 ordering 설정 : list로 지정
+  2. 모든 queryset에 order_by(...)에 지정
+
+## 정렬 지정하기 #1
+
+instagram/models.py
+
+```py
+class Post(models.Model):
+  #...
+
+  class Meta:
+        ordering = ['-id']
+```
+
+메타 속성으로 id순으로 정렬됨
+여기서 다시 order_by로 조건을 입력하면 조건이 바뀌어서 조회
+
+```
+# 생성 순서대로 조회
+
+Post.objects.all().order_by('created_at')
+
+# id정렬은 사라지고 생성순 정렬로 조회
+```
+
+## 슬라이싱을 통한 범위 조건 추가
+
+- SELECT 쿼리에 "OFFSET/LIMIT" 추가
+
+- str/list/tuple에서의 슬라이싱과 거의 유사하나, 역순 슬라이싱은 지원하지 않음
+
+  - 데이터베이스에서 지원하지 않기 때문
+
+- 객체`[start:stop:step]`
+  - OFFSET -> start
+  - LIMIT -> stop - start
+  - (주의) step은 쿼리에 대응되지 않습니다. 사용을 비추천
+
+```
+# 처음에서 2개만 보여주기
+
+Post.objects.all()[:2]
+
+# step을 넣으면 반환 값이 list가 됨
+
+Post.objects.all()[1:3:1]
+
+# 역순 슬라이싱은 지원하지 않음
+
+Post.objects.all()[-2:]
+```
+
+# django-debug-toolbar를 이용한 SQL디버깅
+
+설치 공식문서
+
+https://django-debug-toolbar.readthedocs.io/en/latest/installation.html
+
+주의사항
+
+웹페이지의 템플릿에 필히 "`<body>`" 태그가 있어야만, django-debug-toolbar가 동작합니다.
+
+이유 : dbt의 html/script 디폴트 주입 타겟이 `</body>` 태그 (INSERT_BEFORE 설정 디폴트: "`</body>`")
+
+## django-debug-toolbar
+
+- 현재 request/response에 대한 다양한 디버깅 정보를 보여줌.
+- 다양한 Panel 지원
+  - SQLPanel을 통해, 각 요청 처리 시에 발생한 SQL 내역 확인 가능
+  - Javascript Ajax 요청에 대한 지원은 불가합니다.
+
+그 외 : django-querycount
+
+https://github.com/bradmontgomery/django-querycount/
+
+- SQL 실행내역을 개발서버 콘솔 표준출력
+- Ajax 내역도 출력 가능
+
+# 관계를 표현하는 모델 필드
+
+- ORM은 어디까지나, SQL 생성을 도와주는 라이브러리
+- ORM이 DB에 대한 모든 것을 알아서 처리해주진 않습니다
+- 보다 성능높은 어플리케이션을 만들고자 한다면, 사용할 DB엔진과 SQL에 대한 높은 이해 필요
+
+## RDBMS에서의 관계예시
+
+- 1 : N 관계 -> models.ForeignKey로 표현
+
+  - 1명의 유저가 쓰는 다수의 포스팅(Post)
+  - 1명의 유저가 쓰는 다수의 댓글(Comment)
+  - 1명의 포스팅(Post)에 다수의 댓글(Comment)
+
+- 1 : 1 관계 -> models.OneToOneField로 표현
+
+  - 1명의 유저는 1개의 프로필(Profile)
+
+- M : N 관계 -> models.ManyToManyField로 표현
+
+  - 1개의 포스팅(Post)에는 다수의 태그(Tag)
+    - 1개의 태그(Tag)에는 다수의 포스팅(Post)
+
+## ForeignKey
+
+https://docs.djangoproject.com/en/2.1/ref/models/fields/#django.db.models.ForeignKey
+
+- 1:N 관계에서 N측에 명시
+
+  - ex) Post:**Comment**, User:**Post**, User:**Comment**
+
+- ForeignKey(to, on_delete)
+  - to : 대상모델
+    - 클래스를 직접 지정하거나, 클래스명을 문자열로지정. 자기 참조는 "self"지정
+  - on_delete : Record 삭제 시 Rule
+    - CASCADE : FK로 참조하는 다른 모델의 Record도 삭제 (장고 1.X에서의 디폴트값)
+      - ex) 만약에 포스트와 댓글에서 포스트가 삭제 시 댓글도 같이 삭제
+    - PROTECT : ProtectedError (IntegrityError 상속)를 발생시키며, 삭제 방지
+    - SET_NULL : null로 대체. 필드에 null=True 옵션 필수.
+    - SET_DEFAULT : 디폴트 값으로 대체. 필드에 디폴트값 지정 필수
+    - SET : 대체할 값이나 함수 지정. 함수의 경우 호출하여 리턴값을 사용.
+    - DO_NOTHING : 어떠한 액션 X. DB에 따라 오류가 발생할 수도 있습니다.
+
+instagram/models.py
+
+```py
+# ForeignKey로 댓글 모델 만들기
+
+class Comment(models.Model):
+    post = models.ForeignKey('Post', on_delete=models.CASCADE) # post_id 필드가 생성이 됩니다.
+    mssage = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    update_at = models.DateTimeField(auto_now=True)
+```
+
+### 올바른 User 모델 지정
+
+instagram/models.py
+
+```py
+class Post(models.Model):
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    message = models.TextField()
+    # ...
+```
+
+### ForeignKey에서의 reverse_name
+
+- reverse 접근 시의 속성명 : 디폴트 -> "모델명소문자\_set"
+
+<img src="https://user-images.githubusercontent.com/96982072/168609227-753b81c2-279d-4dde-93d1-f851c64ea474.png">
+
+post.comment_set.all() <-> Comment.objects.filter(post=post)
+
+여기서 사용된 1측의 Post에서 N측의 comment를 참조할 때의 post.comment_set.all()을 reverse_name이라 부른다
+
+### reverse_name의 이름 충돌이 발생한다면?
+
+- reverse_name 디폴트 명은 앱이름 고려 X, 모델명만 고려
+
+- 다음의 경우, user.post_set 이름에 대한 충돌
+
+  - blog앱 Post모델, author = FK(User)
+  - shop앱 Post모델, author = FK(User)
+
+- 이름이 충돌이 날 때, makemigrations 명령이 실패
+
+- 이름 충돌 피하기
+
+  1. 어느 한 쪽의 FK에 대해, reverse_name을 포기 -> related_name='+'
+  2. 어느 한 쪽의 (혹은 모두) FK의 reverse_name을 변경
+
+  - ex) FK(User, …, related_name="blog_post_set")
+  - ex) FK(User, …, related_name="shop_post_set")
+
+### ForeignKey.limit_choices_to 옵션
+
+- Form을 통한 Choice 위젯에서 선택항목 제한 가능.
+  - dict/Q 객체를 통한 지정 : 일괄 지정
+  - dict/Q 객체를 리턴하는 함수 지정 : 매번 다른 조건 지정 가능
+- ManyToManyField에서도 지원
+
+  ```py
+  staff_member = models.ForeignKey(
+  User,
+  on_delete=models.CASCADE,
+  limit_choices_to={'is_staff': True},
+  )
+  ```
