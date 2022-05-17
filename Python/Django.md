@@ -806,3 +806,83 @@ post.comment_set.all() <-> Comment.objects.filter(post=post)
   limit_choices_to={'is_staff': True},
   )
   ```
+
+## OneToOneField
+
+- 1 : 1 관계에서 어느 쪽이라도 가능
+  - User:Profile
+- ForeignKey(unique=True)와 유사하지만, reverse 차이
+  - User:Profile를 FK로 지정한다면 -> profile.user_set.first() -> user
+  - User:Profile를 O2O로 지정한다면 -> profile.user -> user
+    - user.profile -> profile 사용가능.
+    - user.profile 시에 user와 관계에 있는 Profile이 없는 경우, Profile.DoesNotExist 예외가 발생합니다.
+- OneToOneField(to, on_delete)
+  ```py
+  # accounts/models.py
+   class Profile(models.Model):
+   author = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+  ```
+
+### O2O에서의 related_name
+
+- reverse 접근 시의 속성명 : 디폴트 -> 모델명소문자
+
+app/models.py
+
+```py
+ # accounts/models.py
+
+ class Profile(models.Model):
+  author = models.OneToOneField(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
+  phone = models.CharField(max_length=11, blank=True)
+  birth = models.DateField(null=True)
+
+ >>> profile.author
+ >>> user.profile
+```
+
+## ManyToManyField
+
+- M : N 관계에서 어느 쪽이라도 필드 지정 가능
+
+- ManyToManyField(to, blank=False)
+
+app/models.py
+
+```py
+# 방법 1)
+class Post(models.Model):
+  tag_set = models.ManyToManyField('Tag', blank=True) class Article(models.Model):
+  tag_set = models.ManyToManyField('Tag', blank=True) class Tag(models.Model):
+  name = models.CharField(max_length=100, unique=True)
+
+# 방법 2)
+class Post(models.Model):
+  ...
+class Article(models.Model):
+  ...
+class Tag(models.Model):
+  name = models.CharField(max_length=100, unique=True)
+  post_set = models.ManyToManyField('Post', blank=True)
+  article_set = models.ManyToManyField('Article', blank=True)
+```
+
+## RDBMS지만, DB따라 NoSQL기능도 지원
+
+- ex)하나의 Post안에 다수의 댓글 저장 가능
+
+- djkoch/jsonfield
+
+  - 대개의 DB엔진에서 사용 가능
+  - TextField/CharField를 래핑
+  - dict 등의 타입에 대한 저장을 직렬화하여 문자열로 저장
+    - 내부 필드에 대해 쿼리 불가
+
+- django.contrib.postgres.fields.JSONField
+
+  - 내부적으로 PostgreSQL의 jsonb 타입
+  - 내부 필드에 대해 쿼리 지원
+
+- adamchainz/django-mysql
+
+  - MySQL 5.7 이상에서 json 필드 지원
