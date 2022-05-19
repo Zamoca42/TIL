@@ -931,7 +931,7 @@ class Tag(models.Model):
 
 ## 마이그레이션 파일 생성 및 적용
 
-<img src="">
+<img src="https://user-images.githubusercontent.com/96982072/169072631-6b0af075-9e1b-4f74-8cc7-7ab9046f12a5.png">
 
 ## 언제 makemigrations를 하는 가?
 
@@ -956,3 +956,412 @@ class Tag(models.Model):
   - 지정된 <마이그레이션-이름>이 현재 적용된 마이그레이션보다
     - 이후라면, 정방향으로 순차적으로 지정 마이그레이션까지 forward 수행
     - 이전이라면, 역방향으로 순차적으로 지정 마이그레이션 이전까지 backward 수행
+
+## id필드는 왜 생기나요?
+
+- 모든 DB 테이블에는 각 Row의 식별기준인 “기본키 (Primary Key)”가 필요
+  - 장고에서는 기본키로서 id (AutoField) 필드를 디폴트 생성
+  - 다른 필드를 기본키로 지정하고 싶다면 primary_key=True 옵션 적용
+
+## 새로운 필드가 필수필드라면?
+
+- 필수필드 여부 : blank/null 옵션이 모두 False 일 때 (디폴트)
+
+- makemigrations 명령을 수행할 때, 기존 Record들에 어떤 값을 채워넣을 지 묻습니다.
+  - 선택1) 지금 그 값을 입력하겠다.
+  - 선택2) 명령 수행을 중단.
+
+## 협업 Tip
+
+- 절대 하지 말아야할 일
+  - 팀원 각자가 마이그레이션 파일을 생성 -> 충돌 발생
+- 추천) 마이그레이션 파일 생성은 1명이 전담해서 생성.
+  - 생성한 마이그레이션 파일을 버전관리에 넣고, 다른 팀원들은 이를 받아서 migrate만 수행
+
+# 다양한 응답의 함수 기반 뷰
+
+## View
+
+- 1개의 HTTP 요청에 대해 -> 1개의 뷰가 호출
+
+- urls.py/urlpatterns 리스트에 매핑된 호출 가능한 객체
+
+  - 함수도 "호출 가능한 객체" 중의 하나
+
+- 웹 클라이언트로부터의 HTTP 요청을 처리
+
+- 크게 2가지 형태의 뷰
+  - 함수 기반 뷰 (Function Based View) : 장고 뷰의 기본.
+    - 호출 가능한 객체. 그 자체
+  - 클래스 기반 뷰 (Class Based View)
+    - 클래스.as_view() 를 통해 호출가능한 객체를 생성/리턴
+
+## View 호출 시, 인자
+
+- HttpRequest 객체 및 URL Captured Values
+
+- 1번째 인자 : HttpRequest 객체
+
+  - 현재 요청에 대한 모든 내역을 담고 있습니다.
+
+- 2번째~ 인자 : 현재 요청의 URL로부터 Capture된 문자열들
+  - url/re_path 를 통한 처리에서는 -> 모든 인자는 str 타입으로 전달
+  - path 를 통한 처리에서는 -> 매핑된 Converter의 to_python에 맞게 변환된 값이 인자로 전달
+    - 지난 에피소드의 4자리 년도를 위한 FourDigitYearConverter에서는 int 변환 -> 뷰의 인자로 int 타입의 년도가 전달
+
+## View 호출에 대한 리턴값
+
+- HttpResponse 객체
+
+- 필히 HttpResponse 객체를 리턴해야 합니다
+
+  - 장고 Middleware에서는 뷰에서 HttpResponse 객체를 리턴하기를 기대합니다. -> 다른 타입을 리턴하면 Middleware에서 처리 오류.
+  - django.shortcuts.render 함수는 템플릿 응답을 위한 shortcut 함수
+
+- 파일like객체 혹은 str/bytes 타입의 응답 지원
+
+  - str 문자열을 직접 utf8로 인코딩할 필요가 없습니다.
+    - 장고 디폴트 설정에서 str 문자열을 utf8로 인코딩해줍니다.
+  - response = HttpResponse( 파일like객체 또는 str객체 또는 bytes객체 )
+
+- 파일 like 객체
+  - response.write( str객체 또는 bytes객체 )
+
+## HttpRequest와 HttpResponse 예시
+
+```py
+from django.http import HttpRequest, HttpResponse
+
+def index(request: HttpRequest) -> HttpResponse: # View 함수
+  # 주요 request 속성
+  request.method # 'GET', 'POST', etc.
+  request.META
+  request.GET, request.POST, request.FILES, request.body
+
+content = '''
+  <html>...</html>
+''' #문자열혹은이미지,각종파일등
+
+response = HttpResponse(content)
+response.write(content) #response -> file-likeobject
+response['Custom-Header'] = 'Custom Header Value'
+return response
+```
+
+## FBV의 예
+
+- Item 목록 보기
+
+```py
+# myapp/views.py
+from django.shortcuts import render
+from shop.models import Item
+
+def item_list(request):
+  qs = Item.objects.all()
+  return render(request, 'shop/item_list.html', {
+      'item_list': qs,
+    })
+
+# myapp/urls.py
+from django.urls import path
+
+urlpatterns = [
+path('items/', item_list, name='item_list'),
+]
+```
+
+## CBV의 예
+
+- Item 목록 보기
+
+- 간단하게 한줄로 끝낼 수 있지만, 기본 원리를 모르면 커스텀하고자 할 때 건들 수 없게됨.
+
+```py
+# myapp/views.py
+from django.views.generic import ListView
+from shop.models import Item
+
+item_list = ListView.as_view(model=Item)
+
+# myapp/urls.py
+from django.urls import path
+urlpatterns = [
+    path('items/', item_list, name='item_list'),
+]
+```
+
+# 다양한 타입의 HttpResponse
+
+## Excel 파일 다운로드 응답
+
+```py
+from django.http import HttpResponse
+from urllib.parse import quote
+
+def response_excel(request):
+    filepath = '/other/path/excel.xls'
+    filename = os.path.basename(filepath)
+
+    with open(filepath, 'rb') as f:
+        response = HttpResponse(f, content_type='application/vnd.ms-excel')
+
+        # 브라우저에 따라 다른 처리가 필요합니다.
+        encoded_filename = quote(filename)
+        response['Content-Disposition'] = "attachment; filename*=utf-8''{}".format(encoded_filename)
+
+    return response
+
+# ref) django.http.FileResponse 를 통해 첨부 헤더 지원
+```
+
+## Pandas를 통한 CSV 응답 생성
+
+```py
+import pandas as pd
+from io import StringIO
+from django.http import HttpResponse
+def response_csv(request):
+    df = pd.DataFrame([
+        [100, 110, 120],
+        [200, 210, 220],
+        [300, 310, 320],
+])
+
+io = StringIO()
+df.to_csv(io)
+io.seek(0) # 끝에 있는 file cursor를 처음으로 이동
+
+response = HttpResponse(io, content_type='text/csv')
+response['Content-Disposition'] = "attachment; filename*=utf-8''{}".format(encoded_filename)
+return response
+```
+
+## Pillow를 통한 이미지 응답 생성 - 기본
+
+```py
+import requests
+from io import BytesIO
+from PIL import Image, ImageDraw, ImageFont
+
+ttf_path = 'C:/Windows/Fonts/malgun.ttf' # 윈도우의 맑은고딕 폰트 경로, 맥에서는 애플고딕 경로 à '/Library/Fonts/AppleGothic.ttf'
+
+image_url = 'http://www.flowermeaning.com/flower-pics/Calla-Lily-Meaning.jpg'
+
+res = requests.get(image_url) # 서버로 HTTP GET 요청하여, 응답 획득
+io = BytesIO(res.content) # 응답의 Raw Body. 메모리 파일 객체 BytesIO 인스턴스 생성
+io.seek(0) # 파일의 처음으로 커서를 이동
+
+canvas = Image.open(io).convert('RGBA' ) # 이미지 파일을 열고, RGBA모드로 변환
+
+font = ImageFont.truetype(ttf_path, 40) # 지정 경로의 TrueType 폰트, 폰트크기 40
+draw = ImageDraw.Draw(canvas) # canvas에 대한 ImageDraw 객체 획득
+
+text = 'Ask Company'
+left, top = 10, 10
+margin = 10
+width, height = font.getsize(text)
+right = left + width + margin
+bottom = top + height + margin
+
+draw.rectangle((left, top, right, bottom), (255, 255, 224))
+draw.text((15,15), text, font=font, fill=(20, 20, 20))
+
+canvas.show()
+```
+
+# URL Dispatcher와 정규 표현식
+
+## URL Dispatcher
+
+- "특정 URL 패턴 -> View"의 List
+
+- 프로젝트/settings.py에서 최상위 URLConf 모듈을 지정
+
+  - 최초의 urlpatterns로부터 include를 통해, TREE구조로 확장
+
+- HTTP 요청이 들어올 때마다, 등록된 urlpatterns 상의 매핑 리스트를 처음부터 순차적으로 훑으며 URL 매칭을 시도
+  - 매칭이 되는 URL Rule이 다수 존재하더라도, 처음 Rule만을 사용
+  - 매칭되는 URL Rule이 없을 경우, 404 Page Not Found 응답을 발생
+
+## urlpatterns 예시
+
+shop/urls.py
+
+```py
+from django.urls import path, re_path
+from shop import views
+
+urlpatterns = [
+    path('', views.item_list, name='item_list'), # Item 목록
+    path('new/', views.item_new, name='item_new'), # 새 Item
+
+    path('<int:id>/', views.item_detail, name='item_detail'), # Item 보기
+    re_path(r'^(?P<id>\d+)/$', views.item_detail, name='item_detail'), # 혹은 re_path 활용
+
+    path('<int:id>/edit/', views.item_edit, name='item_edit'), # Item 수정
+    path('<int:id>/delete/', views.item_delete, name='item_delete'), # Item 삭제
+
+    path('<int:id>/reviews/', views.review_list, name='review_list'), # 리뷰목록
+    path('<int:item_id>/reviews/<int:id>/edit/$', views.review_edit, # 리뷰수정
+         name='review_edit'),
+    path('<int:item_id>/reviews/<int:id>/delete/$',views.review_delete, # 리뷰삭제
+         name='review_delete'),
+]
+```
+
+## path()와 re_path()의 등장
+
+- 장고 1.x에서의 Django.conf.urls.url() 사용이 2가지로 분리
+
+- django.urls.re_path()
+
+  - django.conf.urls.url()과 동일
+
+- django.urls.path()
+  - 기본 지원되는 Path converters를 통해 정규표현식 기입이 간소화 -> 만능은 아닙니다.
+  - 자주 사용하는 패턴을 Converter로 등록하면, 재활용면에서 편리
+
+```py
+from django.conf.urls import url # django 1.x 스타일
+from django.urls import path, re_path # django 2.x ~ 스타일
+
+ urlpatterns = [
+# 장고 1.x에서의 다음 코드를
+url(r'^articles/(?P<year>[0-9]{4})/$', views.year_archive),
+
+# 다음과같이간소화가능
+     path('articles/<int:year>/', views.year_archive),
+
+#물론다음과같이동일하게쓸수있습니다.
+     re_path(r'^articles/(?P<year>[0-9]{4})/$', views.year_archive),
+]
+```
+
+## 기본 제공되는 Path Converters
+
+- IntConverter -> `r"[0-9]+"`
+- StringConverter -> `r"[^/]+"`
+- UUIDConverter -> `r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"`
+- SlugConverter (StringConverter 상속) -> `r"[-a-zA-Z0-9_]+"`
+- PathConverter (StringConverter 상속) -> `r".+"`
+
+# 클래스 기반 뷰 시작하기
+
+https://docs.djangoproject.com/en/3.0/topics/class-based-views/
+
+## Class Based View(CBV)
+
+- View 함수를 만들어주는 클래스
+
+  - as_view() 클래스 함수를 통해, View 함수를 생성
+  - 상속을 통해, 여러 기능들을 믹스인.
+
+- 장고 기본 CBV 팩키지
+
+  - django.views.generic -> 소스코드 참고
+  - https://github.com/django/django/tree/3.0.2/django/views/generic
+
+- 써드파티 CBV
+  - django-braces
+  - https://django-braces.readthedocs.io
+
+## CBV 컨셉 구현해보기
+
+## 1. FBV
+
+```py
+from django.shortcuts import get_object_or_404, render
+
+def post_detail(request, id):
+  post = get_object_or_404(Post, id=id)
+  return render(request, 'blog/post_detail.html', {
+      'post': post,
+  })
+
+def article_detail(request, id):
+  article = get_object_or_404(Article, id=id)
+  return render(request, 'blog/article_detail.html', {
+    'article': article,
+  })
+
+urlpatterns = [
+    path('post/<int:id>/', post_detail),
+    path('article/<int:id>/', article_detail),
+]
+```
+
+## 3. Class로 동일한 View 함수 구현
+
+```py
+class DetailView:
+    def __init__(self, model):
+        self.model = model
+
+    def get_object(self, *args, **kwargs):
+        return get_object_or_404(self.model, id=kwargs['id'])
+
+    def get_template_name(self):
+        return '{}/{}_detail.html'.format(
+            self.model._meta.app_label,
+            self.model._meta.model_name)
+
+    def dispatch(self, request, *args, **kwargs):
+        object = self.get_object(*args, **kwargs)
+        return render(request, self.get_template_name(), {
+            self.model._meta.model_name: object,
+        })
+
+    @classmethod
+    def as_view(cls, model):
+        def view(request, *args, **kwargs):
+            self = cls(model)
+            return self.dispatch(request, *args, **kwargs)
+return view
+
+post_detail = DetailView.as_view(Post)
+article_detail = DetailView.as_view(Article)
+```
+
+## 4. 장고 기본 제공 CBV 활용
+
+```py
+from django.views.generic import DetailView
+
+post_detail = DetailView.as_view(model=Post, pk_url_kwarg='id')
+article_detail = DetailView.as_view(model=Article, pk_url_kwarg='id')
+
+# pk_url_kwarg 인자를 "pk"로 지정했다면
+
+post_detail = DetailView.as_view(model=Post)
+article_detail = DetailView.as_view(model=Article)
+
+urlpatterns = [
+    path('post/<int:pk>/', post_detail),
+    path('article/<int:pk>/', article_detail),
+]
+
+# 상속을 통한 CBV 속성 정의
+
+from django.views.generic import DetailView
+
+class PostDetailView(DetailView):
+    model = Post
+    pk_url_kwarg = 'id'
+
+post_detail = PostDetailView.as_view()
+```
+
+## CBV는 ~
+
+- CBV가 정한 관례대로 개발할 경우, 아주 적은 양의 코드로 구현
+  - 그 관례에 대한 이해가 필요 -> FBV를 통한 개발경험이 큰 도움.
+    - 필요한 설정값을 제공하거나, 특정 함수를 재정의하는 방식으로 커스텀 가능
+    - 하지만, 그 관례를 잘 이해하지 못하고 사용하거나, 그 관례에서 벗어난 구현을 하고자 할 때에는 복잡해지는 경향이 있습니다.
+
+- CBV를 제대로 이해할려면 ~
+  - 코드를 통한 이해가 지름길
+    - 파이썬 클래스에 대한 이해가 필요 (특히 상속, 인자 packing/unpacking)
+  - https://github.com/django/django/tree/2.1/django/views/generic
+  
+- CBV 코드를 동일하게 동작하는 FBV로 구현해보는 연습을 추천
