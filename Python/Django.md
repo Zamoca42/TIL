@@ -1365,3 +1365,6 @@ post_detail = PostDetailView.as_view()
   - https://github.com/django/django/tree/2.1/django/views/generic
   
 - CBV 코드를 동일하게 동작하는 FBV로 구현해보는 연습을 추천
+  
+
+  
