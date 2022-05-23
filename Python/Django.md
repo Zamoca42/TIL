@@ -1531,7 +1531,7 @@ post_list1 = ListView.as_view(model=Post)
 
 post_list2 = ListView.as_view(model=Post, paginate_by=10)
 
-# 상속 
+# 상속
 
 class PostListView(ListView):
     model = Post
@@ -1569,3 +1569,401 @@ post_list4 = PostListView.as_view()
   - View
 
 - https://github.com/django/django/blob/3.0.2/django/views/generic/list.py
+
+# 뷰 장식자
+
+https://docs.djangoproject.com/en/3.0/topics/http/decorators/
+
+## 장식자 (Decorators)
+
+- 어떤 함수를 감싸는 (Wrapping) 함수
+
+```py
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+
+@login_required
+def protected_view1(request):
+  return render(request, 'myapp/secret.html')
+
+def protected_view2(request):
+  return render(request, 'myapp/secret.html')
+
+protected_view2 = login_required(protected_view2)
+```
+
+## 몇 가지 장고 기본 Decorators
+
+- django.views.decorators.http
+
+  - require_http_methods, require_GET, require_POST, require_safe
+    - 지정 method가 아닐 경우, HttpResponseNotAllowed 응답 (상태코드 405) 반환
+
+- django.contrib.auth.decorators
+
+  - user_passes_test : 지정 함수가 False를 반환하면 login_url로 redirect
+  - login_required : 로그아웃 상황에서 login_url로 redirect
+  - permission_required : 지정 퍼미션이 없을 때 login_url로 redirect
+
+- django.contrib.admin.views.decorators
+  - staff_member_required : staff member가 아닐 경우 login_url로 이동
+
+## CBV에 장식자 입히기 #1
+
+- 가독성이 좋지 않아요.
+
+- 요청을 처리하는 함수를 Wrapping하기
+
+```py
+from django.contrib.auth.decorators import login_required
+from django.views.generic import TempalteView
+
+class SecretView(TemplateView):
+  template_name = 'myapp/secret.html'
+v
+iew_fn = SecretView.as_view()
+
+secret_view = login_required(view_fn) # 이미 생성된 함수에 장식자 입힐 수도 있어요.
+```
+
+## CBV에 장식자 입히기 #2
+
+- 괜히 dispatch 재정의
+
+```py
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from django.views.generic import TempalteView
+
+class SecretView(TemplateView):
+  template_name = 'myapp/secret.html'
+
+  # 클래스 멤버함수에는 method_decorator를 활용
+  @method_decorator(login_required)
+  def dispatch(self, *args, **kwargs):
+    return super().dispatch(*args, **kwargs)
+
+secret_view = SecretView.as_view()
+```
+
+# 장고 기본 CBV API (Generic date views)
+
+https://docs.djangoproject.com/en/3.0/ref/class-based-views/generic-date-based/
+
+## Generic Date Views
+
+- ArchiveIndexView : 지정 날짜필드 역순으로 정렬된 목록
+
+- YearArchiveView : 지정 year년도의 목록
+
+- MonthArchiveView : 지정 year/month 월의 목록
+
+- WeekArchiveView : 지정 year/week 주의 목록
+
+- DayArchiveView : 지정 year/month/day 일의 목록
+
+- TodayArchiveView : 오늘 날짜의 목록
+
+- DateDetailView : 지정 year/month/day 목록 중에서 특정 pk의 detail
+  - DetailView와 비교 : URL에 year/month/day를 쓰고자 할 경우에 유용
+
+## 공통 옵션
+
+- allow_future (디폴트: False)
+  - False : 현재시간 이후의 Record는 제외
+
+## ArchiveIndexView
+
+- 지정 날짜필드 역순으로 정렬된 목록 -> 최신 목록을 보고자 할 때
+
+- 필요한 URL 인자 : 없음.
+
+- 옵션
+
+  - model
+  - date_field : 정렬 기준 필드
+  - date_list_period (디폴트: "year")
+
+- 디폴트 template_name_suffix : "\_archive.html"
+
+- Context
+  - latest : QuerySet
+  - date_list : 등록된 Record의 년도 목록
+
+```py
+from django.views.generic import ArchiveIndexView
+from .models import Post
+
+post_archive = ArchiveIndexView.as_view( model=Post, date_field='created_at')
+```
+
+# 적절한 HTTP 상태코드로 응답하기
+
+## HTTP 상태코드
+
+- 웹서버는 적절한 상태코드로서 응답해야 합니다.
+- 각 HttpResponse 클래스마다 고유한 status_code가 할당 (코드) REST API를 만들 때, 특히 유용
+
+```py
+# django/http/response.py
+class HttpResponseRedirect(HttpResponseRedirectBase):
+  status_code = 302
+
+from django.http import HttpResponse
+
+def test_view(request):
+  # Return a "created" (201) response code.
+  return HttpResponse(status=201)
+```
+
+## 200 응답하는 몇 가지 예
+
+```py
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render
+
+def view1(request):
+  return HttpResponse('Hello, Ask Company')
+
+def view2(request):
+  return render(request, 'template.html')
+
+def view3(request):
+  return JsonResponse({'hello': 'Ask Company'})
+```
+
+## 302 응답하는 몇 가지 예
+
+```py
+from django.http import HttpResponseRedirect
+from django.shortcuts import redirect, resolve_url
+
+def view1(request):
+  return HttpResponseRedirect('/shop/')
+
+def view2(request):
+  url = resolve_url('shop:item_list') # 후에 배울 URL Reverse 적용
+  return HttpResponseRedirect(url)
+
+def view3(request):
+  # 내부적으로 resolve_url 사용
+  # 인자로 지정된 문자열이 url reverse에 실패할 경우,
+  # 그 문자열을 그대로 URL로 사용하여, redirect 시도
+  return redirect('shop:item_list')
+```
+
+## 404 응답하는 몇 가지 예
+
+```py
+from django.http import Http404, HttpResponseNotFound
+from django.shortcuts import get_object_or_404
+from shop.models import Item
+
+def view1(request):
+try:
+item = Item.objects.get(pk=100)
+    except Item.DoesNotExist:
+        raise Http404
+    # 생략
+
+def view2(request):
+  item = get_object_or_404(Item, pk=100) # 내부에서 raise Http404
+  # 생략
+
+def view3(request):
+    try:
+        item = Item.objects.get(pk=100)
+    except Item.DoesNotExist:
+        return HttpResponseNotFound()
+        # 생략
+    # 잘 쓰지 않는 방법
+```
+
+## 500 응답하는 몇 가지 예
+
+- 뷰에서 요청 처리 중에, 뷰에서 미처 잡지못한 오류가 발생했을 경우
+  - IndexError, KeyError, django.db.models.ObjectDoesNotExist 등
+
+```py
+from shop.models import Item
+
+def view1(request):
+  # IndexError
+  name = ['Tom', 'Steve'][100]
+
+  # 지정 조건의 Item 레코드가 없을 때, Item.DoesNotExist 예외
+  # 지정 조건의 Item 레코드가 2개 이상 있을 때, Item.MultipleObjectsReturned 예외
+  item = Item.objects.get(pk=100)
+```
+
+## 다양한 HttpResponse 서브 클래스
+
+- 지정 상태코드의 응답이 필요할 때
+
+- HttpResponseRedirect : 상태코드 302
+- HttpResponsePermanentRedirect : 상태코드 301 (영구 이동)
+- HttpResponseNotModified : 상태코드 304
+- HttpResponseBadRequest : 상태코드 400
+- HttpResponseNotFound : 상태코드 404
+- HttpResponseForbidden : 상태코드 403
+- HttpResponseNotAllowed : 상태코드 405
+- HttpResponseGone : 상태코드 410
+- HttpResponseServerError : 상태코드 500
+
+# URL Reverse를 통해 유연하게 URL 생성하기
+
+## URL Dispatcher
+
+- urls.py 변경만으로 “각 뷰에 대한 URL”이 변경되는 유연한 URL 시스템
+
+```py
+# "/blog/", "/blog/1/" 주소로 서비스하다가
+urlpatterns = [
+  path('blog/', blog_views.post_list, name='post_list’),
+  path('blog/<int:pk>/', blog_views.post_detail, name='post_detail'),
+]
+
+# 다음과 같이 변경을 하면,
+# 이제 "/weblog/", "/weblog/1/" 주소로 서비스하게 됩니다.
+urlpatterns = [
+  path('weblog/', blog_views.post_list, name='post_list’),
+  path('weblog/<int:pk>/', blog_views.post_detail, name='post_detail'),
+]
+```
+
+## URL Reverse의 혜택
+
+- 개발자가 일일이 URL을 계산하지 않아도 됩니다
+
+- URL이 변경되더라도, URL Reverse가 변경된 URL을 추적 누락될 일이 없어요
+
+## 직접 URL을 계산한다면
+
+1. blog앱 Post목록을 볼려면, post_list 뷰를 호출해야하니깐,
+
+2. urls.py 를 뒤적뒤적거리며, URL계산계산
+
+3. 계산완료 ! -> /blog/ 주소를 쓰면 되겠네.
+
+   ```html
+   <!-- blog/templates/blog/layout.html 내에서의 링크 -->
+   <a href="/blog/">블로그 글 목록</a>
+   <!-- blog/templates/blog/post_form.html 내에서의 링크 -->
+   <a href="/blog/">블로그 글 목록</a>
+   <!-- blog/templates/blog/comment_form.html 내에서의 링크 -->
+   <a href="/blog/">블로그 글 목록</a>
+   ```
+
+   그런데, 이 blog앱을 다른 프로젝트에도 쓸려고 옮겼는 데, URL Prefix를 weblog로 쓰고 싶어요.  
+   하나하나 수정할 것인가? 그냥 안된다고 할 것인가?
+
+   /blog/api/post/1001/comments/100/ 과 같은 URL을 외워서 쓸 것인가?
+
+## URL 계산은 장고에게 양보하세요.
+
+1. blog앱 Post목록을 볼려면, post_list 뷰를 호출해야하니깐,
+
+2. ~~urls.py 를 뒤적뒤적거리며, URL계산계산~~
+
+3. ~~계산완료 -> /blog/ 주소를 쓰면 되겠네.~~
+
+그런데, 이 blog앱을 다른 프로젝트에도 쓸려고 옮겼는데, URL Prefix를 weblog로 쓰고 싶어요.  
+하나하나 수정할 것인가? 그냥 안된다고 할 것인가?  
+-> 코드 변경 거의 없이 가능합니다.
+
+## URL Reverse를 수행하는 4가지 함수 (1)
+
+- url 템플릿태그
+
+  - 내부적으로 reverse 함수를 사용
+
+- reverse 함수
+
+  - 매칭 URL이 없으면 NoReverseMatch 예외 발생
+
+- resolve_url 함수
+
+  - 매핑 URL이 없으면 "인자 문자열"을 그대로 리턴
+  - 내부적으로 reverse 함수를 사용
+
+- redirect 함수
+  - 매칭 URL이 없으면 "인자 문자열"을 그대로 URL로 사용
+  - 내부적으로 resolve_url 함수를 사용
+
+## URL Reverse를 수행하는 4가지 함수 (2)
+
+```
+{% url "blog:post_detail" 100 %} -> 문자열 URL
+{% url "blog:post_detail" pk=100 %}
+```
+
+```
+reverse('blog:post_detail', args=[100]) -> 문자열 URL
+reverse('blog:post_detail', kwargs={'pk': 100})
+```
+
+```
+resolve_url('blog:post_detail', 100) -> 문자열 URL
+resolve_url('blog:post_detail', pk=100)
+resolve_url('/blog/100/')
+```
+
+```
+redirect('blog:post_detail', 100) -> HttpResponse 응답 (301 or 302)
+redirect('blog:post_detail', pk=100)
+redirect('/blog/100/')
+```
+
+## 모델 객체에 대한 detail 주소 계산
+
+- 매번 다음과 같은 코드로 하실 수도 있겠지만,
+
+  ```
+  resolve_url('blog:post_detail', pk=post.pk)
+  redirect('blog:post_detail', pk=post.pk)
+  {% url 'blog:post_detail' post.pk %}
+  ```
+
+- 다음과 같이 사용하실 수도 있습니다. 어떻게?
+
+  ```
+   resolve_url(post)
+   redirect(post)
+   {{ post.get_absolute_url }}
+  ```
+
+## 모델 클래스에 get_absolute_url() 구현
+
+- resolve_url 함수는 가장 먼저 get_absolute_url() 함수의 존재여부를 체크하고, 존재할 경우 reverse를 수행하지 않고 그 리턴값을 즉시 리턴
+
+```py
+ # django/shortcuts.py
+def resolve_url(to, *args, **kwargs):
+  if hasattr(to, 'get_absolute_url'):
+    return to.get_absolute_url()
+  # 중략
+  try:
+      return reverse(to, args=args, kwargs=kwargs)
+  except NoReverseMatch:
+        # 나머지 코드 생략
+```
+
+## resolve_url/redirect를 위한 모델 클래스 추가 구현
+
+```py
+from django.urls import reverse
+
+class Post(models.Model):
+  # 중략
+  def get_absolute_url(self):
+  return reverse('blog:post_detail', args=[self.pk])
+```
+
+## 그 외 활용
+
+- CreateView / UpdateView
+  - success_url을 제공하지 않을 경우, 해당 model instance 의 get_absolute_url 주소로 이동이 가능한지 체크하고, 이동이 가능할 경우 이동
+  - 생성/수정하고나서 Detail화면으로 이동하는 것은 자연스러운 시나리오
+
+- 특정 모델에 대한 Detail뷰를 작성할 경우
+  - Detail뷰에 대한 URLConf설정을 하자마자, 필히 get_absolute_url설정을 해주세요. 코드가 보다 간결해집니다.
