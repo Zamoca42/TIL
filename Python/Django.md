@@ -2204,3 +2204,102 @@ URL을 통해 파일시스템에 직접 접근하는 것이 아니라, 지정 �
   - 프로젝트 전반적으로 사용될 파일들이므로, filesystem static finder에서 접근하는 경로에 넣어두고, 버전관리 대상에도 추가
     - "프로젝트/static/" 경로
   - 수집된 파일들은 버전관리 대상에 넣지 않습니다.
+
+# HTML Form
+
+## 언제 쓰나요?
+
+- HTML Form (클라이언트 측)
+
+  - 클라이언트에서 사용자에게 입력폼을 제공하고, 이를 서버로 전송코자 할 때
+
+- Django Form (서버 측)
+  - 클라이언트로부터 전달받은 값들에 대한 유효성 검사를 수행하고, 이를 데이터베이스에 저장하는 등의 처리
+  - HTML Form을 생성하는 기능을 제공합니다. 이를 활용하거나, 인터페이스만 맞춰 직접 HTML Form을 코딩해도 OK.
+
+## HTML Form
+
+- HTML 웹페이지에서는 `<form></form>` 태그를 통해, 입력폼을 구성하고, submit시에 지정 action URL로 데이터 전송을 시도
+
+  - ex) 로그인 폼, 댓글 폼
+
+- 하나의 `<form>`태그는 하나 이상의 Widget을 가집니다.
+
+```html
+<form action="" method="POST">
+  <input type="text" />
+  <textarea></textarea>
+  <select></select>
+  <input type="checkbox" />
+  <input type="radio" />
+  그 외 다수 위젯
+</form>
+```
+
+## HTML <form> 태그 필수 속성
+
+- action : 요청을 보낼 주소
+- method : 전송 방식
+  - "GET" : 주로 데이터 조회 요청 시에 사용
+  - "POST" : 파괴적인 액션(생성/수정/삭제)에서 사용
+- enctype : 인코딩 방식
+  - POST 요청에서만 유효
+  - GET 요청에서는 한 enctype으로 강제됨.
+
+## `<form>`의 enctype
+
+- "application/x-www-form-urlencoded" (디폴트)
+  - GET 요청에서는 이 유형이 강제됨.
+  - 인자들을 "URL 인코딩"을 수행하여, QueryString 형태로 전달
+    - 파일 업로드 불가
+- "multipart/form-data"
+
+  - 파일 업로드 가능.
+
+- "text/plain"
+  - 실제로 사용되지는 않는 유형
+  - 공백만 "+"로 변환
+
+# Form Method
+
+## Form 요청에서 인자 보내는 2가지 방법
+
+1. 요청 URL 뒤에 ? 를 붙이고, 인자를 실어서 보내기.
+
+   - x-www-form-urlencoded 인코딩의 값만 실을 수 있습니다.
+   - 이 인자를 Query String 인자라고 부릅니다.
+   - GET요청에서 주로 사용하기에 GET 인자라고도 합니다.
+     - POST 요청에서도 요청 URL 뒤에 QueryString을 실을 수 있습니다.
+
+2. 요청 Body에 모든 인코딩의 인자를 실어서 보냅니다.
+   - x-www-form-urlencoded 인코딩의 값도 OK
+   - multipart/form-data 인코딩의 값도 OK -> 파일 업로드 가능
+
+## 2가지 Form Method
+
+- GET 방식
+
+  - 엽서에 비유. 물건을 보낼 수 없다.
+  - application/x-www-form-urlencoded 만이 강제되며, 인코딩된 문자열을 QueryString으로 전달
+
+- POST 방식
+  - 택배에 비유. 다양한 물건을 보낼 수 있다.
+  - 다양한 인코딩을 모두 사용 가능하며 (application/x-www-form-urlencoded 및 multipart/form-data), 인코딩된 데이터를 "요청 Body"에 담아서 전달
+
+## 장고 뷰에서의 인자 접근
+
+- request.GET
+
+  - 모든 QueryString 인자 목록
+    - QueryString을 파싱한 QueryDict 객체
+  - GET/POST 요청에서 모두 가능
+
+- request.POST
+
+  - POST 요청에서만 가능.
+  - 파일 내역은 제외한 모든 POST인자 목록
+    - "요청 BODY"를 파싱한 QueryDict 객체
+
+- request.FILES
+  - POST 요청에서만 가능.
+  - "요청 BODY"에서 파일내역만 파싱한 MultiValueDict 객체
