@@ -2303,3 +2303,287 @@ URL을 통해 파일시스템에 직접 접근하는 것이 아니라, 지정 �
 - request.FILES
   - POST 요청에서만 가능.
   - "요청 BODY"에서 파일내역만 파싱한 MultiValueDict 객체
+
+# HttpRequest와 HttpResponse
+
+## HttpRequest 객체
+
+- 클라이언트로부터의 모든 요청 내용을 담고 있으며
+
+  - 함수 기반 뷰 : 매 요청 시마다 뷰 함수의 첫번째 인자 request로 전달
+  - 클래스 기반 뷰 : 매 요청 시마다 self.request를 통해 접근
+
+- Form 처리 관련 속성들
+  - .method : 요청의 종류 "GET" 또는 "POST" 로서 모두 대문자
+  - .GET : GET 인자 목록 (QueryDict타입)
+  - .POST : POST 인자 목록 (QueryDict타입)
+  - .FILES : POST 인자 중에서 파일 목록 (MultiValueDict 타입)
+
+## MultiValueDict (1)
+
+- dict을 상속받은 클래스
+- 동일 key의 다수 value를 지원하는 사전
+  - http 요청에서는 하나의 key에 대해서 여러 값을 전달받을 수 있어야만 합니다.
+  - URL의 QueryString은 같은 Key로서 다수 Value지정을 지원 ex) name=Tom&name=Steve&name=Tomi
+
+## MultiValueDict (2)
+
+- 동일 Key의 다수 Value를 지원하는 사전
+
+```
+>>> from django.utils.datastructures import MultiValueDict
+
+>>> d = MultiValueDict({'name': ['Adrian', 'Simon'], 'position': ['Developer']})
+
+>>> d['name'] # dict과 동일하게 동작. 단일값을 획득
+'Simon'
+
+>>> d.getlist('name') # 다수값 획득을 시도. 리스트를 반환
+['Adrian', 'Simon']
+>>> d.getlist('doesnotexist') # 없는 Key에 접근하면 빈 리스트를 반환
+[]
+
+>>> d['name'] = 'changed'
+>>> d
+<MultiValueDict: {'name': ['changed'], 'position': ['Developer']}>
+```
+
+## MultiValueDict (3)
+
+수정 불가능한 (Immutable) 특성
+
+```
+# 아래 코드는 Django Shell을 통해서 실행이 가능
+
+>>> from django.http import QueryDict
+
+>>> qd = QueryDict('name=Adrian&name=Simon&position=Developer', encoding='utf8')
+
+>>> qd['name']
+'Simon'
+
+>>> qd.getlist('name')
+['Adrian', 'Simon']
+
+>>> qd['name'] = 'changed'
+AttributeError: This QueryDict instance is immutable
+```
+
+## QueryDict
+
+- 수정불가능한 MultiValueDict
+
+```py
+class QueryDict(MultiValueDict):
+    _mutable = True
+    _encoding = None
+
+    def __init__(self, query_string=None, mutable=False, encoding=None):
+        # ...
+        self._mutable = mutable
+
+    def _assert_mutable(self):
+        if not self._mutable:
+            raise AttributeError("This QueryDict instance is immutable")
+
+    def __setitem__(self, key, value):
+        self._assert_mutable()
+        # ...
+
+    def __delitem__(self, key):
+        self._assert_mutable()
+        # ...
+  # ...
+```
+
+## django.http.HttpResponse (1)
+
+- 다양한 응답을 Wrapping : HTML문자열, 이미지 등등
+- View에서는 반환값으로서 HttpResponse 객체를 기대
+  - Middleware에서 HttpResponse 객체를 기대
+
+```py
+# 프로젝트/settings
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+```
+
+# Form
+
+- 장고를 더욱 장고스럽게 만들어주는 주옥같은 Feature
+- 주요 역할
+  - 입력폼 HTML 생성
+  - 입력폼 값에 대한 유효성 검증 (Validation) 및 값 변환
+  - 검증을 통과한 값들을 dict형태로 제공
+
+```py
+# myapp/forms.py
+from django import forms
+
+class PostForm(forms.Form):
+    title = forms.CharField()
+    content = forms.CharField(widget=form.Textarea)
+```
+
+## Django Style의 Form 처리 (1)
+
+- 하나의 URL (하나의 View)에서 2가지 역할을 모두 수행
+  1. 빈 폼을 보여주는 역할과
+  2. 폼을 통해 입력된 값을 검증하고 저장하는 역할
+
+## Django Style의 Form 처리 (2)
+
+- GET 방식으로 요청받았을 때
+
+  - New/Edit 입력폼을 보여줍니다.
+
+- POST 방식으로 요청받았을 때
+  - 데이터를 입력받아 (request.POST, request.FILES) 유효성 검증 수행
+  - 검증 성공 시 : 해당 데이터를 저장하고 SUCCESS URL로 이동
+  - 검증 실패 시 : 오류메세지와 함께 입력폼을 다시 보여줍니다.
+
+```py
+def post_new(request):
+ if request.method == 'POST':
+     form = PostForm(request.POST, request.FILES)
+     if form.is_valid():
+         post = Post(**self.cleaned_data)
+         post.save()
+         return redirect(post)
+ else:
+     form = PostForm()
+ return render(request, 'blog/post_form.html', {
+     'form': form,
+})
+```
+
+## 1) Form/ModelForm 클래스 정의
+
+```py
+# myapp/forms.py
+from django import forms
+class PostForm(forms.Form):
+    title = forms.CharField()
+    content = forms.CharField(widget=form.Textarea)
+```
+
+## 2) 필드 별로 유효성 검사 함수 추가 적용
+
+- Form의 경우
+
+```py
+# myapp/forms.py
+from django import forms
+
+def min_length_3_validator(value):
+    if len(value) < 3:
+      raise forms.ValidationError('3글자 이상 입력해주세요.')
+
+class PostForm(forms.Form):
+    title = forms.CharField(validators=[min_length_3_validator])
+    content = forms.CharField(widget=form.Textarea)
+```
+
+- ModelForm의 경우
+
+```py
+# myapp/models.py
+from django import forms
+from django import models
+
+def min_length_3_validator(value):
+    if len(value) < 3:
+      raise forms.ValidationError('3글자 이상 입력해주세요.')
+
+class Post(forms.Model):
+    title = models.CharField(max_length=100, validators=[min_length_3_validator])
+    content = models.TextField()
+
+# myapp/forms.py
+from django import forms
+from .models import Post
+
+class PostForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = '__all__'
+```
+
+## 3) View 함수 내에서 method에 따라 Form 객체 생성
+
+- if 조건체크를 POST에 대해 먼저 체크하는 것은 장고 스타일. GET요청은 Form 인스턴스 생성 이외에 특별한 루틴이 없어서인듯.
+
+```py
+# myapp/views.py
+from .forms import PostForm
+
+if request.method == 'POST':
+  #POST요청일때
+  form = PostForm(request.POST, request.FILES)
+else: #GET요청일때
+     form = PostForm()
+```
+
+## 4) POST 요청에 한해 입력값 유효성 검증
+
+```py
+if request.method == 'POST':
+  # POST인자는 request.POST와 request.FILES를 제공받음.
+  form = PostForm(request.POST, request.FILES)
+
+  #인자로받은값에대해서,유효성검증수행
+  if form.is_valid(): # 검증이 성공하면, True 리턴
+    # 검증에 성공한 값들을 사전타입으로 제공받음.
+    # 검증에 성공한 값을 제공받으면, Django Form의 역할은 여기까지 !!! #필요에따라,이값을DB에저장하기
+    form.cleaned_data
+
+    post = Post(**form.cleaned_data) # DB에 저장하기
+    post.save()
+
+    return redirect('/success_url/')
+  else: # 검증에 실패하면, form.errors와 form.각필드.errors 에 오류정보를 저장
+      form.errors
+else: # GET 요청일 때
+  form = PostForm()
+  return render(request, 'myapp/form.html', {'form': form})
+```
+
+## 5) 템플릿을 통해 HTML 폼 노출
+
+1. GET요청일 때
+
+   - 유저가 Form을 채우고 Submit -> POST 요청
+
+2. POST요청이지만 유효성 검증에서 실패했을 때
+   - Form 인스턴스를 통해 HTML폼 출력
+   - 오류메세지도 있다면 같이 출력
+     - 유저가 Form을 채우고 Submit -> POST 재요청
+
+```html
+<table>
+  <form action="" method="post">
+    {% csrf_token %}
+    <table>
+      {{ form.as_table }}
+    </table>
+    <input type="submit" />
+  </form>
+</table>
+```
+
+## Form Fields
+
+- Model Fields 와 유사
+
+  - Model Fields : Database Field 들을 파이썬 클래스화
+  - Form Fields : HTML Form Field 들을 파이썬 클래스화
+
+- 필드 종류
+  - BooleanField, CharField, ChoiceField, DateField, DateTimeField, EmailField, FileField, ImageField, FloatField, IntegerField, RegexField 등
