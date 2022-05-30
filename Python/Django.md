@@ -2675,3 +2675,940 @@ def post_new_for_api(request):
       # all other authentication is CSRF exempt.
       return csrf_exempt(view)
 ```
+
+## ModelForm
+
+- 장고 Form을 상속
+
+- 지정된 Model로부터 필드정보를 읽어들여, Form Fields를 세팅
+
+- 내부적으로 Model Instance를 유지
+
+- 유효성 검증에 통과한 값들로, 지정 Model Instance로의 저장(save) 지원 (Create 또는 Update)
+
+```py
+class PostForm(forms.ModelForm):
+     class Meta:
+        model = Post
+        #전체필드지정.혹은list로읽어올필드명지정
+        fields = '__all__'
+```
+
+## Form/ModelForm
+
+```py
+from django import forms
+from .models import Post
+
+class PostForm(forms.Form):
+    title = forms.CharField()
+    content = forms.CharField(widget=forms.Textarea)
+
+# 생성되는 Form Field는 PostForm과 거의 동일
+class PostModelForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ['title', 'content']
+```
+
+## ModelForm.save(commit=True)
+
+- Form의 cleaned_data를 Model Instance 생성에 사용하고, 그 Instance를 리턴
+
+- commit=True
+
+  - model instance의 save() 및 form.save_m2m()을 호출
+  - form.save() != instance.save()
+
+- commit=False
+  - instance.save() 함수 호출을 지연시키고자할 때 사용
+
+## ModelForm.save 컨셉 구현
+
+```py
+from django import forms
+from .models import Post
+
+class PostForm(forms.Form):
+    title = forms.CharField()
+    content = forms.CharField(widget=forms.Textarea)
+
+    def save(self, commit=True):
+        post = Post(**self.cleaned_data)
+        if commit:
+           post.save()
+        return post
+```
+
+## View에서의 ModelForm 처리 (New)
+
+```py
+from django.shortcuts import render
+from .forms import PostModelForm
+from .models import Post
+
+def post_new(request):
+    if request.method == 'POST':
+        form = PostModelForm(request.POST, request.FILES)
+        if form.is_valid():
+            post = form.save()
+            return redirect(post)
+    else:
+        form = PostModelForm()
+    return render(request, 'myapp/post_form.html', {
+        'form': form,
+    })
+```
+
+## View에서의 ModelForm 처리 (Edit)
+
+```py
+from django.shortcuts import get_object_or_404, render
+from .forms import PostModelForm
+from .models import Post
+
+def post_edit(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+
+    if request.method == 'POST':
+        form = PostModelForm(request.POST, request.FILES, instance=post)
+        if form.is_valid():
+            post = form.save()
+            return redirect(post)
+    else:
+        form = PostModelForm(instance=post)
+    return render(request, 'myapp/post_form.html', {
+        'form': form,
+    })
+```
+
+## ModelForm.save(commit=False) 예시 (1)
+
+```py
+from django.db import models
+
+class Comment(models.Model):
+    author = models.CharField(max_length=20)
+    message = models.TextField()
+    ip = models.CharField(max_length=15)
+
+# myapp/forms.py
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        # ip필드는 유저로부터 입력받지 않고, 프로그램으로 채워넣을 것이기에 제외
+        fields = ['author', 'message']
+```
+
+## ModelForm.save(commit=False) 예시 (2)
+
+```py
+def comment_new(request):
+    if request.method == 'POST':
+        form = CommentForm(request.POST, request.FILES)
+        if form.is_valid():
+          comment = form.save(commit=False)
+          comment.ip = request.META['REMOTE_ADDR'] # IP를 기록하고 comment.save() # save() return redirect('/')
+    else:
+      form = CommentForm()
+
+    return render(request, 'myapp/comment_form.html', {'form': form})
+```
+
+## ModelForm.save(commit=False) 예시 (3)
+
+```py
+def comment_edit(request, pk):
+    comment = get_object_or_404(Comment, pk=pk)
+
+    if request.method == 'POST':
+        form = CommentForm(request.POST, request.FILES, instance=comment)
+        if form.is_valid():
+            comment = form.save()
+            return redirect('/')
+    else:
+        form = CommentForm(instance=comment)
+    return render(request, 'myapp/comment_form.html', {'form': form})
+```
+
+## 당부: Form을 끝까지 써주세요.
+
+```py
+form = CommentForm(request.POST)
+if form.is_valid():
+    # request.POST : 폼 인스턴스 초기 데이터
+    message = request.POST['message'] # request.POST를 통한 접근 : BAD !!!
+    comment = Comment(message=message)
+    comment.save()
+return redirect(post)
+
+              form = CommentForm(request.POST)
+              if form.is_valid():
+                  # form.cleaned_data : 폼 인스턴스 내에서 clean함수를 통해 변환되었을 수도 있을 데이터
+                  message = form.cleaned_data['message'] # form.cleaned_data를 통한 접근 : GOOD !!!
+                  comment = Comment(message=message)
+                  comment.save()
+              return redirect(post)
+```
+
+# Form Validation
+
+## Form 유효성 검사가 수행되는 시점
+
+```py
+# myapp/views.py
+def post_new(request):
+    if request.method == 'POST':
+      form = PostForm(request.POST, request.FILES)
+      if form.is_valid(): # 유효성 검사가 수행됩니다.
+        form.save()
+        # SUCCESS 후 처리
+      else:
+        form = PostForm()
+      # ...
+```
+
+## 유효성 검사 호출 로직
+
+- form.is_valid() 호출 당시
+
+1. form.full_clean() 호출
+
+   1. 각필드객체별로
+
+   - 각 필드객체.clean() 호출을 통해 각 필드 Type에 맞춰 유효성 검사
+
+   2. Form 객체 내에서
+
+   - 필드 이름 별로 Form객체.clean\_필드명() 함수가 있다면 호출해서 유효성 검사
+   - Form객체.clean() 함수가 있다면 호출해서 유효성 검사
+
+2. 에러 유무에 따른 True/False 리턴
+
+## Form에서 수행하는 2가지 유효성 검사
+
+1. Validator 함수를 통한 유효성 검사
+
+   - 값이 원하는 조건에 맞지 않을 때, ValidationError 예외를 발생
+     - 주의: 리턴값은 사용되지 않습니다.
+
+2. Form 클래스 내 clean, clean\_ 멤버함수를 통한 유효성 검사 및 값 변경
+   - 값이 원하는 조건에 맞지 않을 때, ValidationError 예외를 발생
+   - 리턴값을 통해 값 반환
+
+## ValidationError 예외가 발생되면 ...
+
+```py
+@html_safe
+class BaseForm:
+  # 중략
+  def _clean_fields(self):
+    for name, field in self.fields.items():
+      if field.disabled:
+        value = self.get_initial_for_field(field, name)
+      else:
+        value = field.widget.value_from_datadict(self.data, self.files, self.add_prefix(name))
+      try:
+        if isinstance(field, FileField):
+          initial = self.get_initial_for_field(field, name)
+          value = field.clean(value, initial)
+        else:
+            value = field.clean(value)
+        self.cleaned_data[name] = value
+        if hasattr(self, 'clean_%s' % name):
+          value = getattr(self, 'clean_%s' % name)()
+          self.cleaned_data[name] = value
+      except ValidationError as e:
+        self.add_error(name, e)
+```
+
+## 함수형/클래스형 Validator (1)
+
+- 함수형
+  - 유효성 검사를 수행할 값 인자를 1개 받은 Callable Object
+- 클래스형
+  - 클래스의 인스턴스가 Callable Object
+
+## 함수형/클래스형 Validator (2)
+
+```py
+@deconstructible
+class RegexValidator:
+  regex = ''
+  # 중략
+
+  def __call__(self, value):
+    regex_matches = self.regex.search(str(value))
+    invalid_input = regex_matches if self.inverse_match else not regex_matches
+    if invalid_input:
+      raise ValidationError(self.message, code=self.code)
+
+integer_validator = RegexValidator(
+  _lazy_re_compile(r'^-?\d+\Z'),
+  message=_('Enter a valid integer.'),
+  code='invalid',
+)
+
+def validate_integer(value):
+  return integer_validator(value)
+
+```
+
+## 모델 필드 정의 시에 지정
+
+```py
+import re
+from django.db import models
+from django.forms import ValidationError
+
+def phone_number_validator(value):
+  if not re.match(r'^010[1-9]\d{7}$'):
+    raise ValidationError('{} is not an phone number'.format(value))
+
+class Profile(models.Model):
+  phone_number = models.CharField(max_length=11,
+                                  validators=[phone_number_validator])
+
+class ProfileForm(forms.ModelForm):
+  class Meta:
+        model = Profile
+        fields = '__all__'
+```
+
+## Form 필드 정의 시에 지정
+
+```py
+import re
+from django import forms
+from django.forms import ValidationError
+
+def phone_number_validator(value):
+  if not re.match(r'^010[1-9]\d{7}$'):
+    raise ValidationError('{} is not an phone number'.format(value))
+
+class ProfileForm(forms.Form):
+  phone_number = forms.CharField(validators=[phone_number_validator])
+```
+
+## ModelForm이지만, Form Field 직접 지정
+
+```py
+
+import re
+from django.db import models
+from django.forms import ValidationError
+
+def phone_number_validator(value):
+  if not re.match(r'^010[1-9]\d{7}$'):
+    raise ValidationError('{} is not an phone number'.format(value))
+
+class Profile(models.Model):
+  phone_number = models.CharField(max_length=11)
+
+class (forms.ModelForm):
+    phone_number = forms.CharField(validators=[phone_number_validator])
+    class Meta:
+        model = Profile
+        fields = '__all__'
+```
+
+## 빌트인 Validators (1)
+
+- RegexValidator
+- EmaiValidator
+- URLValidator
+- valiate_email
+- validate_slug
+- validate_unicode_slug
+- validate_ipv4_address, validate_ipv6_address, validate_ipv46_address validate_comma_separated_integer_list
+- int_list_validator
+
+## 빌트인 Validators (2)
+
+- MaxValueValidator
+- MinValueValidator
+- MaxLengthValidator
+- MinLengthValidator
+- DecimalValidator
+- FileExtensionValidator : 파일 확장자 허용 여부
+  - 주의 : 확장자만으로 정확히 그 포맷 임을 확정할 수는 없습니다.
+- validate_image_file_extension
+  - 이미지 확장자 여부. Pillow 설치 필수
+- ProhibitNullCharactersValidator : 문자열에 '\x00' 포함여부
+
+## 모델 필드에 디폴트 적용된 validators
+
+- models.EmailField (CharField)
+  - validators.validate_email 적용
+- models.URLField
+  - validators.URLValidator() 적용
+- models.GenericIPAddressField
+  - validators.ip_address_validators 적용
+- models.SlugField
+  - validators.validate_slug 적용
+
+## Form clean 멤버함수
+
+- 기대하는 것
+
+1. "필드별 Error 기록" 혹은 "Non 필드 Error 기록"
+
+   - 값이 조건에 안 맞으면 ValidationError 예외를 통해 오류 기록
+   - 혹은 add_error(필드명, 오류내용) 직접 호출을 통해 오류 기록
+
+2. 원하는 포맷으로 값 변경
+
+   - 리턴값을 통해 값 변경하기
+
+## 멤버 함수별, 검사/변경의 책임
+
+- `clean_필드명()` 멤버함수
+
+  - 특정 필드별 검사/변경의 책임
+  - ValidationError 예외 발생 시, 해당 필드 Error로 분류
+
+- clean() 멤버함수
+  - 다수 필드에 대한 검사/변경의 책임
+  - ValidationError 예외 발생 시, non_field_errors로 분류
+  - add_error(...) 함수를 통해 필드별 Error 기록도 가능
+
+## 언제 validators를 쓰고, 언제 clean을?
+
+- 가급적이면 모든 validators는 모델에 정의하고, ModelForm을 통해 모델의 validators 정보도 같이 가져오세요.
+
+- clean이 필요할 때
+- 특정 Form에서 1회성 유효성 검사 루틴이 필요할 때
+- 다수 필드값에 걸쳐서, 유효성 검사가 필요할 때
+- 필드 값을 변경할 필요가 있을 때
+  - validator는 값만 체크할 뿐, 값을 변경할 수는 없습니다.
+
+## 샘플 코드
+
+```py
+# myapp/models.py
+class GameUser(models.Model):
+  server = models.CharField(max_length=10)
+  username = models.CharField(max_length=20)
+
+# myapp/forms.py
+class GameUserSignupForm(forms.ModelForm):
+  class Meta:
+    model = GameUser
+    fields = ['server', 'username']
+
+  def clean_username(self):
+    'username 필드값의 좌/우 공백을 제거하고, 최소 3글자 이상 입력되었는 지 체크'
+    username = self.cleaned_data.get('username', '').strip()
+    if len(username) < 3:
+      raise forms.ValidationError('3글자 이상 입력해주세요.')
+    # 이 리턴값으로 self.cleaned_data['username'] 값이 변경됩니다.
+    # 좌/우 공백이 제거된 (strip) username으로 변경됩니다.
+    return username
+
+  def clean(self):
+    cleaned_data = super().clean()
+    if self.check_exist(cleaned_data['server'], cleaned_data['username']):
+      # clean내 ValidationError는 non_field_errors 로서 노출
+      raise forms.ValidationError('서버에 이미 등록된 username입니다.')
+    return cleaned_data
+
+def check_exist(self, server, username):
+  return GameUser.objects.filter(server=server, username=username).exists()
+```
+
+## 개선된 코드
+
+```py
+from django.core.validators import MinLengthValidator
+
+class GameUser(models.Model):
+  server = models.CharField(max_length=10)
+  username = models.CharField(max_length=20, validators=[MinLengthValidator(3)])
+
+  class Meta:
+      unique_together = [
+          ('server', 'username'),
+      ]
+
+class GameUserSignupForm(forms.ModelForm):
+  class Meta:
+    model = GameUser
+    fields = ['server', 'username']
+
+  def clean_username(self):
+  '''값 변환은 clean함수에서만 가능합니다.
+  validator에서는 지원하지 않습니다.'''
+  return self.cleaned_data.get('username', '').strip()
+```
+
+# Messages Framework
+
+> https://docs.djangoproject.com/en/3.0/ref/contrib/messages/
+
+- 현재 User를 위한 1회성 메시지를 담는 용도
+  - ex) "저장했습니다.", "로그인되었습니다."
+- HttpRequest 인스턴스를 통해 메시지를 남깁니다.
+  - 즉, View에서만 사용 가능
+- 메시지를 1회 노출이 되고 사라집니다.
+- View를 통한 템플릿 시스템을 통해 노출을 하며, 템플릿 내에서 JavaScript를 통한 노출도 가능
+
+## Message Levels를 통한 메시지 분류
+
+- 파이썬 로깅 모듈의 Level을 차용
+- 레벨에 따라 로깅 여부 판단
+  - 혹은 템플릿에서 다른 스타일로 노출
+- 레벨 종류
+  - DEBUG : 디폴트 설정으로 무시되는 레벨
+    - 개발관련된 메세지이며, 실서비스에서는 무시
+- INFO : 해당 유저에 대한 정보성 메세지
+- SUCCESS : 액션이 성공적으로 수행되었음을 알림.
+- WARNING : 실패가 아직 발생하진 않았지만, 임박했다.
+- ERROR : 액션이 수행되지 않았거나, 다른 Failure가 발생했다.
+
+## messages 등록 코드
+
+```py
+# blog/views.py
+from django.contrib import messages
+
+def post_new(request):
+  # 중략
+    if form.is_valid():
+        post = form.save()
+        messages.add_message(request, messages.SUCCESS, '새 글이 등록되었습니다.')
+        messages.success(request, '새 글이 등록되었습니다.') # 혹은 shortcut 형태
+        return redirect(post)
+    # 생략
+```
+
+## messages 소비
+
+- 주로 템플릿을 통해서 소비
+
+- messages context_processors를 통해 messages 목록에 접근
+  - .tags 속성을 통해 레벨을 제공
+  - .message 속성을 통해 내용을 제공 (= str(message))
+
+```html
+{% if messages %}
+<ul class="messages">
+  {% for message in messages %}
+  <li>{{ message.tags }}] {{ message.message }}</li>
+  {% endfor %}
+</ul>
+{% endif %}
+```
+
+## 참고) Context Processors
+
+> https://github.com/django/django/blob/2.1/django/template/context.py#L246
+
+- 템플릿 기본 로딩 변수목록을 생성해주는 함수 목록
+
+```py
+# 프로젝트/settings.py
+TEMPLATES = [{
+    'BACKEND': 'django.template.backends.django.DjangoTemplates',
+    'DIRS': [],
+    'APP_DIRS': True,
+    'OPTIONS': {
+        'context_processors': [
+           'django.template.context_processors.debug',
+           'django.template.context_processors.request',
+           'django.contrib.auth.context_processors.auth',
+           'django.contrib.messages.context_processors.messages',
+           ],
+    },
+}]
+```
+
+```py
+from django.contrib.messages.api import get_messages
+from django.contrib.messages.constants import DEFAULT_LEVELS
+
+def messages(request):
+    return {
+      'messages': get_messages(request),
+      'DEFAULT_MESSAGE_LEVELS': DEFAULT_LEVELS,
+    }
+```
+
+## 출력 tags 변경하기
+
+- 프로젝트/settings.py
+
+```py
+from django.contrib.messages import constants as messages_constants
+
+MESSAGE_TAGS = {
+  messages_constants.DEBUG: 'secondary',
+  messages_constants.ERROR: 'danger',
+}
+```
+
+## MESSAGE_LEVEL 변경하기
+
+- 메세지 노출 최소 레벨 (프로젝트/settings.py)
+
+```py
+from django.contrib.messages import constants as messages_constants
+
+# MESSAGE_LEVEL = messages_constants.INFO # 디폴트 설정
+MESSAGE_LEVEL = messages_constants.DEBUG
+```
+
+## 기본 Form/Messages 템플릿
+
+```html
+{# Load the tag library #} {% load bootstrap4 %} {# Load CSS and JavaScript #}
+{% bootstrap_css %} {% bootstrap_javascript jquery='full' %} {# Display
+django.contrib.messages as Bootstrap alerts #} {% bootstrap_messages %} {#
+Display a form #}
+<form action="/url/to/submit/" method="post" class="form">
+  {% csrf_token %} {% bootstrap_form form %} {% buttons %}
+  <button type="submit" class="btn btn-primary">Submit</button>
+  {% endbuttons %}
+</form>
+```
+
+# built-in CBV를 통한 Form 처리
+
+<img src="https://user-images.githubusercontent.com/96982072/170999366-9ea69466-129a-45f0-b0f4-7143bd217b35.png">
+
+## ProcessFormView
+
+```py
+class ProcessFormView(View):
+  """Render a form on GET and processes it on POST."""
+  def get(self, request, *args, **kwargs):
+    """Handle GET requests: instantiate a blank version of the form."""
+    return self.render_to_response(self.get_context_data())
+
+def post(self, request, *args, **kwargs):
+  """ Handle POST requests: instantiate a form instance with the passed POST variables and then check if it's valid."""
+  form = self.get_form()
+  if form.is_valid():
+    return self.form_valid(form)
+  else:
+    return self.form_invalid(form)
+# PUT is a valid HTTP verb for creating (with a known URL) or editing an
+# object, note that browsers only support POST for now.
+
+def put(self, *args, **kwargs):
+  return self.post(*args, **kwargs)
+
+class FormMixin(ContextMixin):
+  # 생략 ...
+  def get_context_data(self, **kwargs):
+     if 'form' not in kwargs:
+      kwargs['form'] = self.get_form()
+      return super().get_context_data(**kwargs)
+```
+
+## Create 구현의 다양한 예 #1
+
+```py
+def post_new(request):
+    if request.method == 'POST':
+      form = PostForm(request.POST, request.FILES)
+      if form.is_valid():
+            object = form.save()
+            return redirect(object)
+    else:
+      form = PostForm()
+    return render(request, "myapp/post_form.html", {
+        "form": form,
+    })
+```
+
+```html
+<form action="" method="post">
+  {% csrf_token %}
+  <table>
+    {{ form }}
+  </table>
+  <input type="submit" />
+</form>
+```
+
+## Create 구현의 다양한 예 #2
+
+```py
+from django.shortcuts import resolve_url
+from django.views.generic import FormView
+from .forms import PostForm
+
+class PostCreateView(FormView):
+  form_class = PostForm
+  template_name = 'myapp/post_form.html'
+
+def form_valid(self, form):
+  self.object = form.save() # CBV ModelFormMixin에서 구현된 부분
+  return super().form_valid(form)
+
+def get_success_url(self):
+  # 주의: Post모델에 get_absolute_url() 멤버함수 구현 필요
+  return resolve_url(self.object)
+  # return self.post.get_absolute_url() # 대안 1
+  # return reverse('blog:post_detail', args=[self.post.id]) # 대안 2
+
+post_new = PostCreateView.as_view()
+```
+
+## Create 구현의 다양한 예 #3/#4
+
+```py
+
+#3
+
+from django.views.generic import CreateView
+from .forms import PostForm
+
+class PostCreateView(CreateView):
+  form_class = PostForm
+
+post_new = PostCreateView.as_view()
+```
+
+```py
+
+#4
+
+from django.views.generic import CreateView
+from .models import Post
+
+class PostCreateView(CreateView):
+  model = Post
+
+post_new = PostCreateView.as_view()
+```
+
+## CreateView와 UpdateView (1)
+
+```py
+class CreateView(SingleObjectTemplateResponseMixin, BaseCreateView):
+  """
+  View for creating a new object, with a response rendered by a template.
+  """
+  template_name_suffix = '_form'
+
+class BaseCreateView(ModelFormMixin, ProcessFormView):
+  """
+  Base view for creating a new object instance.
+  Using this base class requires subclassing to provide a response mixin.
+  """
+  def get(self, request, *args, **kwargs):
+    self.object = None
+    return super().get(request, *args, **kwargs)
+
+  def post(self, request, *args, **kwargs):
+    self.object = None
+    return super().post(request, *args, **kwargs)
+```
+
+## CreateView와 UpdateView (2)
+
+```py
+class UpdateView(SingleObjectTemplateResponseMixin, BaseUpdateView):
+  """View for updating an object, with a response rendered by a template."""
+  template_name_suffix = '_form'
+
+class BaseUpdateView(ModelFormMixin, ProcessFormView):
+  """
+  Base view for updating an existing object.
+  Using this base class requires subclassing to provide a response mixin.
+  """
+  def get(self, request, *args, **kwargs):
+    self.object = self.get_object()
+    return super().get(request, *args, **kwargs)
+
+  def post(self, request, *args, **kwargs):
+    self.object = self.get_object()
+    return super().post(request, *args, **kwargs)
+```
+
+## ModelFormMixin
+
+> https://github.com/django/django/blob/2.1/django/views/generic/edit.py#L70
+
+```py
+class ModelFormMixin(FormMixin, SingleObjectMixin):
+    """Provide a way to show and handle a ModelForm in a request."""
+    fields = None
+
+    def get_form_class(self):
+        """Return the form class to use in this view."""
+        if self.fields is not None and self.form_class:
+            raise ImproperlyConfigured(
+                "Specifying both 'fields' and 'form_class' is not permitted."
+            )
+        if self.form_class:
+            return self.form_class
+        else:
+            if self.model is not None:
+                # If a model has been explicitly provided, use it
+                model = self.model
+            elif getattr(self, 'object', None) is not None:
+                # If this view is operating on a single object, use
+                # the class of that object
+                model = self.object.__class__
+            else:
+                # Try to get a queryset and extract the model class
+                # from that
+                model = self.get_queryset().model
+
+            if self.fields is None:
+                raise ImproperlyConfigured(
+                    "Using ModelFormMixin (base class of %s) without "
+                    "the 'fields' attribute is prohibited." % self.__class__.__name__
+                )
+
+            return model_forms.modelform_factory(model, fields=self.fields)
+
+    def get_form_kwargs(self):
+        """Return the keyword arguments for instantiating the form."""
+        kwargs = super().get_form_kwargs()
+        if hasattr(self, 'object'):
+            kwargs.update({'instance': self.object})
+        return kwargs
+
+    def get_success_url(self):
+        """Return the URL to redirect to after processing a valid form."""
+        if self.success_url:
+            url = self.success_url.format(**self.object.__dict__)
+        else:
+            try:
+                url = self.object.get_absolute_url()
+            except AttributeError:
+                raise ImproperlyConfigured(
+                    "No URL to redirect to.  Either provide a url or define"
+                    " a get_absolute_url method on the Model.")
+        return url
+
+    def form_valid(self, form):
+        """If the form is valid, save the associated model."""
+        self.object = form.save()
+        return super().form_valid(form)
+
+```
+
+## FormMixin
+
+> https://github.com/django/django/blob/2.1/django/views/generic/edit.py#L10
+
+```py
+class FormMixin(ContextMixin):
+    """Provide a way to show and handle a form in a request."""
+    initial = {}
+    form_class = None
+    success_url = None
+    prefix = None
+
+    def get_initial(self):
+        """Return the initial data to use for forms on this view."""
+        return self.initial.copy()
+
+    def get_prefix(self):
+        """Return the prefix to use for forms."""
+        return self.prefix
+
+    def get_form_class(self):
+        """Return the form class to use."""
+        return self.form_class
+
+    def get_form(self, form_class=None):
+        """Return an instance of the form to be used in this view."""
+        if form_class is None:
+            form_class = self.get_form_class()
+        return form_class(**self.get_form_kwargs())
+
+    def get_form_kwargs(self):
+        """Return the keyword arguments for instantiating the form."""
+        kwargs = {
+            'initial': self.get_initial(),
+            'prefix': self.get_prefix(),
+        }
+
+        if self.request.method in ('POST', 'PUT'):
+            kwargs.update({
+                'data': self.request.POST,
+                'files': self.request.FILES,
+            })
+        return kwargs
+
+    def get_success_url(self):
+        """Return the URL to redirect to after processing a valid form."""
+        if not self.success_url:
+            raise ImproperlyConfigured("No URL to redirect to. Provide a success_url.")
+        return str(self.success_url)  # success_url may be lazy
+
+    def form_valid(self, form):
+        """If the form is valid, redirect to the supplied URL."""
+        return HttpResponseRedirect(self.get_success_url())
+
+    def form_invalid(self, form):
+        """If the form is invalid, render the invalid form."""
+        return self.render_to_response(self.get_context_data(form=form))
+
+    def get_context_data(self, **kwargs):
+        """Insert the form into the context dict."""
+        if 'form' not in kwargs:
+            kwargs['form'] = self.get_form()
+        return super().get_context_data(**kwargs)
+
+
+```
+
+## DeleteView
+
+> https://github.com/django/django/blob/2.1/django/views/generic/edit.py#L202
+
+```py
+class BaseDeleteView(DeletionMixin, BaseDetailView):
+    """
+    Base view for deleting an object.
+    Using this base class requires subclassing to provide a response mixin.
+    """
+
+
+class DeleteView(SingleObjectTemplateResponseMixin, BaseDeleteView):
+    """
+    View for deleting an object retrieved with self.get_object(), with a
+    response rendered by a template.
+    """
+    template_name_suffix = '_confirm_delete'
+```
+
+```py
+class DeletionMixin:
+    """Provide the ability to delete objects."""
+    success_url = None
+
+    def delete(self, request, *args, **kwargs):
+        """
+        Call the delete() method on the fetched object and then redirect to the
+        success URL.
+        """
+        self.object = self.get_object()
+        success_url = self.get_success_url()
+        self.object.delete()
+        return HttpResponseRedirect(success_url)
+
+    # Add support for browsers which only accept GET and POST for now.
+    def post(self, request, *args, **kwargs):
+        return self.delete(request, *args, **kwargs)
+
+    def get_success_url(self):
+        if self.success_url:
+            return self.success_url.format(**self.object.__dict__)
+        else:
+            raise ImproperlyConfigured(
+                "No URL to redirect to. Provide a success_url.")
+```
+
+```html
+<form action="" method="post">
+  {% csrf_token %}
+  <input type="submit" value="삭제하겠습니다." />
+</form>
+```
