@@ -4574,3 +4574,410 @@ def post_detail(request, pk):
 
 return Response(status=status.HTTP_204_NO_CONTENT)
 ```
+
+# mixins 상속을 통한 APIView
+
+> https://github.com/encode/django-rest-framework/blob/3.11.0/rest_framework/mixins.py
+
+## DRF에서 지원하는 mixins
+
+- 필요에 의해 다양한 믹스인을 만들 수 있음
+  - CreateModelMixin
+  - ListModelMixin
+  - RetrieveModelMixin
+  - UpdateModelMixin
+  - DestroyModelMixin
+
+## CreateModelMixin
+
+> https://github.com/encode/django-rest-framework/blob/3.11.0/rest_framework/mixins.py#L12
+
+```py
+class CreateModelMixin:
+    """
+    Create a model instance.
+    """
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def perform_create(self, serializer):
+        serializer.save()
+
+    def get_success_headers(self, data):
+        try:
+            return {'Location': str(data[api_settings.URL_FIELD_NAME])}
+        except (TypeError, KeyError):
+            return {}
+```
+
+## 예시) method별 로직 연결
+
+```py
+from rest_framework import generics
+from rest_framework import mixins
+class PostListAPIView(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
+  queryset = Post.objects.all()
+  serializer_class = PostSerializer
+  def get(self, request, *args, **kwargs):
+    return self.list(request, *args, **kwargs)
+  def post(self, request, *args, **kwargs):
+    return self.create(request, *args, **kwargs)
+```
+
+- 매번 직접 연결하기는 번거로움
+
+```py
+rom rest_framework import generics
+from rest_framework import mixins
+
+class PostDetailAPIView( mixins.RetrieveModelMixin, mixins.DestroyModelMixin,
+                         mixins.UpdateModelMixin, generics.GenericAPIView):
+queryset = Post.objects.all()
+serializer_class = PostSerializer
+
+def get(self, request, *args, **kwargs):
+  return self.retrieve(request, *args, **kwargs)
+
+def put(self, request, *args, **kwargs):
+  return self.update(request, *args, **kwargs)
+
+def delete(self, request, *args, **kwargs):
+  return self.destroy(request, *args, **kwargs)
+```
+
+## 여러 generics APIView (모두 GenericsAPIView 상속)
+
+> https://github.com/encode/django-rest-framework/blob/3.11.0/rest_framework/generics.py
+
+- generics.CreateAPIView : post -> create
+- generics.ListAPIView : get -> list
+- generics.RetrieveAPIView : get -> retrieve
+- generics.DestroyAPIView : delete -> destroy
+- generics.UpdateAPIView : put -> update, patch -> partial_update
+- generics.ListCreateAPIView : get -> list, post -> create
+- generics.RetrieveUpdateAPIView : get -> retrieve, put -> update, patch -> partial_update
+- generics.RetrieveDestroyAPIView : get -> retrieve, delete -> destroy
+- generics.RetrieveUpdateDestroyAPIView
+  : get -> retrieve, put -> update, patch -> partial_update, delete -> destroy
+
+## generic APIView 활용
+
+```py
+from rest_framework import generics
+
+class PostListAPIView(generics.ListCreateAPIView):
+  queryset = Post.objects.all()
+  serializer_class = PostSerializer
+
+# rest_framework/generics.py
+class ListCreateAPIView(mixins.ListModelMixin, mixins.CreateModelMixin, GenericAPIView):
+
+  def get(self, request, *args, **kwargs):
+    return self.list(request, *args, **kwargs)
+
+  def post(self, request, *args, **kwargs):
+    return self.create(request, *args, **kwargs)
+
+```
+
+```py
+from rest_framework import generics
+
+class PostDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+  queryset = Post.objects.all()
+  serializer_class = PostSerializer
+
+# rest_framework/generics.py
+class RetrieveUpdateDestroyAPIView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
+GenericAPIView):
+
+  def get(self, request, *args, **kwargs):
+    return self.retrieve(request, *args, **kwargs)
+
+  def put(self, request, *args, **kwargs):
+    return self.update(request, *args, **kwargs)
+
+  def patch(self, request, *args, **kwargs):
+    return self.partial_update(request, *args, **kwargs)
+
+  def delete(self, request, *args, **kwargs):
+    return self.destroy(request, *args, **kwargs)
+
+```
+
+# ViewSet과 Router
+
+> https://www.django-rest-framework.org/tutorial/6-viewsets-and-routers/ > https://www.django-rest-framework.org/api-guide/routers/
+
+## ViewSet
+
+- 단일 리소스에서 관련있는 View들을 단일 클래스에서 제공
+  - 2개의 URL이 필요합니다.
+  - list/create/detail/update/partial_update/delete 등의 멤버 함수로 구현
+
+```py
+from rest_framework import viewsets
+from rest_framework.response import Response
+
+class PostViewSet(viewsets.ViewSet):
+  def list(self, request):
+    queryset = Post.objects.all()
+    serializer = PostSerializer(queryset, many=True)
+    return Response(serializer.data)
+
+  def retrieve(self, request, pk):
+    queryset = Post.objects.all()
+    user = get_object_or_404(queryset, pk=pk)
+    serializer = PostSerializer(user)
+    return Response(serializer.data)
+
+router = DefaultRouter()
+router.register('post', PostViewSet, basename='post')
+router.urls
+
+```
+
+## Post 리소스에 대한 2개의 URL
+
+- 아래 코드 역시 정형화된 패턴
+  - ModelViewSet을 통해 간결하게 구현하실 수 있습니다.
+
+```py
+from rest_framework import generics
+
+class PostListAPIView(generics.ListCreateAPIView):
+  queryset = Post.objects.all()
+  serializer_class = PostSerializer
+
+class PostDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+  queryset = Post.objects.all()
+  serializer_class = PostSerializer
+```
+
+## ModelViewSet
+
+- 2가지 ModelViewSet
+
+- viewsets.ReadOnlyModelViewSet
+  - list 지원 -> 1개의 URL
+  - detail 지원 -> 1개의 URL
+- viewsets.ModelViewSet
+  - list/create 지원 -> 1개의 URL
+  - detail/update/partial_update/delete 지원 -> 1개의 URL
+
+## URL Patterns에 매핑하기
+
+```py
+from rest_framework import viewsets
+
+class PostViewSet(viewsets.ReadOnlyModelViewSet):
+  queryset = Post.objects.all()
+  serializer_class = PostSerializer
+```
+
+- 개별 View 만들기
+
+  ```py
+  post_list = PostViewSet.as_view({
+    'get': 'list',
+   })
+
+   post_detail = PostViewSet.as_view({
+     'get': 'retrieve',
+   })
+  ```
+
+- Router를 통해 일괄적으로 urlpatterns에 등록
+  ```py
+  from rest_framework.routers import DefaultRouter
+  router = DefaultRouter()
+  router.register('post', views.PostViewSet)
+  urlpatterns = [
+   path('', include(router.urls)),
+   ]
+  ```
+
+## ViewSet에 새로운 EndPoint 추가하기 (1/2)
+
+```py
+from rest_framework.decorators import action
+
+class PostModelViewSet(viewsets.ModelViewSet):
+  queryset = Post.objects.all()
+  serializer_class = PostSerializer
+
+  @action (detail=False, methods=['GET'])
+    def public(self, request):
+        qs = self.queryset.filter(is_public=True)
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)
+
+  @action (detail=True, methods=['PATCH'])
+  def set_public(self, request, pk):
+      instance = self.get_object()
+      instance.is_public = True
+      instance.save()
+      serializer = self.get_serializer(instance)
+      return Response(serializer.data)
+```
+
+- 생성된 URL Patterns 리스트
+
+```py
+[
+  ...
+  <URLPattern '^post/public/$' [name='post-public']>,
+  <URLPattern '^post/public\.(?P<format>[a-z0-9]+)/?$' [name='post-public']>,
+  ...
+  <URLPattern '^post/(?P<pk>[^/.]+)/   /$' [name='post-set-public']>,
+  <URLPattern '^post/(?P<pk>[^/.]+)/   \.(?P<format>[a-z0-9]+)/?$' [name='post-set-public']>,
+  ...
+]
+```
+
+- HTTPie를 활용한 요청의 예
+  - 쉘> http PATCH http://도메인/post/10/set_public/
+  - 쉘> http PATCH http://도메인/post/10/ is_public=true
+
+# Renderer를 통한 다양한 응답포맷 지원
+
+## Renderer
+
+- 같은 Endpoint에서 요청받은 타입에 맞춰, 다양한 응답포맷을 지원
+- Content-Type, URL의 방법을 통해 Renderer 지정 가능
+
+## 기본 지원되는 Renderer
+
+- JSONRenderer (디폴트 지정) : json.dumps를 통한 JSON 직렬화
+  - media_type -> application/json, format -> json
+- BrowsableAPIRenderer (디폴트 지정) : self-document HTML 렌더링
+  - media_type -> text/html, format -> api
+- TemplateHTMLRenderer : 지정 템플릿을 통한 렌더링
+  - media_type -> text/html, format -> api
+  - Response에서 template_name 인자 지정 필요
+  - API 서버라고 해서 모든 응답을 JSON으로 받지 않아도. 경우에 따라서 HTML 응답을 받을 수도. (Server Side Rendering?)
+
+## TemplateHTMLRenderer
+
+> https://www.django-rest-framework.org/topics/html-and-forms/
+
+- 템플릿을 통해 Render를 수행하기에 별도의 Serializer가 불필요
+
+```py
+class PostDetail(RetrieveAPIView):
+  queryset = Post.objects.all()
+  renderer_classes = [TemplateHTMLRenderer]
+  template_name = 'blog/post_detail.html'
+
+  def get(self, request, *args, **kwargs):
+    return Response({
+      'post': self.get_object(),
+    })
+```
+
+## 이 외에도 다양한 Renderer
+
+- StaticHTMLRenderer
+  - 미리 렌더링된 HTML을 반환. Response 객체 생성 시에 HTML문자열을 직접 지정
+
+```py
+@api_view(["GET"])
+@renderer_classes([StaticHTMLRenderer])
+def static_view(request):
+  html = """<html><body>example</body></html>"""
+  return Response(html)
+```
+
+- 그리고 AdminRenderer, HTMLFormRenderer, MultiPartRenderer 등이 지원됩니다.
+
+# Renderer 선택
+
+## Renderer 클래스 리스트 지정하기
+
+- 전역 지정
+
+  - settings -> REST_FRAMEWORK -> DEFAULT_RENDERER_CLASSES 리스트에 문자열로 지정
+
+- APIVIew 마다 지정
+
+  - queryset, serializer_class와 더불어, renderer_classes 리스트
+
+- @api_view 마다 지정
+
+  - renderer_classes 장식자
+
+- Renderer 이외의 다른 속성들도 마찬가지 방법으로 설정
+
+## Response의 기본 2가지 유형의 응답 포맷
+
+- rest_framework.response.Response
+  - api : API Endpoint에 브라우저를 통해 접근할 때, 웹 UI로 조회 가능
+  - json : 보통의 API 접근
+
+## 응답 포맷은 어떻게 결정되는 가?
+
+- Accept 헤더
+  - Accept: application/json
+  - Accept: text/html
+- GET인자 format
+  - ?format=json
+  - ?format=api
+- URL Captured Values에서의 format 인자
+  - .json
+  - .api
+
+## URL Captured Values에서의 format 인자
+
+1. rest_framework.urlpatterns.format_suffix_patterns를 통해, 기존 urlpatterns 끝에 format 인자 지원을 추가
+
+2. DefaultRouter에서는 기본 지원
+
+- router.urls에서의 URL patterns
+  ```py
+  [
+    <URLPattern '^post/$' [name='post-list']>,
+    <URLPattern '^post\.(?P<format>[a-z0-9]+)/?$' [name='post-list']>,
+    <URLPattern '^post/(?P<pk>[^/.]+)/$' [name='post-detail']>,
+    <URLPattern '^post/(?P<pk>[^/.]+)\.(?P<format>[a-z0-9]+)/?$' [name='post-detail']>,
+    <URLPattern '^$' [name='api-root']>,
+    <URLPattern '^\.(?P<format>[a-z0-9]+)/?$' [name='api-root']>
+  ]
+  ```
+
+## @api_view에서의 format 인자
+
+- 함수 기반 뷰에서는 URL Captured Values는 Keyword Arguments를 통해 전달됩니다. 즉, forma인자를 받도록 설정했다면 format인자를 추가해주세요.
+
+views.py
+
+```py
+from rest_framework.decorators import api_view
+
+@api_view(['GET'])
+def hello(request, format=None):
+     return Response([])
+
+```
+
+urls.py
+
+```py
+from rest_framework.urlpatterns import format_suffix_patterns
+
+ urlpatterns = format_suffix_patterns([
+   path('hello/', views.hello),
+  ])
+```
+
+생성된 URL patterns
+
+```py
+[
+  <URLPattern 'hello/'>,
+  <URLPattern 'hello<drf_format_suffix:format>'>,
+]
+```
