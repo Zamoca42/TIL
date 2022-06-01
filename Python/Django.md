@@ -4358,3 +4358,219 @@ class PostSerializer(serializers.ModelSerializer):
         model = Post
         fields = '__all__'
 ```
+
+# APIView, JSON 응답 뷰 만들기
+
+## Serializer를 통한 뷰 처리
+
+- Form 처리와 유사한 방식으로 동작
+
+```py
+ class PostSerializer(serializers.ModelSerializer):
+     class Meta:
+         model = Post
+         fields = '__all__'
+# Views
+ serializer = PostSerializer(data=request.POST)
+ if serializer.is_valid():
+     return JsonResonse(serializer.data, status=201)
+ return JsonResponse(serializer.errors, status=400)
+```
+
+- 주의) Form 생성자의 첫번째 인자는 data이지만, Serializer 생성자의 첫번째 인자는 instance입니다.
+
+## DRF의 기본 CBV인 APIView
+
+> https://github.com/encode/django-rest-framework/blob/3.11.0/rest_framework/views.py - L104
+
+- APIView 클래스 혹은 @api_view 장식자
+- View에 여러 기본 속성을 부여합니다.
+
+1. renderer_classes : 직렬화 class 다수
+2. parser_classes : 비직렬화 class 다수
+3. authentication_classes : 인증 class 다수
+4. throttle_classes : 사용량 제한 class 다수
+5. permission_classes : 권한 class 다수
+6. content_negotiation_class : 요청에 따라 적절한 직렬화/비직렬화 class를 선택하는 class
+7. metadata_class : 메타 정보를 처리하는 class
+8. versioning_class : 요청에서 API버전 정보를 탐지하는 class
+
+## 각 옵션의 디폴트 값
+
+1. renderer_classes
+
+   - rest_framework.renderers.JSONRenderer : JSON 직렬화
+   - rest_framework.renderers.TemplateHTMLRenderer : HTML 페이지 직렬화
+
+2. parser_classes
+
+   - rest_framework.parsers.JSONParser : JSON 포맷 처리
+   - rest_framework.parsers.FormParser
+   - rest_framework.parsers.MultiPartParser
+
+3. authentication_classes
+
+   - rest_framework.authentication.SessionAuthentication : 세션에 기반한 인증
+   - rest_framework.authentication.BasicAuthentication : HTTP Basic 인증
+
+4. throttle_classes
+
+   - 빈튜플
+
+5. permission_classes
+
+   - rest_framework.permissions.AllowAny : 누구라도 접근 허용
+
+6. content_negotiation_class
+
+   - rest_framework.negotiation.DefaultContentNegotiation
+   - 같은 URL로의 요청이지만, JSON응답을 요구하는 것이냐 / HTML응답을 요구하는 것인지 판단
+
+7. metadata_class
+
+   - rest_framework.metadata.SimpleMetadata
+
+8. versioning_class
+   - None : API 버전 정보를 탐지하지 않겠다.
+   - 요청 URL에서, GET인자에서, HEADER에서 버전정보를 탐지하여, 해당 버전의 API뷰가 호출되도록 합니다.
+
+# APIView와 @api_view
+
+> 공식 튜토리얼 : https://www.django-rest-framework.org/tutorial/3-class-based-views/
+
+## DRF의 2가지 기본 뷰
+
+1. APIView : 클래스 기반 뷰
+2. @api_view : 함수 기반 뷰를 위한 장식자
+
+## APIView
+
+- 하나의 CBV이므로 하나의 URL만 처리 가능
+- 각 method(get, post, put, delete)에 맞게 멤버함수를 구현하면, 해당 method 요청이 들어올 때 호출
+
+1. 직렬화/비직렬화 처리 (JSON 등)
+2. 인증 체크
+3. 사용량제한체크:호출허용량범위인지체크
+4. 권한클래스지정:비인증/인증유저에대해해당API호출을허용할것인지를결정
+5. 요청된 API 버전 문자열을 탐지하여, request.version에 저장
+
+- APIView 내 dispatch
+  - https://github.com/encode/django-rest-framework/blob/3.11.0/rest_framework/views.py#L493
+
+## 클래스 형태) APIView 구현 샘플 (list/create)
+
+```py
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from .models import Post
+from .serializers import PostSerializer
+
+class PostListAPIView(APIView):
+  def get(self, request):
+    qs = Post.objects.all()
+    serializer = PostSerializer(qs, many=True)
+    return Response(serializer.data)
+
+  def post(self, request):
+    serializer = PostSerializer(data=request.data)
+    if serializer.is_valid():
+      serializer.save()
+      return Response(serializer.data, status=201)
+    return Response(serializer.errors, status=400)
+
+# rest_framework/views.py
+from django.views.decorators.csrf import csrf_exempt
+
+class APIView(View):
+  #...
+  @classmethod
+  def as_view(cls, **initkwargs):
+    #...
+    return csrf_exempt(view)
+
+```
+
+- rest_framework/views.py#L144
+- 뷰가 csrf_exempt 장식자로 이미 감싸져있기에 POST 요청에서 csrf token 체크를 하지 않습니다.
+
+## 클래스 형태) APIView 구현 샘플 (detail/update/delete)
+
+```py
+from django.shortcuts import get_object_or_404
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from .models import Post
+from .serializers import PostSerializer
+
+class PostDetailAPIView(APIView):
+  def get_object(self, pk):
+    return get_object_or_404(Post, pk=pk)
+
+  def get(self, request, pk, format=None):
+    post = self.get_object(pk)
+    serializer = PostSerializer(post)
+    return Response(serializer.data)
+
+  def put(self, request, pk):
+    post = self.get_object(pk)
+    serializer = PostSerializer(post, data=request.data)
+      if serializer.is_valid():
+          serializer.save()
+          return Response(serializer.data)
+      return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+  def delete(self, request, pk):
+    post = self.get_object(pk)
+    post.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
+```
+
+## 함수 형태) @api_view 장식자 구현 샘플 (list/create)
+
+```py
+from django.http import get_object_or_404
+from rest_framework import status, Response
+from rest_framework.decorators import api_view
+from .models import Post
+from .serializers import PostSerializer
+
+@api_view(['GET', 'POST'])
+def post_list(request):
+  if request.method == 'GET':
+    serializer = PostSerializer(Post.objects.all(), many=True)
+    return Response(serializer.data)
+  else:
+    serializer = PostSerializer(data=request.data)
+      if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=201)
+      return Response(serializer.errors, status=400)
+```
+
+- 하나의 작업만을 구현하고자 할 때 @api_view를 쓰시면 편리합니다.
+
+## 함수 형태) @api_view 장식자 구현 샘플 (detail/update/delete)
+
+```py
+from rest_framework.decorators import api_view
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def post_detail(request, pk):
+  post = get_object_or_404(Post, pk=pk)
+
+  if request.method == 'GET':
+    serializer = PostSerializer(post)
+    return Response(serializer.data)
+
+  elif request.method == 'PUT':
+    serializer = PostSerializer(post, data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+  else:
+      post.delete()
+
+return Response(status=status.HTTP_204_NO_CONTENT)
+```
