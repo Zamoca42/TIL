@@ -4981,3 +4981,147 @@ from rest_framework.urlpatterns import format_suffix_patterns
   <URLPattern 'hello<drf_format_suffix:format>'>,
 ]
 ```
+
+# Form와 Serializer 관점에서 DRF 비교
+
+> https://www.django-rest-framework.org/api-guide/serializers/
+
+## Serializer / ModelSerializer
+
+- 데이터 변환/직렬화 지원
+
+  - QuerySet/Model객체 <-> Native Python 데이터타입, JSON/XML 등
+
+- Django의 Form/ModelForm과 유사
+  - Serializer는 뷰 응답을 생성하는 데에 범용적이고 강력한 방법을 제공
+  - ModelSerializer는 Serializer 생성을 위한 Shortcut
+
+## 비교) Features
+
+- Form / ModelForm
+
+  - HTML 입력폼을 통한 입력에 대한 유효성 검사
+  - 주로 Create/Update에 대한 처리에서 활용 -> 장고 admin 에서 활용
+  - CreateView/UpdateView CBV를 통한 뷰 처리 -> 단일 뷰
+
+- Serializer / ModelSerializer
+  - 데이터 변환 및 직렬화 지원 (JSON 포맷 등)
+  - 주로 JSON 포맷 (주된 Web API 포맷) 입력에 대한 유효성 검사
+  - List/Create 및 특정 Record에 대한 Retrieve/Edit/Delete 등 에서 활용
+  - APIView를 통한 뷰 처리 -> 단일 뷰
+  - ViewSet을 통한 뷰 처리 -> 2개 뷰 -> 2개 URL 처리
+
+## 비교) 주된 호출 주체
+
+- Form
+
+  - 일반적으로 웹브라우저 상에서
+    - HTML Form Submit
+    - JavaScript에 의한 비동기 호출
+  - 물론, Android/iOS 앱에 의한 요청/응답도 가능
+    - 모두 http(s) 프로토콜 요청/응답이기에.
+
+- Serializer
+  - 다양한 Client에 대한 Data 위주의 http(s) 요청
+  - by : Web/Android/iOS 등
+
+## 비교) 클래스 정의 – Form/ModelForm vs Serializer/ModelSerializer
+
+Form
+
+```py
+from django import forms
+
+class PostForm(forms.Form):
+  email = forms.EmailField()
+  content = forms.CharField(widget=forms.Textarea)
+  created_at = forms.DateTimeField()
+
+class PostModelForm(forms.ModelForm):
+  class Meta:
+        model = Post
+        fields = '__all__'
+```
+
+Serializers
+
+```py
+from rest_framework import serializers
+
+class PostSerializer(serializers.Serializer):
+  email = serializers.EmailField()
+  content = serializers.CharField(max_length=200)
+  created_at = serializers.DateTimeField()
+
+class PostModelSerializer(serializers.ModelSerializer):
+  class Meta:
+        model = Post
+        fields = '__all__'
+
+```
+
+## 비교) FBV를 통한 요청/응답 – Form vs Serializer
+
+Form
+
+```py
+def post_list(request):
+    if request.method == 'POST':
+      form = PostForm(request.POST, request.FILES)
+      if form.is_valid():
+            post = form.save()
+            return redirect(post)
+    else:
+      form = PostForm()
+
+    return render(request, 'myapp/post_form.html', {
+        'form': form,
+    })
+
+def post_list_or_create(request):
+
+  # 새 글 저장을 구현
+  if request.method == 'POST':
+    form = PostForm(request.POST, request.FILES)
+    if form.is_valid():
+      post = form.save()
+      # 커스텀 직렬화 루틴이 필요
+      return JsonResponse(post)
+    return JsonResponse(form.errors)
+
+  # 목록 응답을 구현
+  else:
+    qs = Post.objects.all()
+    return JsonResponse(qs) # 커스텀 직렬화 루틴이 필요
+```
+
+Serializer
+
+```py
+def post_list_or_create(request):
+  if request.method == 'POST':
+    serializer = PostSerializer(data=request.POST)
+    if serializer.is_valid():
+      serializer.save()
+      return Response(serializer.data, status=201)
+    return Response(serializer.errors, status=400)
+  else:
+    qs = Post.objects.all()
+    serializer = PostSerializer(qs, many=True)
+    return Response(serializer.data)
+
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+class PostListCreateAPIView(APIView):
+  def get(self, request):
+    serializer = PostSerializer(Post.objects.all(), many=True)
+    return Response(serializer.data)
+
+  def post(self, request):
+    serializer = PostSerializer(data=request.data)
+    if serializer.is_valid():
+      serializer.save()
+      return Response(serializer.data, status=201)
+    return Response(serializer.errors, status=400)
+```
