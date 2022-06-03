@@ -5125,3 +5125,527 @@ class PostListCreateAPIView(APIView):
       return Response(serializer.data, status=201)
     return Response(serializer.errors, status=400)
 ```
+
+## 비교) CBV를 통한 요청 및 응답 (1) – 장고 기본
+
+```py
+from django.views.generic import ListView, CreateView
+
+post_list = ListView.as_view(model=Post)
+post_new = CreateView.as_view(model=Post, form_class=PostModelForm)
+
+# 앱/urls.py
+urlpatterns = [
+    path('', post_list),
+    path('new/', post_new),
+]
+```
+
+```html
+<form action="" method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  <table>
+    {{ form.as_table }}
+  </table>
+  <input type="submit" />
+</form>
+```
+
+## 비교) CBV를 통한 요청 및 응답 (2) – DRF의 APIView
+
+```py
+from rest_framework.generics import ListCreateAPIView
+
+class PostListCreateAPIView(ListCreateAPIView):
+  queryset = Post.objects.all()
+  serializer_class = PostModelSerializer
+
+post_list_create = PostListCreateAPIView.as_view()
+
+# 앱/urls.py
+urlpatterns = [
+  # 단일 URL에서 list/create 요청 처리
+  path('api/post/', post_list_create),
+]
+```
+
+## 유효성 검사 수행 시점 – Form vs Serializer
+
+```py
+class ProcessFormView(View):
+  def get(self, request, *args, **kwargs):
+    return self.render_to_response(self.get_context_data())
+
+  def post(self, request, *args, **kwargs):
+    form = self.get_form() # POST 데이터를 통해 Form 객체 생성
+    if form.is_valid(): # 유효성 검사를 수행. 실패하면 False를 반환
+      return self.form_valid(form) # DB로의 저장을 수행
+    else:
+      return self.form_invalid(form) # 오류 HTML 응답
+
+# rest_framework/mixins.py
+class CreateModelMixin(object):
+  def create(self, request, *args, **kwargs): # POST 요청 -> CREATE 요청이 들어오면,
+    serializer = self.get_serializer(data=request.data) # POST데이터를 통해 Serializer 인스턴스를 만들고
+    serializer.is_valid(raise_exception=True) # 유효성 검사를 수행. 실패하면 예외발생 !!!
+    self.perform_create(serializer) # DB로의 저장을 수행
+    headers = self.get_success_headers(serializer.data) # 필요한 헤더를 뽑고
+    return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers) # 응답을 합니다.
+
+  def perform_create(self, serializer): # CREATE 커스텀은 이 함수를 재정의하세요.
+    serializer.save()
+```
+
+## 커스텀 유효성 검사 루틴 – clean*\* vs validate*\*
+
+```py
+from django import forms
+
+class PostForm(forms.Form):
+  title = forms.CharField()
+
+  def clean_title(self):
+    value = self.cleaned_data.get('title', '')
+    if 'django' not in value:
+      raise forms.ValidationError('제목에 필히 django가 포함되어야 합니다.')
+    return value
+
+from rest_framework.exceptions import ValidationError
+
+class PostSerializer(serializers.Serializer):
+  title = serializers.CharField(max_length=100)
+
+  def validate_title(self, value):
+    if 'django' not in value:
+      raise ValidationError('제목에 필히 django가 포함되어야 합니다.')
+    return value
+```
+
+# Serializer를 통한 유효성 검사 및 저장
+
+> https://github.com/encode/django-rest-framework/blob/master/rest_framework/validators.py
+
+## Serializer의 생성자
+
+- Serializer는 Django Form와 컨셉/사용법이 유사하나, 생성자 차이
+
+```py
+
+# django/forms/forms.py
+class BaseModelForm:
+  def __init__(self, data=None, files=None, auto_id='id_%s', prefix=None,
+               initial=None, error_class=ErrorList, label_suffix=None, empty_permitted=False, instance=None, use_required_attribute=None):
+
+ class Form(BaseForm):
+     pass
+
+# rest_framework/serializers.py
+
+class BaseSerializer(Field):
+  def __init__(self, instance=None, data=empty, **kwargs):
+
+class Serializer(BaseSerializer):
+  pass
+```
+
+## data= 인자가 주어지면
+
+- .is_valid()가 호출되고 나서야 ...
+  1. .initial_data 필드에 접근할 수 있고
+  2. .validated_data를 통해 유효성 검증에 통과한 값들이 .save() 시에 사용됩니다.
+  3. .errorsà유효성 검증 수행 후에 오류 내역
+  4. .dataà유효성 검증 후에, 갱신된 인스턴스에 대한 필드값 사전
+
+## serializer.save(`\*\*kwargs`) 호출을 할 때
+
+1. DB에 저장한 관련 instance를 리턴
+2. .validated_data와 kwargs사전을 합친 데이터를
+   1. .update 함수 / .create 함수를 통해 관련 필드에 값을 할당하고, DB로의 저장을 시도
+   2. .update() : self.instance 인자를 지정했을 때
+   3. .create() : self.instance 인자를 지정하지 않았을 때
+
+## from rest_framework.validators import ...
+
+- 값에 대한 유효성 검사를 수행하는 호출 가능한 객체
+
+- DRF에서는 유일성 체크를 도와주는 Validators 제공
+  1.  UniqueValidator : 지정 1개 필드가 지정 QuerySet 범위에서의 유일성 여부 체크
+  2.  UniqueTogetherValidator : UniqueValidator의 다수 필드 버전
+  3.  BaseUniqueForValidator
+  4.  UniqueForDateValidator (BaseUniqueValidator) : 지정 날짜 범위에서 유일성 여부 체크
+  5.  UniqueForMonthValidator (BaseUniqueValidator) : 지정 월 범위에서 유일성 여부 체크
+  6.  UniqueForYearValidator (BaseUniqueValidator) : 지정 년 범위에서 유일성 여부 체크
+
+## UniqueValidator
+
+- 모델 필드에 unique=True를 지정하면, 자동 지정
+
+  - qureyset (필수)
+  - message:유효성검사실패시의에러메세지
+  - lookup : 디폴트 'exact'
+
+- Serializer 필드에 직접 validators 지정 가능
+
+```py
+from rest_framework.validators import UniqueValidator
+
+slug = SlugField(
+  max_length=100,
+  validators=[UniqueValidator(queryset=BlogPost.objects.all())]
+)
+```
+
+## UniqueTogetherValidator
+
+- 모델 Meta에 unique_together이 지정된다면, 자동 지정
+  - queryset (필수)
+  - fields (필수)
+  - message
+
+```py
+from rest_framework.validators import UniqueTogetherValidator
+class ExampleSerializer(serializers.Serializer):
+  # ...
+  class Meta:
+    validators=[
+       UniqueTogetherValidator(
+         queryset=ToDoItem.objects.all(),
+         fields=['list', 'position']
+      )
+]
+```
+
+## UniqueForDateValidator / Month / Year
+
+- queryset (필수)
+- field (필수)
+- date_field (필수)
+- message
+
+```py
+from rest_framework.validators import UniqueForYearValidator
+
+class ExampleSerializer(serializers.Serializer):
+  # ...
+  class Meta:
+    validators = [
+      UniqueForYearValidator(
+        queryset=BlogPostItem.objects.all(),
+        field='slug',
+        date_field='published'
+    )
+]
+```
+
+## 유효성 검사에 실패하면 ValidationError 예외 발생
+
+> https://github.com/encode/django-rest-framework/blob/3.10.1/rest_framework/exceptions.py#L138
+
+- 필히 rest_framework.exceptions.ValidationError 사용
+- 장고 기본에서는 django.forms.exceptions.ValidationError
+
+```py
+class ValidationError(APIException):
+  status_code = status.HTTP_400_BAD_REQUEST
+  default_detail = _('Invalid input.')
+  default_code = 'invalid'
+
+  def __init__(self, detail=None, code=None):
+    if detail is None:
+      detail = self.default_detail
+    if code is None:
+      code = self.default_code
+    if not isinstance(detail, dict) and not isinstance(detail, list):
+      detail = [detail]
+
+self.detail = _get_error_details(detail, code)
+```
+
+## Serializer에의 유효성 검사
+
+- 필드 정의 시에 validators 지정하거나, 클래스 Meta.validators 지정
+- Field Level 검사 : 유효성 검사 및 값 변환
+
+  ```py
+  class PostSerializer(serializers.Serializer):
+    title = serializers.CharField(max_length=100)
+
+    def validate_title(self, value):
+      if 'django' not in value:
+        raise ValidationError('제목에 필히 django가 포함되어야합니다.')
+      return value
+  ```
+
+- Object Level 검사 : 유효성 검사 및 값 변환
+
+  ```py
+  class PostSerializer(serializers.Serializer):
+    title = serializers.CharField(max_length=100)
+
+    def validate(self, data):
+      if 'django' not in data['title']:
+        raise ValidationError('제목에 필히 django가 포함되어야합니다.')
+      return data
+  ```
+
+## DB로의 반영과 Mixins의 perform\_ 계열 함수
+
+- APIView의 create/update/destroy 멤버함수에서 실질적인 DB처리 로직은
+  - perform_create(serializer)/perform_update(serializer)/perform_destroy(instance)를 통해 이뤄집니다.
+
+```py
+class CreateModelMixin:
+  def create(self, request, *args, **kwargs):
+    serializer = self.get_serializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    self.perform_create(serializer)
+    headers = self.get_success_headers(serializer.data)
+    return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+  def perform_create(self, serializer):
+    serializer.save()
+
+  def get_success_headers(self, data):
+    try:
+      return {'Location': str(data[api_settings.URL_FIELD_NAME])}
+    except (TypeError, KeyError):
+      return {}
+```
+
+## create 시에 추가로 저장할 필드가 있다면?
+
+- 모델에 ip 필드가 있고, 유저의 아이피들 저장하고 싶다면?
+
+```py
+def perform_create(self, serializer):
+  serializer.save(ip=self.request.META['REMOTE_ADDR'])
+```
+
+# Authentication과 Permission
+
+> https://www.django-rest-framework.org/api-guide/authentication/
+
+## 인증 (Authentication)
+
+- 유입되는 요청을 허용/거부하는 것을 결정하는 것이 아니라,
+- 단순히 인증정보로 유저를 식별하는 것입니다.
+  - Authentication : 유저 식별
+  - Permissions : 각 요청에 대한 허용/거부
+  - Throttling : 일정 기간 동안에 허용할 최대 요청 횟수
+
+## 인증 처리 순서
+
+1. 매 요청 시마다 APIView의 dispatch(request) 호출
+2. APIView의 initial(request) 호출
+3. APIView의 perform_authentication(request) 호출
+4. request의 user 속성 호출 (rest_framework.request.Request 타입)
+5. request의 `_authenticate()` 호출
+
+## 지원하는 인증 (Authentication)의 종류
+
+- SessionAuthentication
+
+  - 세션을 통한 인증, APIView에서 디폴트 지정
+
+- BasicAuthentication
+
+  - Basic 인증 헤더를 통한 인증 (예 -> Authorization: Basic YWxsaWV1czE6MTAyOXNoYWtl )
+  - HTTPie를 통한 요청 : 쉘> http --auth 유저명:암호 --form POST :8000 필드명1:값1 필드명2:값2
+
+- TokenAuthentication
+
+  - Token 헤더를 통한 인증 (예 -> Authorization: Token 401f7ac837da42b97f613d789819ff93537bee6a)
+
+- RemoteUserAuthentication
+  - User가 다른 서비스에서 관리될 때, Remote 인증
+  - Remote-User 헤더를 통한 인증 수행
+
+## 웹브라우저를 통한 API 접근에서 로그인/로그아웃 지원
+
+- 장고 기본 앱 django.contrib.auth를 통한 지원 -> 세션 인증
+
+rest_framework/urls.py
+
+```py
+from django.conf.urls import url
+from django.contrib.auth import views
+
+app_name = 'rest_framework'
+urlpatterns = [
+   url(r'^login/$', views.LoginView.as_view(template_name='rest_framework/login.html'), name='login'),
+   url(r'^logout/$', views.LogoutView.as_view(), name='logout'),
+]
+```
+
+프로젝트 내, urls.py
+
+```py
+urlpatterns += [
+  path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+]
+```
+
+## 허가와 권한 (Authorizations and Permissions)
+
+- 개체(정보/코드 등)에 대한 접근을 허용하기 위해서, 인증/식별만으로는 충분하지 않습니다. 추가로 각 개체에 대한 허가가 필요합니다.
+
+## DRF의 Permission 시스템
+
+- 현재 요청에 대한 허용/거부를 결정합니다. APIView 단위로 지정할 수 있습니다.
+
+- AllowAny (디폴트 전역 설정) : 인증 여부에 상관없이, 뷰 호출 허용
+
+- IsAuthenticated : 인증된 요청에 한해서, 뷰 호출 허용
+
+- IsAdminUser : Staff 인증 요청에 한해서, 뷰 호출 허용
+
+- IsAuthenticatedOrReadOnly : 비인증 요청에게는 읽기 권한만 허용
+
+- DjangoModelPermissions : 인증된 요청에 한해 뷰 호출을 허용하고, 추가로 장고의 모델단위 Permissions 체크
+
+- DjangoModelPermissionsOrAnonReadOnly
+
+  - DjangoModelPermissions과 유사하나, 비인증 요청에게는 읽기만 허용
+
+- DjangoObjectPermissions
+
+  - 비인증 요청은 거부하고, 인증된 요청은 Object에 대한 권한 체크를 수행
+
+## permission_classes 지정
+
+- APIView에는 permission_classes 설정
+
+```py
+from rest_framework.permissions import IsAuthenticated
+
+class ExampleView(APIView):
+  permission_classes = [IsAuthenticated]
+
+  def get(self, request, format=None):
+    content = { 'status': 'request was permitted' }
+    return Response(content)
+```
+
+- @api_view에는 @permission_classes 장식자 설정
+
+```py
+from rest_framework.decorators import permission_classes
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def example_view(request, format=None):
+  content = { 'status': 'request was permitted' }
+  return Response(content)
+```
+
+## 디폴트 전역 설정
+
+```py
+REST_FRAMEWORK = {
+  'DEFAULT_PERMISSION_CLASSES': [
+    'rest_framework.permissions.AllowAny',
+  ]
+}
+```
+
+## 커스텀 Permission
+
+- 모든 Permission 클래스는 다음 2가지 함수를 선택적으로 구현
+
+- has_permission(request, view)
+
+  - APIView 접근 시, 체크
+  - 거의 모든 Permission 클래스에서 구현하며, 로직에 따라 True/False 반환
+
+- has_object_permission(request, view, obj)
+
+  - APIView의 get_object 함수를 통해 object 획득 시에 체크
+  - 브라우저를 통한 API 접근에서 CREATE/UPDATE Form 노출 시에 체크
+  - DjangoObjectPermissions에서 구현하며, 로직에 따라 True/False 반환
+
+- dry-rest-permissions : 룰 기반 퍼미션 지원 (https://github.com/dbkaplan/dry-rest-permissions)
+
+## DRF의 Permissions 코드 살펴보기
+
+> https://github.com/encode/django-rest-framework/blob/3.10.1/rest_framework/permissions.py
+
+```py
+
+SAFE_METHODS = ('GET', 'HEAD', 'OPTIONS')
+
+class AllowAny(BasePermission):
+  def has_permission(self, request, view):
+    return True
+
+class IsAuthenticated(BasePermission):
+  def has_permission(self, request, view):
+    return request.user and request.user.is_authenticated
+
+class IsAdminUser(BasePermission):
+  def has_permission(self, request, view):
+    return request.user and request.user.is_staff
+```
+
+```py
+class DjangoObjectPermissions(DjangoModelPermissions):
+  # ...
+  def has_object_permission(self, request, view, obj):
+    # authentication checks have already executed via has_permission
+    queryset = self._queryset(view)
+    model_cls = queryset.model
+    user = request.user
+
+    perms = self.get_required_object_permissions(request.method, model_cls)
+
+    if not user.has_perms(perms, obj):
+      if request.method in SAFE_METHODS:
+        raise Http404
+
+      read_perms = self.get_required_object_permissions('GET', model_cls)
+      if not user.has_perms(read_perms, obj):
+        raise Http404
+
+      return False
+
+    return True
+```
+
+## 포스팅 작성자가 아니라면, 읽기 권한만 부여하기
+
+- 모델에 author 필드가 있다고 가정
+
+```py
+from rest_framework import permissions
+
+class IsAuthorOrReadonly(permissions.BasePermission):
+  # 인증된 유저에 한해, 목록조회/포스팅등록을 허용
+  def has_permission(self, request, view):
+    return request.user.is_authenticated
+
+  # 작성자에 한해, Record에 대한 수정/삭제 허용
+  def has_object_permission(self, request, view, obj):
+    # 조회 요청(GET, HEAD, OPTIONS) 에 대해서는 인증여부에 상관없이 허용
+    if request.method in permissions.SAFE_METHODS:
+      return True
+
+  # PUT, DELETE 요청에 대해, 작성자일 경우에만 요청 허용
+  return obj.author == request.user
+```
+
+## 포스팅 작성자에게 수정권한만 부여하고, 삭제는 superuser에게만.
+
+```py
+from rest_framework import permissions
+
+class IsAuthorUpdateOrReadonly(permissions.BasePermission):
+  def has_permission(self, request, view):
+    return request.user.is_authenticated
+
+  def has_object_permission(self, request, view, obj):
+    if request.method in permissions.SAFE_METHODS:
+      return True
+    if (request.method == 'DELETE'):
+      return request.user.is_superuser # 또는 request.user.is_staff
+
+    return obj.author == request.user
+```
