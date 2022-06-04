@@ -5649,3 +5649,364 @@ class IsAuthorUpdateOrReadonly(permissions.BasePermission):
 
     return obj.author == request.user
 ```
+
+# Filtering과 Ordering
+
+## Filtering
+
+- 목록조회 APIView에서는 조건에 따라 필터링이 필요
+  (ex: QuerySet의 filter/exclude 등)
+
+- APIView 역시 Class Based View
+
+- 필터링에 필요한 인자 참조
+
+| APIView                                | @api_view                         |
+| -------------------------------------- | --------------------------------- |
+| self.request.user                      | request.user                      |
+| self.request.GET                       | request.GET                       |
+| self.request.query_params (GET과 동일) | request.query_params (GET과 동일) |
+| self.kwargs                            | 함수의 키워드 인자                |
+
+## 직접 Filtering의 예 -> ListAPIView에서는 get_queryset 재정의
+
+```py
+from rest_framework import generics
+
+class PostListAPIView(generics.ListAPIView):
+  queryset = Post.objects.all()
+
+  def get_queryset(self):
+    q = self.request.query_params.get('q', '')
+    qs = super().get_queryset()
+    if q:
+      qs = qs.filter(title__icontains=q) # 적절히 필터링
+    return qs
+```
+
+## Generic Filtering / Ordering
+
+- Django Admin의 search 기능과 유사한 제공 -> 별도의 검색엔진을 사용하는 것이 아니라, DBMS의 조건절 활용
+
+```py
+from rest_framework.filters import SearchFilter, OrderingFilter
+
+class PostModelViewSet(viewsets.ModelViewSet):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ['message'] # ?search= -> QuerySet 조건 절에 추가할 필드 지정. 모델 필드 중에 문자열 필드만을 지정.
+    ordering_fields = ['id'] # ?ordering= -> 정렬을 허용할 필드의 화이트 리스트. 미지정 시에 serializer_class에 지정된 필드들.
+    ordering = ['id'] # 디폴트 정렬을 지정
+```
+
+- 참고 : django-filter 라이브러리에서는 DRF와의 통합을 지원 -> django_filters.rest_framework.DjangoFilterBackend
+
+## search_fields
+
+```
+search_fields = ['=username', '=email']
+```
+
+- 문자열 패턴 지정
+  - "^" : Starts-with search
+  - "=" : Exact matches
+  - "@" : Full-text search. (단어/구문에 대한 검색, 2020년 2월 현재 장고의 MySQL 백엔드에서만 지원)
+  - "$" : Regex search
+- get_search_fields 함수로도 구현 가능
+
+# Pagination
+
+## DRF에서 기본 지원하는 페이징 방식
+
+- PageNumberPagination
+  - page/page_size 인자를 통한 페이징 처리
+- LimitOffsetPagination
+  - offset/limit 인자를 통한 페이징 처리
+
+## PageNumberPagination
+
+- page_size 미지정 상황을 위해, 디폴트 지정이 필요
+  - settings.py 내 REST_FRAMEWORK = { "PAGE_SIZE": 10 } 를 통해 전역 설정
+  - PageNumberPagination을 상속받아 page_size 설정
+
+```py
+from rest_framework.pagination import PageNumberPagination
+
+class MyPageNumberPagination(PageNumberPagination):
+     page_size = 10
+
+class APIViewWithPage(APIView):
+  pagination_class = PageNumberPagination
+```
+
+## LimitOffsetPagination
+
+- limit 미지정 상황을 위해, 디폴트 지정이 필요
+
+  - settings.py 내 REST_FRAMEWORK = { "PAGE_SIZE": 10 } 를 통해 전역 설정
+  - LimitOffsetPagination을 상속받아 default_limit 설정하고,
+
+```py
+from rest_framework.pagination import LimitOffsetPagination
+
+class MyLimitOffsetPagination(LimitOffsetPagination):
+     page_size = 10
+class APIViewWithLimit(APIView):
+  pagination_class = LimitOffsetPagination
+```
+
+## 전역 설정
+
+```py
+REST_FRAMEWORK = {
+  'PAGE_SIZE': 10,
+  'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+}
+```
+
+# Throttling (최대 호출 횟수 제한하기)
+
+> https://www.django-rest-framework.org/api-guide/throttling/
+
+## 용어 정리
+
+- Rate : 지정 기간 내에 허용할 최대 호출 횟수
+
+- Scope : 각 Rate에 대한 별칭 (alias)
+
+- Throttle : 특정 조건 하에 최대 호출 횟수를 결정하는 로직이 구현된 클래스
+
+## 기본 제공 Throttle
+
+- AnonRateThrottle
+
+  - 인증 요청에는 제한을 두지 않고, 비인증 요청에는 IP 단위로 횟수 제한
+  - 디폴트 scope : 'anon'
+
+- UserRateThrottle
+
+  - 인증 요청에는 유저 단위로 횟수를 제한하고, 비인증 요청에는 IP 단위로 횟수 제한
+  - 디폴트 scope : 'user'
+
+- ScopedRateThrottle
+  - 인증 요청에는 유저 단위로 횟수를 제한하고, 비인증 요청에는 IP 단위로 횟수 제한
+  - 각 APIView내 throttle_scope 설정을 읽어, APIView 별로 서로 다른 Scope을 적용
+
+## 설정 예
+
+디폴트 설정
+
+```py
+REST_FRAMEWORK = {
+  'DEFAULT_THROTTLE_CLASSES': [],
+  'DEFAULT_THROTTLE_RATES': {
+        'anon': None,
+        'user': None,
+    },
+}
+```
+
+설정 예
+
+```py
+REST_FRAMEWORK = {
+  'DEFAULT_THROTTLE_CLASSES': [
+    'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'user': '10/day',
+    },
+}
+```
+
+ViewSet 예
+
+```py
+from rest_framework.throttling import UserRateThrottle
+
+class PostViewSet(ViewSet):
+   throttle_classes = UserRateThrottle
+```
+
+## 최대 호출 횟수 제한을 넘긴다면?
+
+- 429 Too Many Requests 응답
+
+- 예외 메세지에 API 활용이 가능한 시점을 알려줍니다. -? 이는 Throttle의 wait 멤버함수를 통해 계산
+
+## Cache
+
+> https://docs.djangoproject.com/en/2.2/ref/settings/#caches > https://www.django-rest-framework.org/api-guide/throttling/#setting-up-the-cache
+
+- 매 요청 시마다 cache에서 timestamp list를 get/set -> 캐시 성능이 중요
+- SimpleRateThrottle에서는 다음과 같이 디폴트 캐시 설정
+
+```py
+
+# rest_framework/throttling.py
+
+from django.core.cache import cache as default_cache
+
+class SimpleRateThrottle(BaseThrottle):
+  cache = default_cache
+```
+
+## 장고의 Cache 지원
+
+- 기본 settings의 디폴트 캐시 : 로컬 메모리 캐시
+
+- 다양한 캐시 지원
+
+  - Memcached 서버 지원 : django.core.cache.backends.MemcachedCache 혹은 PyLibMCCache
+  - 데이터베이스 캐시 : django.core.cache.backends.DatabaseCache
+  - 파일 시스템 캐시 : django.core.cache.backends..FileBasedCache
+  - 로컬 메모리 캐시 : django.core.cache.backends.LocMemCache
+  - 더미 캐시 : django.core.cache.backends.dummy.DummyCacheà실제로 캐시를 수행하진 않습니다.
+
+- redis를 활용한 캐시
+  - django-redis-cache : https://github.com/sebleier/django-redis-cache
+
+## Throttle별 캐시 설정
+
+- settings.CACHES의 "default" 사용
+- Throttle 클래스 별로 다른 캐시 설정 지원
+
+```py
+from django.core.cache import caches
+
+class CustomAnonRateThrottle(AnonRateThrottle):
+  cache = caches['alternate']
+```
+
+## 설정
+
+### Rates 포맷
+
+- 포맷 : "숫자/간격"
+- 숫자 : 지정 간격 내의 최대 요청 제한 횟수
+- 간격 : 지정 문자열의 첫 글자만 사용. "d", "day", "ddd" 모두 Day로서 사용 "s" : 초, "m" : 분, "h" : 시, "d" : 일
+
+### Rates 제한 메커니즘
+
+- SingleRateThrottle에서는 요청한 시간의 timestamp를 list로 유지
+
+- 매 요청시마다
+  1.  cache에서 timestamp list를 가져옵니다.
+  2.  체크 범위 밖의 timestamp 값들은 모두 버립니다.
+  3.  timestamp list의 크기가 허용범위보다 클 경우, 요청을 거부합니다.
+  4.  timestamp list의 크기가 허용범위보다 작을 경우, 현재 timestamp를 list에 추가하고, cache에 다시 저장합니다.
+
+### 클라이언트 IP
+
+- X-Forwarded-For 헤더와 REMOTE_ADDR 헤더를 참조해서, 확정
+- 우선순위 : X-Forwarded-For > REMOTE_ADDR
+
+### API 별로 서로 다른 Rate 적용하기
+
+```py
+# 프로젝트/settings.py
+REST_FRAMEWORK = {
+  'DEFAULT_THROTTLE_CLASSES': [],
+  'DEFAULT_THROTTLE_RATES': {
+        'contact': '1000/day',
+       'upload': '20/day',
+  },
+}
+
+# myapp/throttles.py
+class CotactRateThrottle(UserRateThrottle):
+  scope = 'contact'
+
+class UploadRateThrottle(UserRateThrottle):
+  scope = 'upload'
+
+# myapp/views.py
+class ContactListView(APIView):
+  throttle_classes = [CotactRateThrottle]
+
+class ContactDetailView(APIView):
+  throttle_classes = [ContactRateThrottle]
+
+class UploadView(APIView):
+  throttle_classes = [UploadRateThrottle]
+
+```
+
+- 직전 코드를 ScopedRateThrottle를 통해 간결하게 변경
+
+```py
+# 프로젝트/settings.py
+REST_FRAMEWORK = {
+  'DEFAULT_THROTTLE_CLASSES': [
+    'rest_framework.throttling.ScopedRateThrottle',
+  ],
+  'DEFAULT_THROTTLE_RATES': {
+         'contact': '1000/day',
+         'upload': '20/day',
+     },
+}
+
+# myapp/views.py
+class ContactListView(APIView):
+  throttle_scope = 'contact'
+
+class ContactDetailView(APIView):
+  throttle_scope = 'contact'
+
+class UploadView(APIView):
+  throttle_scope = 'upload'
+```
+
+### 유저 별로 Rate 다르게 적용하기
+
+```py
+REST_FRAMEWORK = { 'DEFAULT_THROTTLE_RATES': {
+        'premium_user': '1000/day',
+        'light_user': '10/day',
+    },
+}
+
+from rest_framework import viewsets
+from .serializers import PostSerializer
+from .throttling import PremiumThrottle
+from .models import Post
+
+class PostViewSet(viewsets.ModelViewSet):
+  queryset = Post.objects.all()
+  serializer_class = PostSerializer
+
+  throttle_classes = [PremiumThrottle]
+  premium_scope = 'premium_user'
+  light_scope = 'light_user'
+
+  def perform_create(self, serializer):
+    serializer.save(author=self.request.user)
+```
+
+```py
+from rest_framework.throttling import UserRateThrottle
+
+class PremiumLightThrottle(UserRateThrottle):
+  def __init__(self):
+    pass # User에 따라 scope가 달라지기에, 생성자에서는 get_rate()를 수행하지 않도록 했습니다.
+
+  def allow_request(self, request, view):
+    premium_scope = getattr(view, 'premium_scope', None)
+    light_scope = getattr(view, 'light_scope', None)
+
+    if request.user.profile.is_premium_user:
+      if not premium_scope:
+                return True
+            self.scope = premium_scope # premium_scope 설정이 없다면, 제한을 두지 않습니다.
+      else:
+            if not light_scope:
+                return True
+            self.scope = light_scope # light_scope 설정이 없다면, 제한을 두지 않습니다.
+
+      self.rate = self.get_rate()
+      self.num_requests, self.duration = self.parse_rate(self.rate)
+
+      return super().allow_request(request, view)
+```
