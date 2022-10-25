@@ -23,6 +23,7 @@
 - [Pandas & Numpy](AI/pandas_&_numpy.ipynb)
 - [Train/Test/Validation Data Set](AI/Train_Test_Validation.ipynb)
 - [Vectorization](AI/Vectorization.ipynb)
+- [Summary - 중간 요약](AI/Midterm_Summary.ipynb)
 
 ### Python
 
