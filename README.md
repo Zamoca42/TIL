@@ -24,6 +24,8 @@
 - [Train/Test/Validation Data Set](AI/Train_Test_Validation.ipynb)
 - [Vectorization](AI/Vectorization.ipynb)
 - [Summary - 중간 요약](AI/Midterm_Summary.ipynb)
+- [손글씨 구분(MNIST)](AI/Keras_MNIST.ipynb)
+- [손글씨 구분을 합성곱 신경망(CNN)으로 구현](AI/Keras_MNIST_CNN.ipynb)
 
 ### Python
 
@@ -35,7 +37,12 @@
 
 ### Data Structure & Algorithm
 
-- [알고리즘-공부중](Algorithm.ipynb)
+- [Linked List](DS/Array_Linked_List.ipynb)
+- [해시(Hash)](DS/Hash.ipynb)
+- [힙(Heap)](DS/Heap.ipynb)
+- [정렬(Sort)](DS/Sort.ipynb)
+- [스택(Stack) & 큐(Queue)](DS/Stack_Queue.ipynb)
+- [트리구조(Tree)](DS/Tree.ipynb)
 
 ### DB
 
