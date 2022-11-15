@@ -37,7 +37,7 @@
 
 ### Data Structure & Algorithm
 
-- [Linked List](DS/Array_Linked_List.ipynb)
+- [연결 리스트(Linked List)](DS/Array_Linked_List.ipynb)
 - [해시(Hash)](DS/Hash.ipynb)
 - [힙(Heap)](DS/Heap.ipynb)
 - [정렬(Sort)](DS/Sort.ipynb)
