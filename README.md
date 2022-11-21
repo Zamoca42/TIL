@@ -27,14 +27,6 @@
 - [손글씨 구분(MNIST)](AI/Keras_MNIST.ipynb)
 - [손글씨 구분을 합성곱 신경망(CNN)으로 구현](AI/Keras_MNIST_CNN.ipynb)
 
-### Python
-
-- [함수](Python/python_ch5.ipynb)
-- [객체와 클래스](Python/python_ch06.ipynb)
-- [직렬화](Python/python_ch08.ipynb)
-- [쓰레드와 프로세스](Python/python_ch09.ipynb)
-- [Python 장고](Python/Django.md)
-
 ### Data Structure & Algorithm
 
 - [연결 리스트(Linked List)](DS/Array_Linked_List.ipynb)
@@ -47,6 +39,20 @@
 ### DB
 
 - [MySQL-기본](MySQL/MySQL.md)
+
+### Python
+
+- [함수](Python/python_ch5.ipynb)
+- [객체와 클래스](Python/python_ch06.ipynb)
+- [직렬화](Python/python_ch08.ipynb)
+- [쓰레드와 프로세스](Python/python_ch09.ipynb)
+- [Python 장고](Python/Django.md)
+
+### Operating System
+
+- [인터럽트 & 시스템 콜](OS/interrupt_systemcall.ipynb)
+- [프로세스 관리](OS/Process.ipynb)
+- [스레드와 동시성](OS/Thread.ipynb)
 
 ### Javascript
 
