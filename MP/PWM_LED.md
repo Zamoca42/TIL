@@ -89,8 +89,87 @@ int main()
 
 - Compare Output Mode(COM) 설정  
   ![스크린샷 2022-12-07 오후 11 50 39](https://user-images.githubusercontent.com/96982072/206210900-5258a8c1-bd7d-469e-b6c6-6c90e4048b35.png)
-  - 비반전 모드
-    - 5V에서 OCR2B와 만나면 0V
-  
-  - 반전 모드
-    - 0V에서 OCR2B와 만나면 5V
+
+  - Fast PWM과 PC PWM 모두 설정 레지스터비트는 같다
+  - OCR 값이 증가함에 따라 duty cycle 증가/감소를 결정
+  - TCNT 와 OCR 레지스터가 동일한 값을 가질 때(Compare Match 가 발생할 때) PWM 출력핀에서 High(5V), Low(0V) 신호가 변경됨
+
+    - 비반전 모드
+
+      - 5V에서 OCR2B와 만나면 0V
+
+    - 반전 모드
+      - 0V에서 OCR2B와 만나면 5
+
+- PWM 주파수 설정 (CS: Clock Select)
+
+  - 원하는 PWM 발생 주파수 설정
+  - PWM 주파수 계산 방법
+    - fclk_io = 16000000 Hz, Tclk_io = 1/fclk_io
+    - Fast PWM 방식
+      - 주파수 f = fclk_io / (256 N) Hz
+      - 주기 T = Tclk_io (256 N) sec
+    - Phase Correct PWM 방식
+      - 주파수 f = fclk_io / (510 N) Hz
+      - 주기 T = Tclk_io (510 N) sec
+  - N : 분주비 (Prescale factor) 설정 (CS210)
+
+    - N = 1
+      - TCCR2B = 0bXXXXX001;
+    - N = 8
+      - TCCR2B = 0bXXXXX010;
+    - N = 32
+      - TCCR2B = 0bXXXXX011;
+    - N = 64
+      - TCCR2B = 0bXXXXX100;
+    - N = 128
+      - TCCR2B = 0bXXXXX101;
+    - N = 256
+      - TCCR2B = 0bXXXXX110;
+    - N = 1024
+      - TCCR2B = 0bXXXXX111;
+
+  - 주파수 설정 예시 (Fast PWM 방식)
+
+    - TCCR2B = 0bxxxxx111
+      - 분주비 N : 1024
+    - Clock 주파수 (fclk/N)
+      - 16,000,000 / 1024 = 15625 Hz
+    - pwm 주파수
+      - 15625 / 256 = 61 Hz
+    - pwm 주기
+      - 1 / 61 = 16.38 msec
+
+  - 주파수 설정 예시 (Phase Correct PWM 방식)
+
+    - TCCR2B = 0bxxxxx111
+      - 분주비 N : 1024
+    - Clock 주파수 (fclk / N)
+      - 16,000,000 / 1024 = 15625 Hz
+    - pwm 주파수
+      - 15625 / 510 = 30.6 Hz
+    - pwm 주기
+      - 1 / 30.6 = 32.64 msec
+
+  - Phase correct pwm 주기는 fast pwm 보다 약 2배 길어짐
+
+## OC2B PWM설정 정리
+
+![스크린샷 2022-12-08 오전 12 10 39](https://user-images.githubusercontent.com/96982072/206216141-ca5d1bde-8821-4ac0-8292-a399b2f5997e.png)
+
+- 파형발생모드(waveform generation mode) 설정
+  - (2A)Bit1,0 = 1,1
+  - (2B)Bit3 = 0
+  - 파형 : Fast PWM
+- 반전/비반전 설정 (Compare Match Output Mode)
+  - (2A)Bit5,4 = 1,0
+  - 비반전 : OCR2B 증가에 따라 duty cycle 증가
+- PWM 주파수 설정
+  - (2B)bit2,1,0 = 1,1,1
+    - 분주비 N = 1024
+- Clock 주파수
+  - fclk / 1024
+  - 16,000,000 / 1024 = 15625 Hz
+- fast pwm 주파수
+  - 15625/256 (8bit up count)
+  - 61 Hz
