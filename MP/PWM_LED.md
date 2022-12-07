@@ -74,3 +74,23 @@ int main()
     - 1 cycle : 510 count
   - OCR2B = 200일 때  
     ![스크린샷 2022-12-06 오후 11 49 34](https://user-images.githubusercontent.com/96982072/205944396-9d704055-8583-4052-a519-3d3a1f83f25f.png)
+
+# PWM 레지스터 설정
+
+- PWM 파형 발생 모드 설정(WGM: Waveform Generation Mode)  
+  ![스크린샷 2022-12-07 오후 11 46 40](https://user-images.githubusercontent.com/96982072/206210346-eb80f373-cebf-4de1-9e32-cb73d55c0833.png)
+
+  | WGMn2 | WGMn1 | WGMn0 | 모드                |
+  | ----- | ----- | ----- | ------------------- |
+  | 0     | 1     | 1     | PWM : Fast          |
+  | 0     | 0     | 1     | PWM : Phase correct |
+  | 0     | 0     | 0     | Normal              |
+  | 0     | 1     | 0     | CTC                 |
+
+- Compare Output Mode(COM) 설정  
+  ![스크린샷 2022-12-07 오후 11 50 39](https://user-images.githubusercontent.com/96982072/206210900-5258a8c1-bd7d-469e-b6c6-6c90e4048b35.png)
+  - 비반전 모드
+    - 5V에서 OCR2B와 만나면 0V
+  
+  - 반전 모드
+    - 0V에서 OCR2B와 만나면 5V
