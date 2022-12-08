@@ -173,3 +173,43 @@ int main()
 - fast pwm 주파수
   - 15625/256 (8bit up count)
   - 61 Hz
+
+## PWM (OC2B) 구동 프로그램
+
+```C
+int main()
+{
+  unsigned char key;
+  DDRH = 0xff; // Direction for PWM, OC2B(PH6)
+  TCCR2A = 0b00100011; // PWM setting
+  TCCR2B = 0b00000111;
+
+  DDRF = 0x0f; // Keypad
+  PORTF = 0b11111011;
+    //keypad pull-up & keypad 두번째 세로줄 구동
+  while(1)
+  {
+    key = PINF;
+    switch ( key )
+    {
+      case 0b01111011 : OCR2B=255; break;
+      case 0b10111011 : OCR2B=177; break;
+      case 0b11011011 : OCR2B=80; break;
+      case 0b11101011 : OCR2B=10; break;
+    }
+  } // while close
+} // main close
+```
+
+- Fast PWM 방식 : 비반전, 주파수
+
+  - TCCR2A = 0b00 (COM2A1:2A0) 10(COM2B1:2B0 비반전) 00 11(WGM21 20)
+
+    - TCCR2A = 0b00100011;
+
+  - TCCR2B = 0000 0(WGM22) 111(CS22 21 20)
+    - TCCR2B = 00000111;
+    - clk/N = 16000000/1024 = 15,625 (CS : 111)
+    - pwm freq = 15625/256=61 Hz (16.38 msec)
+
+- 듀티사이클 (Fast PWM 비반전) = ((OCR2B+1)/256)\*100 (%)
