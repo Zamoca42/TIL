@@ -77,6 +77,9 @@
   - 하나의 인터럽트가 발생하면 cli() 기능이 수행되어 모든 인터럽트 금지됨
   - 해당 인터럽트가 처리된 후 다시 sei() 기능이 수행되어 인터럽트 금지를 해제함
 
+![스크린샷 2022-12-09 오후 10 05 23](https://user-images.githubusercontent.com/96982072/206709580-ee794567-3fd3-46a5-bdd5-be2ba71f226d.png)
+
+
 ## 일정시간 간격 프로그램 (Normal mode, Overflow interrupt)
 
 ```c
