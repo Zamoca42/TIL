@@ -26,6 +26,10 @@
 - [Summary - 중간 요약](AI/Midterm_Summary.ipynb)
 - [손글씨 구분(MNIST)](AI/Keras_MNIST.ipynb)
 - [손글씨 구분을 합성곱 신경망(CNN)으로 구현](AI/Keras_MNIST_CNN.ipynb)
+- [이미지 구별하기(CIFAR10)](AI/keras_CIFAR10.ipynb)
+- [저장된 모델 불러오기](AI/keras_Model_Retrain.ipynb)
+- [로컬로 저장된 데이터로 학습하기](AI/keras_Retain_mydata.ipynb)
+- [RNN]()
 
 ### Data Structure & Algorithm
 
@@ -35,6 +39,7 @@
 - [정렬(Sort)](DS/Sort.ipynb)
 - [스택(Stack) & 큐(Queue)](DS/Stack_Queue.ipynb)
 - [트리구조(Tree)](DS/Tree.ipynb)
+- [그래프(Graph)](DS/Graph.ipynb)
 
 ### DB
 
@@ -53,6 +58,10 @@
 - [인터럽트 & 시스템 콜](OS/interrupt_systemcall.ipynb)
 - [프로세스 관리](OS/Process.ipynb)
 - [스레드와 동시성](OS/Thread.ipynb)
+- [CPU 스케쥴링](OS/CPU_Scheduling.ipynb)
+- [메모리](OS/Main_Memory.ipynb)
+- [뮤텍스 & 세마포어](OS/Mutex_Semaphores.ipynb)
+- [스토리지](OS/Storage.ipynb)
 
 ### Javascript
 
@@ -64,7 +73,22 @@
 
 ### Math in CS
 
-- 공부 중...
+- [시간복잡도](math/Complexity_ch04.md)
+- [확률 및 통계](math/probability_&_statistics.ipynb)
+- [1차원 데이터 분석](math/data_analysis.ipynb)
+- [2차원 데이터 분석](math/probability_&_statistics.ipynb)
+- [이산 확률 변수](math/Discrete_Random_variable.ipynb)
+
+### MicroProcessor
+
+- [AD converter](MP/ADC.md)
+- [하드웨어 시계](MP/Hardware_timer.md)
+- [PWM LED 제어](MP/PWM_LED.md)
+- [PWM 서보모터](MP/PWM_Servomotor.md)
+- [스텝모터](MP/Stepper_motor.md)
+- [인터럽트 CTC모드](MP/interrupt2_CTC.md)
+- [초음파 센서](MP/Ultrasonic_Sensor.md)
+- [외부 펄스 입력](MP/Timer_Pulse_Input.md)
 
 ### Etc...
 
